@@ -280,6 +280,7 @@ graph/
 ├── models.py             # Node, edge, evidence, compiled-document contracts
 ├── store.py              # SQLite schema, transactions, repositories, FTS5 setup
 ├── source_tree.py        # Adapter that reads md.py output/manifests/frontmatter
+├── compiler.py           # Raw .md → staged md.py compile → promote → graph ingest
 ├── ingest.py             # Bootstrap, new/update ingest, extraction, invalidation
 ├── search.py             # FTS5 now; Elasticsearch/vector adapters behind one interface
 ├── query.py              # Search, bounded traversal, LLM context assembly
@@ -297,7 +298,7 @@ must expose a stable `CompiledDocument` contract so that later changes to
 CompiledDocument(
     source_path=Path(...),
     output_root=Path(...),
-    manifest=..., 
+    manifest=...,
     source_pages=[
         CompiledSourcePage(
             markdown_path=Path(...),
@@ -416,6 +417,9 @@ second_hop_decay: 0.35
 max_query_nodes: 30
 max_external_edges_per_source_page: 8
 max_external_edges_per_document: 25
+max_edges_per_expansion: 8
+max_local_pages_from_document: 6
+contains_traversal_weight: 0.1
 max_edges_per_synthetic_node: 10
 minimum_active_strength: 0.45
 synthetic_repeat_query_threshold: 2
@@ -442,8 +446,9 @@ Track and lint:
 3. Implement absolute extraction and basic identity resolution inside `ingest.py`.
    Store aliases, evidence, and review flags in JSON metadata initially.
 4. Add FTS5 search and bounded typed/weighted traversal in `query.py`.
-5. Add staged ingest for new/updated large and small Markdown documents, including
-   source-version activation and lazy synthetic staleness.
+5. Add staged raw-Markdown import for new/updated large and small documents: call
+   the unchanged `md.py`, validate the staged tree, promote it, activate its
+   source version, and apply lazy synthetic staleness.
 6. Add `synthetic.py`: repeated-query matching, Markdown creation/reuse, flattened
    absolute dependencies, and immediate FTS indexing.
 7. Add `maintenance.py`: explicit `maintain` command for stale refresh, linting,
