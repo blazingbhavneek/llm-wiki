@@ -35,23 +35,23 @@ from pydantic import BaseModel, Field
 # Runtime config
 # ---------------------------------------------------------------------
 
-SOURCE_PATH = "/home/seigyo/llm-wiki/input/"
-OUTPUT_ROOT = "/home/seigyo/llm-wiki/output/"
+SOURCE_PATH = "/run/media/blaze/Common/Code/llm-wiki/input/"
+OUTPUT_ROOT = "/run/media/blaze/Common/Code/llm-wiki/output/"
 
-PHASE = "all"  # all | generate | verify | repair
+PHASE = "all"  # all | generate | generate-flat | verify | repair
 
-BASE_URL = os.environ.get("OPENAI_BASE_URL", "http://10.160.144.101:51021/v1")
+BASE_URL = os.environ.get("OPENAI_BASE_URL", "http://localhost:8000/v1")
 API_KEY = os.environ.get("OPENAI_API_KEY", "local")
 
-GEN_MODEL = "openai/gpt-oss-120b"
-VERIFY_MODEL = "openai/gpt-oss-120b"
+GEN_MODEL = "gemma4"
+VERIFY_MODEL = "gemma4"
 
 GENERATION_LINES = 100
 VERIFICATION_LINES = 25
 MAX_CHUNK_EXTRA = 30
 
 # Concurrency inside verification for one file.
-CONCURRENCY = 5
+CONCURRENCY = 1
 
 # Number of input markdown files processed at the same time.
 FILE_CONCURRENCY = 3
@@ -99,6 +99,37 @@ class VerificationResult(BaseModel):
 class RepairResult(BaseModel):
     markdown_patch: str = ""
     reason: str = ""
+
+
+class ChunkSummary(BaseModel):
+    """A factual description of one source chunk; it never owns source text."""
+
+    summary: str = ""
+    topics: list[str] = Field(default_factory=list)
+    suggested_heading: str = ""
+
+
+class TopicRange(BaseModel):
+    """A named, contiguous source range used at one level of the wiki tree."""
+
+    title: str = ""
+    summary: str = ""
+    source_range: Optional[list[int]] = None
+
+
+class H1Plan(BaseModel):
+    sections: list[TopicRange] = Field(default_factory=list)
+
+
+class H1Layout(BaseModel):
+    """Sections are H2 folders when use_h2_folders is true, otherwise leaf pages."""
+
+    use_h2_folders: bool = False
+    sections: list[TopicRange] = Field(default_factory=list)
+
+
+class LeafPagePlan(BaseModel):
+    pages: list[TopicRange] = Field(default_factory=list)
 
 
 @dataclass
@@ -268,33 +299,6 @@ def append_markdown(path: Path, markdown: str) -> int:
     return len(markdown.splitlines())
 
 
-def create_markdown_file(
-    path: Path,
-    title: str,
-    summary: str,
-    source_start: int,
-    source_end: int,
-    body: str,
-) -> None:
-    title = title.strip() or "Untitled"
-    summary = summary.strip()
-
-    body = body.strip()
-
-    content = f"""---
-title: {yaml_quote(title)}
-summary: {yaml_quote(summary)}
-source_lines: [{source_start}, {source_end}]
----
-
-# {title}
-
-{body}
-"""
-
-    path.write_text(content, encoding="utf-8")
-
-
 def numbered_source_lines(lines: list[str], start_line_number: int) -> str:
     return "\n".join(
         f"{start_line_number + i}: {line}" for i, line in enumerate(lines)
@@ -422,6 +426,8 @@ def init_manifest(source_path: Path) -> dict[str, Any]:
         "updated_at": utc_now_iso(),
         "files": [],
         "chunks": [],
+        "planning": {},
+        "coverage": [],
         "verification_flags": [],
     }
 
@@ -475,62 +481,6 @@ def add_or_update_file_record(
 
 
 def update_markdown_frontmatter(path: Path, new_merged_ranges: list[list[int]]) -> None:
-    """Rewrites the source_lines field in the YAML frontmatter of an existing MD file."""
-    if not path.exists():
-        return
-    content = path.read_text(encoding="utf-8")
-    if not content.startswith("---"):
-        return
-
-    parts = content.split("---", 2)
-    if len(parts) < 3:
-        return
-
-    _, front_str, body = parts
-
-    lines = front_str.strip().splitlines()
-    new_front_lines = []
-    for line in lines:
-        if line.startswith("source_lines:"):
-            # Update to the new merged ranges (list of lists)
-            new_front_lines.append(f"source_lines: {json.dumps(new_merged_ranges)}")
-        else:
-            new_front_lines.append(line)
-
-    new_front_str = "\n".join(new_front_lines)
-    # Reconstruct the file. `body` already contains the leading newlines and content.
-    new_content = f"---\n{new_front_str}\n---{body}"
-
-    path.write_text(new_content, encoding="utf-8")
-
-
-def create_markdown_file(
-    path: Path,
-    title: str,
-    summary: str,
-    source_start: int,
-    source_end: int,
-    body: str,
-) -> None:
-    title = title.strip() or "Untitled"
-    summary = summary.strip()
-    body = body.strip()
-
-    # Initialize source_lines as a list containing one range list
-    content = f"""---
-title: {yaml_quote(title)}
-summary: {yaml_quote(summary)}
-source_lines: [[{source_start}, {source_end}]]
----
-
-# {title}
-
-{body}
-"""
-
-    path.write_text(content, encoding="utf-8")
-
-def update_markdown_frontmatter(path: Path, new_merged_ranges: list[list[int]]) -> None:
     content = path.read_text(encoding="utf-8")
     if not content.startswith("---"):
         return  # unexpected format
@@ -568,7 +518,8 @@ def create_markdown_file(
 ) -> None:
     title = title.strip() or "Untitled"
     summary = summary.strip()
-    body = body.strip()
+    # Keep `body` unchanged: leading and trailing blank source lines are owned
+    # by this page just as much as non-blank source lines are.
 
     content = f"""---
 title: {yaml_quote(title)}
@@ -581,6 +532,7 @@ source_lines: [[{source_start}, {source_end}]]
 {body}
 """
 
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
 
 
@@ -697,8 +649,331 @@ async def structured_ainvoke(
 
 
 # ---------------------------------------------------------------------
+# Hierarchical planning helpers
+# ---------------------------------------------------------------------
+
+
+def format_source_range(source_range: list[int]) -> str:
+    return f"{source_range[0]}–{source_range[1]}"
+
+
+def initialize_chunk_summary_document(path: Path, source_path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        f"# Chunk summaries\n\nSource: `{source_path}`\n",
+        encoding="utf-8",
+    )
+
+
+def append_chunk_summary_document(
+    path: Path,
+    source_start: int,
+    source_end: int,
+    summary: ChunkSummary,
+) -> None:
+    topics = ", ".join(summary.topics) or "(no distinct topic identified)"
+    heading = summary.suggested_heading.strip() or "Untitled section"
+    append_markdown(
+        path,
+        f"## Source lines {source_start}–{source_end}\n\n"
+        f"- Suggested heading: {heading}\n"
+        f"- Topics: {topics}\n"
+        f"- Summary: {summary.summary.strip()}",
+    )
+
+
+def summaries_for_range(
+    summaries: list[dict[str, Any]],
+    source_start: int,
+    source_end: int,
+) -> list[dict[str, Any]]:
+    return [
+        record
+        for record in summaries
+        if overlap_size(
+            source_start,
+            source_end,
+            int(record["source_start"]),
+            int(record["source_end"]),
+        )
+        > 0
+    ]
+
+
+def format_summary_ledger(summaries: list[dict[str, Any]]) -> str:
+    if not summaries:
+        return "(No previous chunk summaries.)"
+
+    entries = []
+    for record in summaries:
+        topics = ", ".join(record.get("topics", [])) or "no distinct topic"
+        entries.append(
+            f"- Lines {record['source_start']}–{record['source_end']}: "
+            f"{record.get('summary', '').strip()} "
+            f"Topics: {topics}."
+        )
+    return "\n".join(entries)
+
+
+def allowed_chunk_ranges(
+    summaries: list[dict[str, Any]],
+    source_start: int,
+    source_end: int,
+) -> list[list[int]]:
+    return [
+        [int(record["source_start"]), int(record["source_end"])]
+        for record in summaries_for_range(summaries, source_start, source_end)
+    ]
+
+
+def partition_or_fallback(
+    topics: list[TopicRange],
+    source_start: int,
+    source_end: int,
+    valid_chunk_ranges: list[list[int]],
+    fallback_title: str,
+    fallback_summary: str,
+    label: str,
+) -> list[TopicRange]:
+    """Accept only an exact, chunk-aligned partition of a parent source range.
+
+    Planning may degrade to one page if the model returns an invalid plan, but it
+    must never produce a gap, an overlap, or a range that cannot be justified by
+    the chunk summary ledger.
+    """
+    if source_start > source_end:
+        return []
+
+    allowed_starts = {item[0] for item in valid_chunk_ranges}
+    allowed_ends = {item[1] for item in valid_chunk_ranges}
+    expected_start = source_start
+    accepted: list[TopicRange] = []
+
+    for topic in topics:
+        source_range = topic.source_range
+        if (
+            not source_range
+            or len(source_range) != 2
+            or source_range[0] != expected_start
+            or source_range[0] not in allowed_starts
+            or source_range[1] not in allowed_ends
+            or source_range[1] < source_range[0]
+            or source_range[1] > source_end
+        ):
+            accepted = []
+            break
+
+        accepted.append(
+            TopicRange(
+                title=topic.title.strip() or fallback_title,
+                summary=topic.summary.strip() or fallback_summary,
+                source_range=[int(source_range[0]), int(source_range[1])],
+            )
+        )
+        expected_start = int(source_range[1]) + 1
+
+    if accepted and expected_start == source_end + 1:
+        return accepted
+
+    print(
+        f"[Planning] Invalid {label} partition for source lines "
+        f"{source_start}-{source_end}; using one safe fallback range."
+    )
+    return [
+        TopicRange(
+            title=fallback_title,
+            summary=fallback_summary,
+            source_range=[source_start, source_end],
+        )
+    ]
+
+
+def assert_exact_coverage(
+    leaves: list[TopicRange],
+    source_line_count: int,
+) -> None:
+    """Raise before rendering unless each source line belongs to one leaf page."""
+    if source_line_count == 0:
+        if leaves:
+            raise RuntimeError("An empty source document cannot have leaf pages.")
+        return
+
+    expected_start = 1
+    for leaf in leaves:
+        source_range = leaf.source_range
+        if not source_range or len(source_range) != 2:
+            raise RuntimeError("Leaf page is missing its source range.")
+        start, end = source_range
+        if start != expected_start or end < start or end > source_line_count:
+            raise RuntimeError(
+                "Source coverage is not exact: expected next range to start at "
+                f"{expected_start}, got {source_range}."
+            )
+        expected_start = end + 1
+
+    if expected_start != source_line_count + 1:
+        raise RuntimeError(
+            "Source coverage is incomplete: expected coverage through line "
+            f"{source_line_count}, stopped before line {expected_start}."
+        )
+
+
+# ---------------------------------------------------------------------
 # Generation phase
 # ---------------------------------------------------------------------
+
+
+def build_chunk_summary_prompt(
+    previous_source_block: str,
+    prior_summary_ledger: str,
+    source_block: str,
+    source_start: int,
+    source_end: int,
+) -> list[Any]:
+    return [
+        SystemMessage(
+            content=(
+                "You summarize source chunks for a later wiki-planning pass. "
+                "Do not rewrite or omit source content. Describe every meaningful "
+                "topic, instruction, command, warning, and transition in the current "
+                "range so a later planner can choose safe page boundaries."
+            )
+        ),
+        HumanMessage(
+            content=f"""
+Current source range: {source_start}–{source_end}.
+
+Previous 100 source lines, included only for context:
+```text
+{previous_source_block or "(This is the first source chunk.)"}
+```
+
+Line-range summary ledger accumulated before this chunk:
+```markdown
+{prior_summary_ledger}
+```
+
+Current numbered source lines to summarize:
+```text
+{source_block}
+```
+
+Return one concise factual summary of this exact range. `topics` should list the
+important subjects in source order. `suggested_heading` should be a short label
+for this range. Do not claim facts not present in the source.
+""",
+        ),
+    ]
+
+
+def build_h1_plan_prompt(
+    summary_ledger: str,
+    source_line_count: int,
+    chunk_ranges: list[list[int]],
+) -> list[Any]:
+    return [
+        SystemMessage(
+            content=(
+                "You are the first pass of a lossless Markdown wiki planner. "
+                "Plan only top-level H1 guide sections from the chunk summaries. "
+                "Do not write Markdown or source content."
+            )
+        ),
+        HumanMessage(
+            content=f"""
+Create H1 sections for source lines 1–{source_line_count}.
+
+The returned `sections` source ranges MUST be a contiguous exact partition of
+the whole document: first range starts at 1, each next range starts one line
+after the previous range, and the final range ends at {source_line_count}.
+There must be no gaps and no overlaps.
+
+Choose boundaries only at these chunk ranges; each returned range must begin at
+one listed range start and end at one listed range end:
+{json.dumps(chunk_ranges)}
+
+Chunk summary ledger:
+```markdown
+{summary_ledger}
+```
+
+Use a small number of reader-facing guide titles. Each section needs a concise
+summary and an inclusive `source_range`.
+""",
+        ),
+    ]
+
+
+def build_h1_layout_prompt(
+    h1: TopicRange,
+    summary_ledger: str,
+    chunk_ranges: list[list[int]],
+) -> list[Any]:
+    source_start, source_end = h1.source_range or [0, 0]
+    return [
+        SystemMessage(
+            content=(
+                "You decide whether one H1 wiki guide needs H2 folders. "
+                "Plan ranges only; do not write Markdown or source text."
+            )
+        ),
+        HumanMessage(
+            content=f"""
+H1 guide: {h1.title}
+H1 source range: {source_start}–{source_end}
+H1 summary: {h1.summary}
+
+Decide whether this guide has enough distinct major subtopics to use H2 folders.
+Set `use_h2_folders` to true only when H2 folders improve navigation. If false,
+`sections` must be the final leaf pages directly inside the H1 folder. If true,
+`sections` must be the H2 folder ranges; a later pass will make leaf pages.
+
+In either case, `sections` must exactly and contiguously partition {source_start}–{source_end},
+with no gap or overlap. Use only these chunk ranges:
+{json.dumps(chunk_ranges)}
+
+Relevant chunk summaries:
+```markdown
+{summary_ledger}
+```
+""",
+        ),
+    ]
+
+
+def build_leaf_page_plan_prompt(
+    parent: TopicRange,
+    parent_label: str,
+    summary_ledger: str,
+    chunk_ranges: list[list[int]],
+) -> list[Any]:
+    source_start, source_end = parent.source_range or [0, 0]
+    return [
+        SystemMessage(
+            content=(
+                "You create the final page plan for one lossless wiki section. "
+                "Plan only page titles, summaries, and exact source ranges."
+            )
+        ),
+        HumanMessage(
+            content=f"""
+Parent {parent_label}: {parent.title}
+Source range: {source_start}–{source_end}
+Summary: {parent.summary}
+
+Return reader-sized leaf pages. Their `pages` ranges MUST be an exact contiguous
+partition of {source_start}–{source_end}; no source line may be skipped or
+assigned twice. Boundaries must use only these complete chunk ranges:
+{json.dumps(chunk_ranges)}
+
+Relevant chunk summaries:
+```markdown
+{summary_ledger}
+```
+""",
+        ),
+    ]
+
 
 def build_generation_prompt(
     current: Optional[CurrentFileState],
@@ -936,7 +1211,7 @@ def enforce_generation_rules(
 
     return decision
 
-async def phase_generate(args: argparse.Namespace) -> None:
+async def phase_generate_flat(args: argparse.Namespace) -> None:
     source_path = Path(args.source)
     out_dir = Path(args.out)
     manifest_path = out_dir / "manifest.json"
@@ -1150,6 +1425,428 @@ async def phase_generate(args: argparse.Namespace) -> None:
         write_json(manifest_path, manifest)
 
     print(f"[Generation] Done. Manifest written to {manifest_path}")
+
+
+def write_navigation_index(
+    path: Path,
+    title: str,
+    summary: str,
+    children: list[dict[str, Any]],
+    source_range: Optional[list[int]] = None,
+) -> None:
+    """Render an index page; indexes navigate source pages but do not own text."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = [
+        "---",
+        f"title: {yaml_quote(title)}",
+        f"summary: {yaml_quote(summary)}",
+        "generated: true",
+        "---",
+        "",
+        f"# {title}",
+        "",
+    ]
+
+    if summary:
+        lines.extend([summary, ""])
+
+    if source_range:
+        lines.extend([f"Source coverage: lines {format_source_range(source_range)}.", ""])
+
+    if children:
+        lines.extend(["## Contents", ""])
+        for child in children:
+            relative_path = Path(
+                os.path.relpath(Path(child["path"]), start=path.parent)
+            ).as_posix()
+            child_summary = child.get("summary", "").strip()
+            range_text = format_source_range(child["source_range"])
+            suffix = f" — {child_summary}" if child_summary else ""
+            lines.append(
+                f"- [{child['title']}]({relative_path}){suffix} "
+                f"_(source lines {range_text})_"
+            )
+        lines.append("")
+
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def hierarchy_to_manifest(hierarchy: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [
+        {
+            "h1": node["h1"].model_dump(),
+            "use_h2_folders": node["use_h2_folders"],
+            "groups": [
+                {
+                    "topic": group["topic"].model_dump(),
+                    "pages": [page.model_dump() for page in group["pages"]],
+                }
+                for group in node["groups"]
+            ],
+        }
+        for node in hierarchy
+    ]
+
+
+def write_topic_plan_document(path: Path, hierarchy: list[dict[str, Any]]) -> None:
+    lines = ["# Topic plan", ""]
+    for node in hierarchy:
+        h1 = node["h1"]
+        lines.extend(
+            [
+                f"## {h1.title} — source lines {format_source_range(h1.source_range or [0, 0])}",
+                "",
+                h1.summary,
+                "",
+            ]
+        )
+        for group in node["groups"]:
+            topic = group["topic"]
+            if node["use_h2_folders"]:
+                lines.extend(
+                    [
+                        f"### {topic.title} — source lines "
+                        f"{format_source_range(topic.source_range or [0, 0])}",
+                        "",
+                    ]
+                )
+            for page in group["pages"]:
+                lines.append(
+                    f"- {page.title}: source lines "
+                    f"{format_source_range(page.source_range or [0, 0])}"
+                )
+            lines.append("")
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def planned_leaf_pages(hierarchy: list[dict[str, Any]]) -> list[TopicRange]:
+    return [
+        page
+        for node in hierarchy
+        for group in node["groups"]
+        for page in group["pages"]
+    ]
+
+
+def render_hierarchical_wiki(
+    out_dir: Path,
+    source_lines: list[str],
+    manifest: dict[str, Any],
+    hierarchy: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Create the wiki tree only after its leaf ranges passed exact coverage."""
+    root_children: list[dict[str, Any]] = []
+    coverage: list[dict[str, Any]] = []
+
+    def render_page(directory: Path, page_number: int, page: TopicRange) -> dict[str, Any]:
+        source_start, source_end = page.source_range or [0, 0]
+        filename = make_unique_filename(directory, page_number, "", page.title)
+        page_path = directory / filename
+        create_markdown_file(
+            path=page_path,
+            title=page.title,
+            summary=page.summary,
+            source_start=source_start,
+            source_end=source_end,
+            body=range_to_markdown(source_lines, page.source_range),
+        )
+
+        relative_filename = page_path.relative_to(out_dir).as_posix()
+        add_or_update_file_record(
+            manifest,
+            relative_filename,
+            page.title,
+            page.summary,
+            source_start,
+            source_end,
+        )
+        add_chunk_record(
+            manifest=manifest,
+            source_start=source_start,
+            source_end=source_end,
+            action="planned",
+            targets=[
+                {
+                    "filename": relative_filename,
+                    "source_start": source_start,
+                    "source_end": source_end,
+                }
+            ],
+            reason="Hierarchical plan leaf page.",
+        )
+        coverage.append(
+            {
+                "source_start": source_start,
+                "source_end": source_end,
+                "file": relative_filename,
+            }
+        )
+        return {
+            "title": page.title,
+            "summary": page.summary,
+            "source_range": [source_start, source_end],
+            "path": page_path,
+        }
+
+    for h1_number, node in enumerate(hierarchy, start=1):
+        h1 = node["h1"]
+        h1_directory = out_dir / f"{h1_number:02d}-{slugify(h1.title)}"
+        h1_children: list[dict[str, Any]] = []
+
+        if node["use_h2_folders"]:
+            for h2_number, group in enumerate(node["groups"], start=1):
+                h2 = group["topic"]
+                h2_directory = h1_directory / f"{h2_number:02d}-{slugify(h2.title)}"
+                page_children = [
+                    render_page(h2_directory, page_number, page)
+                    for page_number, page in enumerate(group["pages"], start=1)
+                ]
+                h2_index = h2_directory / "index.md"
+                write_navigation_index(
+                    path=h2_index,
+                    title=h2.title,
+                    summary=h2.summary,
+                    children=page_children,
+                    source_range=h2.source_range,
+                )
+                h1_children.append(
+                    {
+                        "title": h2.title,
+                        "summary": h2.summary,
+                        "source_range": h2.source_range,
+                        "path": h2_index,
+                    }
+                )
+        else:
+            direct_pages = node["groups"][0]["pages"]
+            h1_children = [
+                render_page(h1_directory, page_number, page)
+                for page_number, page in enumerate(direct_pages, start=1)
+            ]
+
+        h1_index = h1_directory / "index.md"
+        write_navigation_index(
+            path=h1_index,
+            title=h1.title,
+            summary=h1.summary,
+            children=h1_children,
+            source_range=h1.source_range,
+        )
+        root_children.append(
+            {
+                "title": h1.title,
+                "summary": h1.summary,
+                "source_range": h1.source_range,
+                "path": h1_index,
+            }
+        )
+
+    write_navigation_index(
+        path=out_dir / "index.md",
+        title="Wiki index",
+        summary="Generated guide index.",
+        children=root_children,
+    )
+    return coverage
+
+
+async def phase_generate(args: argparse.Namespace) -> None:
+    """Plan first, prove leaf coverage, then render the hierarchical wiki tree."""
+    source_path = Path(args.source)
+    out_dir = Path(args.out)
+    manifest_path = out_dir / "manifest.json"
+
+    if args.clean and out_dir.exists():
+        shutil.rmtree(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    if manifest_path.exists() and not args.clean:
+        raise RuntimeError(
+            f"{manifest_path} already exists. Use --clean to regenerate from scratch."
+        )
+
+    source_lines = read_lines(source_path)
+    chunks = chunk_source_lines_preserving_tables(
+        source_lines,
+        target_size=args.generation_lines,
+        max_extra=args.max_chunk_extra,
+    )
+    manifest = init_manifest(source_path)
+    planning_dir = out_dir / "_planning"
+    summary_path = planning_dir / "chunk-summaries.md"
+    topic_plan_path = planning_dir / "topic-index.md"
+    coverage_path = planning_dir / "coverage.json"
+    initialize_chunk_summary_document(summary_path, source_path)
+
+    llm = make_llm(
+        model=args.gen_model,
+        base_url=args.base_url,
+        api_key=args.api_key,
+        temperature=args.temperature,
+        timeout=args.timeout,
+    )
+
+    summaries: list[dict[str, Any]] = []
+    for chunk_number, (start_idx, end_idx) in enumerate(chunks, start=1):
+        source_start = start_idx + 1
+        source_end = end_idx
+        previous_start_idx = max(0, start_idx - 100)
+        previous_block = numbered_source_lines(
+            source_lines[previous_start_idx:start_idx],
+            previous_start_idx + 1,
+        )
+        source_block = numbered_source_lines(source_lines[start_idx:end_idx], source_start)
+        prior_ledger = summary_path.read_text(encoding="utf-8")
+
+        print(
+            f"[Planning] Summarizing chunk {chunk_number}/{len(chunks)} "
+            f"source lines {source_start}-{source_end}"
+        )
+        result = await structured_ainvoke(
+            llm,
+            ChunkSummary,
+            build_chunk_summary_prompt(
+                previous_source_block=previous_block,
+                prior_summary_ledger=prior_ledger,
+                source_block=source_block,
+                source_start=source_start,
+                source_end=source_end,
+            ),
+        )
+        summary = ChunkSummary.model_validate(result)
+        record = {
+            "source_start": source_start,
+            "source_end": source_end,
+            **summary.model_dump(),
+        }
+        summaries.append(record)
+        append_chunk_summary_document(summary_path, source_start, source_end, summary)
+        manifest["planning"]["chunk_summaries"] = summaries
+        manifest["updated_at"] = utc_now_iso()
+        write_json(manifest_path, manifest)
+
+    if not source_lines:
+        hierarchy: list[dict[str, Any]] = []
+    else:
+        summary_ledger = format_summary_ledger(summaries)
+        all_chunk_ranges = allowed_chunk_ranges(summaries, 1, len(source_lines))
+        h1_result = await structured_ainvoke(
+            llm,
+            H1Plan,
+            build_h1_plan_prompt(
+                summary_ledger=summary_ledger,
+                source_line_count=len(source_lines),
+                chunk_ranges=all_chunk_ranges,
+            ),
+        )
+        h1_sections = partition_or_fallback(
+            H1Plan.model_validate(h1_result).sections,
+            1,
+            len(source_lines),
+            all_chunk_ranges,
+            fallback_title=source_path.stem.replace("-", " ").title(),
+            fallback_summary="Complete source document.",
+            label="H1",
+        )
+
+        # Stage 2: decide every H1's shape before any H2 is expanded into pages.
+        h1_layouts: list[dict[str, Any]] = []
+        for h1 in h1_sections:
+            h1_start, h1_end = h1.source_range or [0, 0]
+            h1_summaries = summaries_for_range(summaries, h1_start, h1_end)
+            h1_ranges = allowed_chunk_ranges(summaries, h1_start, h1_end)
+            layout_result = await structured_ainvoke(
+                llm,
+                H1Layout,
+                build_h1_layout_prompt(
+                    h1=h1,
+                    summary_ledger=format_summary_ledger(h1_summaries),
+                    chunk_ranges=h1_ranges,
+                ),
+            )
+            layout = H1Layout.model_validate(layout_result)
+            layout_sections = partition_or_fallback(
+                layout.sections,
+                h1_start,
+                h1_end,
+                h1_ranges,
+                fallback_title=(f"{h1.title} Overview" if layout.use_h2_folders else h1.title),
+                fallback_summary=h1.summary or "Source section.",
+                label=f"{h1.title} layout",
+            )
+            h1_layouts.append(
+                {
+                    "h1": h1,
+                    "use_h2_folders": layout.use_h2_folders,
+                    "sections": layout_sections,
+                }
+            )
+
+        # Stage 3: all chosen H2 sections are now split into final files.
+        hierarchy = []
+        for h1_layout in h1_layouts:
+            h1 = h1_layout["h1"]
+            if not h1_layout["use_h2_folders"]:
+                hierarchy.append(
+                    {
+                        "h1": h1,
+                        "use_h2_folders": False,
+                        "groups": [{"topic": h1, "pages": h1_layout["sections"]}],
+                    }
+                )
+                continue
+
+            groups: list[dict[str, Any]] = []
+            for h2 in h1_layout["sections"]:
+                h2_start, h2_end = h2.source_range or [0, 0]
+                h2_summaries = summaries_for_range(summaries, h2_start, h2_end)
+                h2_ranges = allowed_chunk_ranges(summaries, h2_start, h2_end)
+                leaf_result = await structured_ainvoke(
+                    llm,
+                    LeafPagePlan,
+                    build_leaf_page_plan_prompt(
+                        parent=h2,
+                        parent_label="H2 section",
+                        summary_ledger=format_summary_ledger(h2_summaries),
+                        chunk_ranges=h2_ranges,
+                    ),
+                )
+                pages = partition_or_fallback(
+                    LeafPagePlan.model_validate(leaf_result).pages,
+                    h2_start,
+                    h2_end,
+                    h2_ranges,
+                    fallback_title=h2.title,
+                    fallback_summary=h2.summary or "Source section.",
+                    label=f"{h2.title} leaf page",
+                )
+                groups.append({"topic": h2, "pages": pages})
+
+            hierarchy.append(
+                {"h1": h1, "use_h2_folders": True, "groups": groups}
+            )
+
+    leaves = planned_leaf_pages(hierarchy)
+    assert_exact_coverage(leaves, len(source_lines))
+    write_topic_plan_document(topic_plan_path, hierarchy)
+
+    manifest["planning"]["hierarchy"] = hierarchy_to_manifest(hierarchy)
+    manifest["planning"]["coverage_verified_at"] = utc_now_iso()
+    coverage = render_hierarchical_wiki(out_dir, source_lines, manifest, hierarchy)
+    manifest["coverage"] = coverage
+    manifest["updated_at"] = utc_now_iso()
+    write_json(manifest_path, manifest)
+    write_json(
+        coverage_path,
+        {
+            "source": str(source_path),
+            "source_line_count": len(source_lines),
+            "exact_coverage": True,
+            "assignments": coverage,
+        },
+    )
+    print(f"[Generation] Done. Hierarchical wiki written to {out_dir}")
+
 
 # ---------------------------------------------------------------------
 # Verification phase
@@ -1528,7 +2225,9 @@ async def process_one_source(
         print("=" * 80)
 
         try:
-            if config.phase in {"all", "generate"}:
+            if config.phase == "generate-flat":
+                await phase_generate_flat(config)
+            elif config.phase in {"all", "generate"}:
                 await phase_generate(config)
 
             if config.phase in {"all", "verify"}:
