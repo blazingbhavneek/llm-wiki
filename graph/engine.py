@@ -7,6 +7,7 @@ summaries/edges via the LLM. No heuristic stand-ins.
 
 from __future__ import annotations
 
+from collections import deque
 from pathlib import Path
 import re
 
@@ -286,6 +287,8 @@ class DomainEngine:
             return [f"ingested-new:{node.id}" for node in incoming]
 
         actions: list[str] = []
+        replacements: dict[str, str] = {}
+        stale_sources: set[str] = set()
         matched_old: set[str] = set()
         exact_by_hash = {
             node.source_material_hash or source_hash(node.body): node
@@ -323,16 +326,17 @@ class DomainEngine:
 
             self.ingest(node)
             self._supersede(old, node)
-            self._stale_supported_exogenous(old.id, actions)
+            replacements[old.id] = node.id
             actions.append(f"superseded:{old.id}->{node.id}")
 
         for old in active_old:
             if old.id in matched_old:
                 continue
             self.database.set_node_status(old.id, NodeStatus.stale)
-            self._stale_supported_exogenous(old.id, actions)
+            stale_sources.add(old.id)
             actions.append(f"stale:{old.id}")
 
+        self._cascade_dependents(replacements, stale_sources, actions)
         self._replace_structural_edges(document_name, structural_edges)
         self.database.record_source(document_name, version)
         return actions
@@ -390,12 +394,136 @@ class DomainEngine:
         )
         self.database.set_node_status(old.id, NodeStatus.superseded)
 
-    def _stale_supported_exogenous(self, source_node_id: str, actions: list[str]) -> None:
-        for edge in self.database.get_outgoing_edges(source_node_id, "supports"):
+    def _cascade_dependents(
+        self,
+        replacements: dict[str, str],
+        stale_sources: set[str],
+        actions: list[str],
+    ) -> None:
+        """Regenerate downstream exogenous nodes through provenance edges.
+
+        Only ``supports`` edges participate. Each regenerated exogenous node is
+        append-only: the old derived node is superseded, and the new one receives
+        support edges from the current active support nodes.
+        """
+
+        max_hops = max(0, self.settings.cascade_max_hops)
+        max_nodes = max(0, self.settings.cascade_max_nodes)
+        if max_hops == 0 or max_nodes == 0:
+            if replacements or stale_sources:
+                actions.append("cascade-skipped:disabled")
+            return
+
+        frontier: deque[tuple[str, int]] = deque(
+            (node_id, 0) for node_id in sorted(set(replacements) | set(stale_sources))
+        )
+        visited_dependents: set[str] = set()
+        processed = 0
+
+        while frontier:
+            changed_id, depth = frontier.popleft()
+            target_depth = depth + 1
+            if target_depth > max_hops:
+                continue
+
+            for edge in self.database.get_outgoing_edges(changed_id, "supports"):
+                target = self.database.get_node(edge.target_node_id)
+                if (
+                    not target
+                    or target.status != NodeStatus.active
+                    or target.type != NodeType.exogenous
+                    or target.id in visited_dependents
+                ):
+                    continue
+
+                if processed >= max_nodes:
+                    actions.append(
+                        f"cascade-cap-hit:max_nodes={max_nodes}:at={target.id}"
+                    )
+                    return
+
+                visited_dependents.add(target.id)
+                processed += 1
+
+                support_nodes = self._current_support_nodes(target, replacements)
+                if not support_nodes:
+                    self.database.set_node_status(target.id, NodeStatus.stale)
+                    actions.append(f"stale-exogenous:{target.id}")
+                    if target_depth < max_hops:
+                        frontier.append((target.id, target_depth))
+                    continue
+
+                replacement = self._regenerate_exogenous_node(target, support_nodes)
+                if replacement is None:
+                    self.database.set_node_status(target.id, NodeStatus.stale)
+                    actions.append(f"stale-exogenous:{target.id}")
+                    if target_depth < max_hops:
+                        frontier.append((target.id, target_depth))
+                    continue
+
+                replacements[target.id] = replacement.id
+                actions.append(f"regenerated-exogenous:{target.id}->{replacement.id}")
+                if target_depth < max_hops:
+                    frontier.append((target.id, target_depth))
+
+    def _current_support_nodes(
+        self, node: Node, replacements: dict[str, str]
+    ) -> list[Node]:
+        support_nodes: dict[str, Node] = {}
+        for edge in self.database.get_incoming_edges(node.id, "supports"):
+            source_id = replacements.get(edge.source_node_id, edge.source_node_id)
+            source = self.database.get_node(source_id)
+            if source and source.status == NodeStatus.superseded:
+                replacement_id = self._active_replacement_id(source.id)
+                if replacement_id:
+                    source = self.database.get_node(replacement_id)
+            if source and source.status == NodeStatus.active:
+                support_nodes[source.id] = source
+        return list(support_nodes.values())
+
+    def _active_replacement_id(self, node_id: str) -> str | None:
+        for edge in self.database.get_outgoing_edges(node_id, "superseded_by"):
             target = self.database.get_node(edge.target_node_id)
-            if target and target.type == NodeType.exogenous and target.status == NodeStatus.active:
-                self.database.set_node_status(target.id, NodeStatus.stale)
-                actions.append(f"stale-exogenous:{target.id}")
+            if target and target.status == NodeStatus.active:
+                return target.id
+        return None
+
+    def _regenerate_exogenous_node(
+        self, old: Node, support_nodes: list[Node]
+    ) -> Node | None:
+        body = self.llm.regenerate_exogenous(old, support_nodes).strip()
+        if not body:
+            return None
+
+        support_ids = sorted(node.id for node in support_nodes)
+        version = source_hash("|".join(
+            [source_hash(body), *support_ids, *(n.source_version or "" for n in support_nodes)]
+        ))
+        replacement = Node(
+            id=make_exogenous_node_id(f"{old.id}|{version}|{body}"),
+            body=body,
+            type=NodeType.exogenous,
+            title=old.title,
+            original_document_name=old.original_document_name,
+            source_version=version,
+            cluster=old.cluster,
+        )
+        if replacement.id == old.id:
+            return old
+
+        self.ingest(replacement)
+        for support in support_nodes:
+            self.database.upsert_edge(
+                Edge(
+                    id=make_edge_id(support.id, replacement.id, "supports"),
+                    source_node_id=support.id,
+                    target_node_id=replacement.id,
+                    label="supports",
+                    summary="Current source node supports this regenerated node.",
+                )
+            )
+        self._supersede(old, replacement)
+        return replacement
 
     def _replace_structural_edges(
         self, document_name: str | None, edges: list[Edge]

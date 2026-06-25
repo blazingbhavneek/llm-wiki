@@ -122,10 +122,15 @@ def test_cascading_update_supersedes_changed_source_node() -> None:
             n for n in eng.database.get_nodes_by_document("manual.md", active_only=True)
             if "alpha" in n.body
         )
-        exo = eng.create_exogenous_node(
+        exo1 = eng.create_exogenous_node(
             "agent note: call omegaapi with alpha",
             [old_omega.id],
-            origin="agent",
+            origin="agent-1",
+        )
+        exo2 = eng.create_exogenous_node(
+            "higher level note based on agent note",
+            [exo1.id],
+            origin="agent-2",
         )
 
         v2 = _md_output(root, "v2", [
@@ -136,17 +141,53 @@ def test_cascading_update_supersedes_changed_source_node() -> None:
 
         assert any(a.startswith(f"superseded:{old_omega.id}->") for a in actions)
         assert eng.database.get_node(old_omega.id).status.value == "superseded"
-        assert eng.database.get_node(exo.id).status.value == "stale"
+        assert eng.database.get_node(exo1.id).status.value == "superseded"
+        assert eng.database.get_node(exo2.id).status.value == "superseded"
+        assert any(a.startswith(f"regenerated-exogenous:{exo1.id}->") for a in actions)
+        assert any(a.startswith(f"regenerated-exogenous:{exo2.id}->") for a in actions)
 
         active = eng.database.get_nodes_by_document("manual.md", active_only=True)
         assert any("beta" in n.body for n in active)
         assert any("setupguide" in n.body for n in active)
+        active_exo = [n for n in eng.database.get_all_nodes() if n.type == NodeType.exogenous and n.status.value == "active"]
+        assert any("beta" in n.body for n in active_exo)
 
         edges = eng.database.get_edges_for_node(old_omega.id)
         assert any(e.label == "superseded_by" for e in edges)
 
         second = eng.cascading_update(v2)
         assert not any(a.startswith(("superseded:", "new:", "stale:")) for a in second)
+    finally:
+        eng.close()
+
+
+def test_cascading_update_stales_exogenous_with_removed_support() -> None:
+    eng = _engine()
+    root = Path(tempfile.mkdtemp())
+    try:
+        v1 = _md_output(root, "v1", [
+            ("omega", "omegaapi takes parameter alpha."),
+            ("setup", "setupguide uses a config file."),
+        ])
+        eng.ingest_md_output(v1)
+        old_omega = next(
+            n for n in eng.database.get_nodes_by_document("manual.md", active_only=True)
+            if "omegaapi" in n.body
+        )
+        exo = eng.create_exogenous_node(
+            "agent note: omegaapi exists",
+            [old_omega.id],
+            origin="removed-support-agent",
+        )
+
+        v2 = _md_output(root, "v2", [
+            ("setup", "setupguide uses a config file."),
+        ])
+        actions = eng.cascading_update(v2)
+
+        assert any(a == f"stale:{old_omega.id}" for a in actions)
+        assert any(a == f"stale-exogenous:{exo.id}" for a in actions)
+        assert eng.database.get_node(exo.id).status.value == "stale"
     finally:
         eng.close()
 

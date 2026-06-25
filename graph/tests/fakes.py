@@ -68,3 +68,7 @@ class FakeLlm:
                     summary="shares keywords",
                 ))
         return out
+
+    def regenerate_exogenous(self, previous: Node, support_nodes: list[Node]) -> str:
+        support_text = "\n".join(node.body for node in support_nodes)
+        return f"regenerated from current supports\n{support_text}".strip()

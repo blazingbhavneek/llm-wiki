@@ -15,6 +15,7 @@ from .prompts import (
     CLAIM_PROMPT,
     EDGE_PROMPT,
     KEYWORD_PROMPT,
+    REGENERATE_EXOGENOUS_PROMPT,
     SUMMARY_PROMPT,
     SYSTEM_PROMPT,
 )
@@ -112,6 +113,38 @@ class LlmClient:
         )
         allowed = {c.id for c in candidates}
         return [e for e in result.edges if e.target_node_id in allowed]
+
+    def regenerate_exogenous(self, previous: Node, support_nodes: list[Node]) -> str:
+        if not support_nodes:
+            return ""
+        import json
+
+        from langchain_core.messages import HumanMessage, SystemMessage
+
+        payload = {
+            "previous_node": {
+                "id": previous.id,
+                "title": previous.title,
+                "summary": previous.summary,
+                "body": previous.body[:4000],
+            },
+            "current_support_material": [
+                {
+                    "id": node.id,
+                    "title": node.title,
+                    "summary": node.summary,
+                    "body": node.body[:2500],
+                }
+                for node in support_nodes[:8]
+            ],
+        }
+        resp = self._chat().invoke(
+            [
+                SystemMessage(content=REGENERATE_EXOGENOUS_PROMPT),
+                HumanMessage(content=json.dumps(payload, ensure_ascii=False)),
+            ]
+        )
+        return str(resp.content or "").strip()
 
     async def invoke(self, prompt: str, output_model: type | None = None) -> tuple[str, Any]:
         if not prompt.strip():

@@ -289,6 +289,15 @@ class Database:
         sql += " ORDER BY created_at DESC"
         return [_row_to_edge(r) for r in self.connection.execute(sql, params).fetchall()]
 
+    def get_incoming_edges(self, node_id: str, label: str | None = None) -> list[Edge]:
+        sql = "SELECT * FROM edges WHERE target_node_id=?"
+        params: list[str] = [node_id]
+        if label is not None:
+            sql += " AND label=?"
+            params.append(label)
+        sql += " ORDER BY created_at DESC"
+        return [_row_to_edge(r) for r in self.connection.execute(sql, params).fetchall()]
+
     def delete_edges_by_label_for_nodes(self, label: str, node_ids: set[str]) -> None:
         if not node_ids:
             return

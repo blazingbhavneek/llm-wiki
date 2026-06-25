@@ -54,6 +54,11 @@ python -m graph.cli get
 `WIKI_DB`, `WIKI_EMBED_DIM`. Defaults target the work-pc servers (gpt-oss-120b,
 ruri-v3); `server` auto-falls-back to local HF GPU when unreachable.
 
+Cascade safety caps:
+
+- `WIKI_CASCADE_MAX_HOPS` — downstream `supports` hops to regenerate, default `2`
+- `WIKI_CASCADE_MAX_NODES` — max exogenous nodes touched per cascade, default `50`
+
 ## Dependencies
 
 ```
@@ -76,15 +81,17 @@ matches new source chunks against active nodes using exact body hashes first,
 then extracted entity/claim metadata. Identical chunks are left alone, reordered
 chunks remap without changing facts, changed chunks create a new active node and
 mark the previous one `superseded` with `superseded_by` / `supersedes` edges.
-Exogenous nodes directly supported by superseded/stale source nodes are marked
-`stale`.
+
+After source changes are applied, cascade walks downstream `supports` edges only.
+Supported exogenous nodes are regenerated from their current active supports and
+supersede the older derived node. If a derived node loses all active support, it
+is marked `stale`. This propagation is bounded by hop and node-count caps.
 
 Source node bodies are append-only: cascade does not rewrite old source material
 in place.
 
 ## Still Missing
 
-- Deep recursive neighbour regeneration beyond directly supported exogenous nodes
 - Stronger claim matching for heavy rewrites where the local extractor is noisy
 - query-time exogenous-node growth (agent cache feeding back into the graph)
 - `agent.py` / `master_agent.py` query agent wired into `query`

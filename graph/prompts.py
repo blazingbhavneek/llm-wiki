@@ -33,3 +33,11 @@ EDGE_PROMPT = (
     "- Only propose an edge when the relationship is clearly useful; skip weak ones.\n"
     "- summary: one short clause explaining the link."
 )
+
+REGENERATE_EXOGENOUS_PROMPT = (
+    "Regenerate a derived wiki node after its supporting source material changed. "
+    "Use the previous derived node only to understand the intended topic and shape. "
+    "The new node body must be supported only by the CURRENT SUPPORT MATERIAL. "
+    "Drop stale claims that are no longer supported. Keep the result concise, "
+    "factual, and in markdown. No preamble."
+)

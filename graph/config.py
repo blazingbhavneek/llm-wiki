@@ -37,6 +37,8 @@ class Settings:
     # Graph behaviour.
     edge_candidate_k: int = 12  # KNN neighbours considered per new node.
     vector_query_k: int = 20
+    cascade_max_hops: int = 2
+    cascade_max_nodes: int = 50
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -56,4 +58,6 @@ class Settings:
             database_path=env("WIKI_DB", cls.database_path),
             edge_candidate_k=int(env("WIKI_EDGE_K", cls.edge_candidate_k)),
             vector_query_k=int(env("WIKI_VECTOR_K", cls.vector_query_k)),
+            cascade_max_hops=int(env("WIKI_CASCADE_MAX_HOPS", cls.cascade_max_hops)),
+            cascade_max_nodes=int(env("WIKI_CASCADE_MAX_NODES", cls.cascade_max_nodes)),
         )
