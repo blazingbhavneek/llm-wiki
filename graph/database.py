@@ -57,6 +57,10 @@ class Database:
                 original_document_name TEXT,
                 source_path TEXT,
                 source_ranges_json TEXT NOT NULL,
+                source_version TEXT,
+                source_material_hash TEXT,
+                entity TEXT,
+                claims_json TEXT NOT NULL DEFAULT '[]',
                 keywords_json TEXT NOT NULL,
                 summary TEXT,
                 cluster TEXT,
@@ -85,12 +89,42 @@ class Database:
                 ingested_at TEXT NOT NULL
             );
 
+            CREATE TABLE IF NOT EXISTS source_versions (
+                document_name TEXT NOT NULL,
+                source_hash TEXT NOT NULL,
+                ingested_at TEXT NOT NULL,
+                PRIMARY KEY(document_name, source_hash)
+            );
+
             CREATE VIRTUAL TABLE IF NOT EXISTS nodes_fts USING fts5(
                 node_id UNINDEXED, text
             );
             """
         )
+        self._ensure_node_columns()
         self.connection.commit()
+
+    def _ensure_node_columns(self) -> None:
+        existing = {
+            row["name"]
+            for row in self.connection.execute("PRAGMA table_info(nodes)").fetchall()
+        }
+        additions = {
+            "source_version": "TEXT",
+            "source_material_hash": "TEXT",
+            "entity": "TEXT",
+            "claims_json": "TEXT NOT NULL DEFAULT '[]'",
+        }
+        for column, ddl in additions.items():
+            if column not in existing:
+                self.connection.execute(f"ALTER TABLE nodes ADD COLUMN {column} {ddl}")
+        self.connection.executescript(
+            """
+            CREATE INDEX IF NOT EXISTS idx_nodes_source_version ON nodes(source_version);
+            CREATE INDEX IF NOT EXISTS idx_nodes_source_material_hash ON nodes(source_material_hash);
+            CREATE INDEX IF NOT EXISTS idx_nodes_entity ON nodes(entity);
+            """
+        )
 
     def _restore_dim(self) -> None:
         row = self.connection.execute(
@@ -147,14 +181,19 @@ class Database:
         self.connection.execute(
             """
             INSERT INTO nodes (id, body, type, title, original_document_name,
-                source_path, source_ranges_json, keywords_json, summary, cluster,
-                status, created_at, updated_at)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+                source_path, source_ranges_json, source_version,
+                source_material_hash, entity, claims_json, keywords_json, summary,
+                cluster, status, created_at, updated_at)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             ON CONFLICT(id) DO UPDATE SET
                 body=excluded.body, type=excluded.type, title=excluded.title,
                 original_document_name=excluded.original_document_name,
                 source_path=excluded.source_path,
                 source_ranges_json=excluded.source_ranges_json,
+                source_version=excluded.source_version,
+                source_material_hash=excluded.source_material_hash,
+                entity=excluded.entity,
+                claims_json=excluded.claims_json,
                 keywords_json=excluded.keywords_json, summary=excluded.summary,
                 cluster=excluded.cluster, status=excluded.status,
                 updated_at=excluded.updated_at
@@ -162,7 +201,9 @@ class Database:
             (
                 node.id, node.body, node.type.value, node.title,
                 node.original_document_name, node.source_path,
-                json.dumps(node.source_ranges), json.dumps(node.keywords),
+                json.dumps(node.source_ranges), node.source_version,
+                node.source_material_hash, node.entity,
+                json.dumps(node.claims), json.dumps(node.keywords),
                 node.summary, node.cluster, node.status.value,
                 node.created_at, node.updated_at,
             ),
@@ -202,6 +243,16 @@ class Database:
         sql += " ORDER BY updated_at DESC"
         return [_row_to_node(r) for r in self.connection.execute(sql).fetchall()]
 
+    def get_nodes_by_document(
+        self, document_name: str, active_only: bool = False
+    ) -> list[Node]:
+        sql = "SELECT * FROM nodes WHERE original_document_name=?"
+        params: list[str] = [document_name]
+        if active_only:
+            sql += " AND status='active'"
+        sql += " ORDER BY updated_at DESC"
+        return [_row_to_node(r) for r in self.connection.execute(sql, params).fetchall()]
+
     # ── edges ───────────────────────────────────────────────────────────
 
     def upsert_edge(self, edge: Edge) -> None:
@@ -229,14 +280,47 @@ class Database:
         ).fetchall()
         return [_row_to_edge(r) for r in rows]
 
+    def get_outgoing_edges(self, node_id: str, label: str | None = None) -> list[Edge]:
+        sql = "SELECT * FROM edges WHERE source_node_id=?"
+        params: list[str] = [node_id]
+        if label is not None:
+            sql += " AND label=?"
+            params.append(label)
+        sql += " ORDER BY created_at DESC"
+        return [_row_to_edge(r) for r in self.connection.execute(sql, params).fetchall()]
+
+    def delete_edges_by_label_for_nodes(self, label: str, node_ids: set[str]) -> None:
+        if not node_ids:
+            return
+        placeholders = ",".join("?" for _ in node_ids)
+        params = [label, *node_ids, *node_ids]
+        self.connection.execute(
+            f"""
+            DELETE FROM edges
+            WHERE label=?
+              AND source_node_id IN ({placeholders})
+              AND target_node_id IN ({placeholders})
+            """,
+            params,
+        )
+        self.connection.commit()
+
     # ── sources (recon dedup) ───────────────────────────────────────────
 
     def record_source(self, document_name: str, source_hash: str) -> None:
-        self.connection.execute(
-            "INSERT OR REPLACE INTO sources(document_name, source_hash, ingested_at) VALUES(?,?,?)",
-            (document_name, source_hash, now_iso()),
-        )
-        self.connection.commit()
+        stamp = now_iso()
+        with self.transaction() as conn:
+            conn.execute(
+                "INSERT OR REPLACE INTO sources(document_name, source_hash, ingested_at) VALUES(?,?,?)",
+                (document_name, source_hash, stamp),
+            )
+            conn.execute(
+                """
+                INSERT OR IGNORE INTO source_versions(document_name, source_hash, ingested_at)
+                VALUES(?,?,?)
+                """,
+                (document_name, source_hash, stamp),
+            )
 
     def get_source(self, document_name: str) -> tuple[str, str] | None:
         row = self.connection.execute(
@@ -265,7 +349,7 @@ class Database:
         rows = self.connection.execute(
             """
             SELECT n.* FROM nodes_fts f JOIN nodes n ON n.id = f.node_id
-            WHERE nodes_fts MATCH ? AND n.status != 'deleted'
+            WHERE nodes_fts MATCH ? AND n.status = 'active'
             ORDER BY rank LIMIT ?
             """,
             (query, limit),
@@ -302,7 +386,7 @@ class Database:
             )
             SELECT m.node_id AS node_id, m.distance AS distance
             FROM matches m JOIN nodes n ON n.id = m.node_id
-            WHERE n.status != 'deleted'
+            WHERE n.status = 'active'
             ORDER BY m.distance
             """,
             (blob, limit),
@@ -318,6 +402,10 @@ def _row_to_node(row: sqlite3.Row) -> Node:
         original_document_name=row["original_document_name"],
         source_path=row["source_path"],
         source_ranges=[tuple(r) for r in json.loads(row["source_ranges_json"] or "[]")],
+        source_version=row["source_version"],
+        source_material_hash=row["source_material_hash"],
+        entity=row["entity"] or "",
+        claims=json.loads(row["claims_json"] or "[]"),
         keywords=json.loads(row["keywords_json"] or "[]"),
         summary=row["summary"] or "", cluster=row["cluster"], status=row["status"],
         created_at=row["created_at"], updated_at=row["updated_at"],

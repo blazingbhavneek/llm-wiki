@@ -24,6 +24,7 @@ class NodeType(str, Enum):
 class NodeStatus(str, Enum):
     active = "active"
     stale = "stale"
+    superseded = "superseded"
     deleted = "deleted"
 
 
@@ -35,6 +36,10 @@ class Node(BaseModel):
     original_document_name: str | None = None
     source_path: str | None = None
     source_ranges: list[tuple[int, int]] = Field(default_factory=list)
+    source_version: str | None = None
+    source_material_hash: str | None = None
+    entity: str = ""
+    claims: list[str] = Field(default_factory=list)
     keywords: list[str] = Field(default_factory=list)
     summary: str = ""
     cluster: str | None = None
@@ -66,6 +71,11 @@ class EdgeSuggestions(BaseModel):
 
 class Keywords(BaseModel):
     keywords: list[str] = Field(default_factory=list)
+
+
+class ClaimExtraction(BaseModel):
+    entity: str = ""
+    claims: list[str] = Field(default_factory=list)
 
 
 class QueryResult(BaseModel):

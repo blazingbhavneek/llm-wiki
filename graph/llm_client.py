@@ -10,8 +10,14 @@ from __future__ import annotations
 from typing import Any
 
 from .config import Settings
-from .models import EdgeSuggestion, EdgeSuggestions, Keywords, Node
-from .prompts import EDGE_PROMPT, KEYWORD_PROMPT, SUMMARY_PROMPT, SYSTEM_PROMPT
+from .models import ClaimExtraction, EdgeSuggestion, EdgeSuggestions, Keywords, Node
+from .prompts import (
+    CLAIM_PROMPT,
+    EDGE_PROMPT,
+    KEYWORD_PROMPT,
+    SUMMARY_PROMPT,
+    SYSTEM_PROMPT,
+)
 
 
 class LlmClient:
@@ -58,6 +64,28 @@ class LlmClient:
             if kw and kw.lower() not in {s.lower() for s in seen}:
                 seen.append(kw)
         return seen[:12]
+
+    def extract_claims(self, text: str) -> ClaimExtraction:
+        if not text.strip():
+            return ClaimExtraction()
+        from langchain_core.messages import HumanMessage, SystemMessage
+
+        structured = self._chat().with_structured_output(ClaimExtraction)
+        result: ClaimExtraction = structured.invoke(
+            [SystemMessage(content=CLAIM_PROMPT), HumanMessage(content=text[:12000])]
+        )
+        claims: list[str] = []
+        seen: set[str] = set()
+        for claim in result.claims:
+            claim = " ".join(claim.strip().split())
+            key = claim.lower()
+            if claim and key not in seen:
+                seen.add(key)
+                claims.append(claim)
+        return ClaimExtraction(
+            entity=" ".join(result.entity.strip().split()),
+            claims=claims[:20],
+        )
 
     def suggest_edges(self, node: Node, candidates: list[Node]) -> list[EdgeSuggestion]:
         if not candidates:

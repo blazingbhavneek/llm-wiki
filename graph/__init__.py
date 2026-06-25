@@ -6,7 +6,7 @@ summaries/keywords/edges, md.py hierarchical ingestion.
 
 from .config import Settings
 from .engine import DomainEngine
-from .models import Edge, GraphStats, Node, NodeStatus, NodeType, QueryResult
+from .models import ClaimExtraction, Edge, GraphStats, Node, NodeStatus, NodeType, QueryResult
 
 __all__ = [
     "Settings",
@@ -15,6 +15,7 @@ __all__ = [
     "Edge",
     "NodeType",
     "NodeStatus",
+    "ClaimExtraction",
     "GraphStats",
     "QueryResult",
 ]

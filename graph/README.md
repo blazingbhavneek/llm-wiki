@@ -42,6 +42,7 @@ python -m graph.cli query keyword "gpu setup"
 python -m graph.cli query vector "select a device"   # +1-2 hop neighbourhood
 python -m graph.cli query id node:test-md:4564559ce3d6
 python -m graph.cli recon input/test.md       # new / unchanged / changed
+python -m graph.cli cascade output/test-v2    # append/supersede revised md.py output
 python -m graph.cli health
 python -m graph.cli get
 ```
@@ -68,9 +69,22 @@ pytest                         # tests
 python -m pytest graph/tests/ -q   # offline: fake embedder + fake LLM injected
 ```
 
-## Not yet implemented (pass 2 — raise `NotImplementedError`, not faked)
+## Revision Updates
 
-- `cascading_update` — line-range fact-check + recursive neighbour regeneration
-- `recluster` — embedding clustering + LLM cluster labels
+`cascade` consumes a fresh `md.py` output directory for the revised source. It
+matches new source chunks against active nodes using exact body hashes first,
+then extracted entity/claim metadata. Identical chunks are left alone, reordered
+chunks remap without changing facts, changed chunks create a new active node and
+mark the previous one `superseded` with `superseded_by` / `supersedes` edges.
+Exogenous nodes directly supported by superseded/stale source nodes are marked
+`stale`.
+
+Source node bodies are append-only: cascade does not rewrite old source material
+in place.
+
+## Still Missing
+
+- Deep recursive neighbour regeneration beyond directly supported exogenous nodes
+- Stronger claim matching for heavy rewrites where the local extractor is noisy
 - query-time exogenous-node growth (agent cache feeding back into the graph)
 - `agent.py` / `master_agent.py` query agent wired into `query`

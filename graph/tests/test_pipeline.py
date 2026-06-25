@@ -7,6 +7,7 @@ Run: python -m pytest graph/tests/ -q
 from __future__ import annotations
 
 import tempfile
+import json
 from pathlib import Path
 
 from ..config import Settings
@@ -25,6 +26,30 @@ def _engine() -> DomainEngine:
 def _node(body: str, doc: str = "test.md") -> Node:
     return Node(id=make_node_id(body, doc), body=body, type=NodeType.endogenous,
                 original_document_name=doc)
+
+
+def _md_output(root: Path, name: str, bodies: list[tuple[str, str]]) -> Path:
+    out = root / name
+    section = out / "01-manual"
+    section.mkdir(parents=True)
+    files = []
+    for index, (title, body) in enumerate(bodies, start=1):
+        filename = f"01-manual/{index:03d}-{title}.md"
+        files.append({
+            "filename": filename,
+            "title": title,
+            "summary": title,
+            "source_ranges": [[index, index]],
+        })
+        (out / filename).write_text(
+            f"---\ntitle: {title}\n---\n{body}\n",
+            encoding="utf-8",
+        )
+    (out / "manifest.json").write_text(
+        json.dumps({"source": "/missing/manual.md", "files": files}),
+        encoding="utf-8",
+    )
+    return out
 
 
 def test_ingest_query_edges_health() -> None:
@@ -79,5 +104,68 @@ def test_delete_and_recon() -> None:
         src = Path(tempfile.mkdtemp()) / "doc.md"
         src.write_text("# title\nbody text", encoding="utf-8")
         assert eng.recon(src)["status"] == "new"
+    finally:
+        eng.close()
+
+
+def test_cascading_update_supersedes_changed_source_node() -> None:
+    eng = _engine()
+    root = Path(tempfile.mkdtemp())
+    try:
+        v1 = _md_output(root, "v1", [
+            ("omega", "omegaapi takes parameter alpha.\nomegaapi returns int."),
+            ("setup", "setupguide uses a config file."),
+        ])
+        eng.ingest_md_output(v1)
+
+        old_omega = next(
+            n for n in eng.database.get_nodes_by_document("manual.md", active_only=True)
+            if "alpha" in n.body
+        )
+        exo = eng.create_exogenous_node(
+            "agent note: call omegaapi with alpha",
+            [old_omega.id],
+            origin="agent",
+        )
+
+        v2 = _md_output(root, "v2", [
+            ("omega", "omegaapi takes parameter beta.\nomegaapi returns int."),
+            ("setup", "setupguide uses a config file."),
+        ])
+        actions = eng.cascading_update(v2)
+
+        assert any(a.startswith(f"superseded:{old_omega.id}->") for a in actions)
+        assert eng.database.get_node(old_omega.id).status.value == "superseded"
+        assert eng.database.get_node(exo.id).status.value == "stale"
+
+        active = eng.database.get_nodes_by_document("manual.md", active_only=True)
+        assert any("beta" in n.body for n in active)
+        assert any("setupguide" in n.body for n in active)
+
+        edges = eng.database.get_edges_for_node(old_omega.id)
+        assert any(e.label == "superseded_by" for e in edges)
+
+        second = eng.cascading_update(v2)
+        assert not any(a.startswith(("superseded:", "new:", "stale:")) for a in second)
+    finally:
+        eng.close()
+
+
+def test_cascading_update_reorder_does_not_supersede() -> None:
+    eng = _engine()
+    root = Path(tempfile.mkdtemp())
+    try:
+        first = "alphaapi defines a queue.\nalphaapi submits work."
+        second = "betaconfig controls the runtime.\nbetaconfig sets timeout."
+        v1 = _md_output(root, "v1", [("alpha", first), ("beta", second)])
+        eng.ingest_md_output(v1)
+
+        v2 = _md_output(root, "v2", [("beta", second), ("alpha", first)])
+        actions = eng.cascading_update(v2)
+
+        assert all(not a.startswith("superseded:") for a in actions)
+        assert all(not a.startswith("new:") for a in actions)
+        nodes = eng.database.get_nodes_by_document("manual.md")
+        assert all(n.status.value == "active" for n in nodes)
     finally:
         eng.close()

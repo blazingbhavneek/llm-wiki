@@ -63,6 +63,14 @@ def cmd_recon(args) -> None:
         eng.close()
 
 
+def cmd_cascade(args) -> None:
+    eng = _engine(args)
+    try:
+        _print({"actions": eng.cascading_update(args.md_output_dir)})
+    finally:
+        eng.close()
+
+
 def cmd_get(args) -> None:
     eng = _engine(args)
     try:
@@ -119,6 +127,10 @@ def build_parser() -> argparse.ArgumentParser:
     rec = sub.add_parser("recon", help="check if a source doc is new/changed")
     rec.add_argument("source_file")
     rec.set_defaults(func=cmd_recon)
+
+    cas = sub.add_parser("cascade", help="apply a revised md.py output directory")
+    cas.add_argument("md_output_dir")
+    cas.set_defaults(func=cmd_cascade)
 
     sub.add_parser("get", help="dump all nodes and edges").set_defaults(func=cmd_get)
 

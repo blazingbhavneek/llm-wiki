@@ -14,6 +14,14 @@ KEYWORD_PROMPT = (
     "unless an acronym or identifier."
 )
 
+CLAIM_PROMPT = (
+    "Extract stable identity facts from this markdown node for revision matching. "
+    "Return one primary entity/topic and up to 20 atomic claims. A claim must be "
+    "a short factual statement supported directly by the text. Prefer facts that "
+    "would remain recognizable if the source document is reordered. Do not infer "
+    "or add facts not present in the text."
+)
+
 EDGE_PROMPT = (
     "You maintain a wiki graph. Given a NEW node and a list of CANDIDATE existing "
     "nodes (already pre-filtered by semantic similarity), decide which candidates "

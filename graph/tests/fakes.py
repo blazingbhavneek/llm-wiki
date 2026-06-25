@@ -10,7 +10,7 @@ from __future__ import annotations
 import math
 import re
 
-from ..models import EdgeSuggestion, Node
+from ..models import ClaimExtraction, EdgeSuggestion, Node
 
 _TOKEN = re.compile(r"[a-z0-9]+")
 _DIM = 64
@@ -47,6 +47,16 @@ class FakeLlm:
             if len(tok) > 3 and tok not in seen:
                 seen.append(tok)
         return seen[:12]
+
+    def extract_claims(self, text: str) -> ClaimExtraction:
+        tokens = [tok for tok in _tokens(text) if len(tok) > 3]
+        entity = tokens[0] if tokens else ""
+        claims: list[str] = []
+        for part in re.split(r"[.\n]+", text):
+            claim = " ".join(_tokens(part))
+            if claim and claim not in claims:
+                claims.append(claim)
+        return ClaimExtraction(entity=entity, claims=claims[:20])
 
     def suggest_edges(self, node: Node, candidates: list[Node]) -> list[EdgeSuggestion]:
         node_kw = set(node.keywords)
