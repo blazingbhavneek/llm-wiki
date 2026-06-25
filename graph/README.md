@@ -1,57 +1,76 @@
-# `graph/` — knowledge layer over `md.py`
+# graph — LLM wiki knowledge graph
 
-`md.py` owns: raw Markdown → lossless source-local tree.
-`graph/` owns: compiled tree → catalog, graph, search, query, synthetic knowledge.
+Real implementation. No heuristic stand-ins: embeddings are real (sqlite-vec),
+keyword search is real (FTS5/BM25), summaries / keywords / edges come from the
+LLM, and markdown ingestion consumes the hierarchical `md.py` pipeline output.
 
-Implements the design contract in [`../handoff.md`](../handoff.md) as one thin
-vertical slice. State lives under `.wiki/` (gitignored): `catalog.sqlite`,
-`graph-policy.yml`, `synthetic/`.
+## Layout
 
-## Modules
-
-| File | Role |
+| file | role |
 |---|---|
-| `models.py` | Two node classes (`absolute`/`synthetic`), edge contract, `Evidence`, `CompiledDocument`. |
-| `store.py` | SQLite: five tables + FTS5, repositories, transactions. |
-| `source_tree.py` | Only reader of `md.py` output; enforces lossless coverage; builds `CompiledDocument`. |
-| `compiler.py` | Raw Markdown import: invoke unchanged `md.py` into staging, promote, then ingest. |
-| `ids.py` | Deterministic stable node/edge ids (shared global topic identity). |
-| `policy.py` | `graph-policy.yml` traversal/lint budgets. |
-| `llm.py` | Optional OpenAI-compatible client; everything structural works without it. |
-| `ingest.py` | Bootstrap, staged version activation, document subgraphs, invalidation. |
-| `search.py` | `SearchBackend` protocol; FTS5 backend (ES/vector are later adapters). |
-| `query.py` | One query service: seed → bounded typed/weighted traversal → cited context. |
-| `synthetic.py` | Reuse/create/refresh synthetic nodes with flattened absolute deps. |
-| `maintenance.py` | Reindex, lazy stale refresh, lint, health metrics. |
-| `cli.py` | `bootstrap` / `ingest` / `import` / `query` / `maintain`. |
+| `config.py` | `Settings` — endpoints, models, paths (env-driven) |
+| `models.py` | Pydantic `Node`, `Edge`, `GraphStats`, `QueryResult` |
+| `database.py` | SQLite: nodes, edges, `nodes_fts` (FTS5), `vec_body`/`vec_summary` (sqlite-vec) |
+| `embeddings.py` | `Embedder` — OpenAI-compat server, HF-GPU fallback |
+| `llm_client.py` | `LlmClient` — summarize, extract_keywords, suggest_edges, invoke |
+| `md_ingest.py` | `md.py` output dir → nodes + structural edges |
+| `edges.py` | KNN candidates → LLM judge → bidirectional semantic edges |
+| `engine.py` | `DomainEngine` — ingest / query / recon / update / delete / get / health |
+| `health.py` | degree, density, neighbour-overlap metrics |
+| `cli.py` | `python -m graph.cli ...` |
+| `agent.py`, `master_agent.py` | pass-2: query agent + specialist cache (ported from `new/`) |
 
-## Use
+## Pipeline
 
-```bash
-python md.py                                   # compile sources into output/
-python -m graph.cli bootstrap --output output  # build catalog + graph
-python -m graph.cli import input/new.md         # compile raw Markdown with md.py, then ingest
-python -m graph.cli query "gpu environment setup"
-python -m graph.cli query "gpu environment setup" --synthesize --kind howto
-python -m graph.cli maintain                    # reindex, refresh stale, health
-python -m graph.tests.test_pipeline             # end-to-end, no LLM needed
+```
+input.md ──md.py──▶ output/<doc>/ (manifest.json + leaf .md hierarchy)
+                          │
+              md_ingest.load_md_output
+                          │  nodes (title/summary/source_ranges) + follows-edges
+                          ▼
+        DomainEngine.ingest ── LLM keywords ── embed body+summary ─▶ sqlite-vec
+                          │
+              edges.build_semantic_edges ── KNN ─▶ LLM judge ─▶ bidir edges
 ```
 
-Add `--llm` to any command to enable LLM synthesis/extraction against an
-OpenAI-compatible server (`OPENAI_BASE_URL`, default `http://localhost:8000/v1`).
+## CLI
 
-## How it maps to the acceptance criteria
+```bash
+python -m graph.cli init
+python -m graph.cli add output/test          # ingest an md.py output dir
+python -m graph.cli query keyword "gpu setup"
+python -m graph.cli query vector "select a device"   # +1-2 hop neighbourhood
+python -m graph.cli query id node:test-md:4564559ce3d6
+python -m graph.cli recon input/test.md       # new / unchanged / changed
+python -m graph.cli health
+python -m graph.cli get
+```
 
-- **No lost source line** — `source_tree.validate_coverage` rejects any
-  gap/overlap before ingest; `ingest_document` refuses uncovered trees.
-- **Document subgraph before global linking** — one document root + page nodes;
-  cross-document links exist *only* through shared global topic nodes.
-- **Evidenced factual edges** — `contains`/`has_topic` carry source-version +
-  line-range `Evidence`; `maintenance.health` lints any that don't.
-- **Synthetic staleness** — synthetic nodes store a flattened
-  `absolute_dependencies` closure and `source_version_fingerprint`; a source
-  update marks them stale; they refresh lazily on query or `maintain`.
-- **One query service** — search/LLM/UI all call `QueryService`, which respects
-  stale status, edge type, strength, hop budget, and emits citations.
-- **No uncited speculation as fact** — `synthetic_requires_absolute_evidence`
-  refuses evidence-free synthetic creation.
+## Config (env)
+
+`OPENAI_BASE_URL`, `OPENAI_API_KEY`, `WIKI_MODEL`, `WIKI_EMBED_BACKEND`
+(`server`|`hf`), `WIKI_EMBED_BASE_URL`, `WIKI_EMBED_MODEL`, `WIKI_HF_EMBED_MODEL`,
+`WIKI_DB`, `WIKI_EMBED_DIM`. Defaults target the work-pc servers (gpt-oss-120b,
+ruri-v3); `server` auto-falls-back to local HF GPU when unreachable.
+
+## Dependencies
+
+```
+sqlite-vec pydantic            # core storage + schema
+langchain-openai langchain-core  # chat + server embeddings
+sentence-transformers torch langchain-huggingface  # only for HF embed fallback
+pytest                         # tests
+```
+
+## Tests
+
+```bash
+python -m pytest graph/tests/ -q   # offline: fake embedder + fake LLM injected
+```
+
+## Not yet implemented (pass 2 — raise `NotImplementedError`, not faked)
+
+- `cascading_update` — line-range fact-check + recursive neighbour regeneration
+- `recluster` — embedding clustering + LLM cluster labels
+- query-time exogenous-node growth (agent cache feeding back into the graph)
+- `agent.py` / `master_agent.py` query agent wired into `query`

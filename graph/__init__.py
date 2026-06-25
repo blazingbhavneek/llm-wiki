@@ -1,29 +1,20 @@
-"""Knowledge-graph layer over md.py compiled output.
+"""LLM wiki graph package.
 
-md.py owns: raw Markdown -> lossless source-local tree.
-graph/ owns: compiled tree -> catalog, graph, search, query, synthetic knowledge.
-
-See handoff.md for the design contract. This package is a thin vertical slice:
-one SQLite catalog (.wiki/catalog.sqlite), FTS5 search, typed/weighted/evidenced
-edges, document subgraphs, and reusable synthetic Markdown nodes.
+Real implementation: sqlite-vec vector search, FTS5 keyword search, LLM-driven
+summaries/keywords/edges, md.py hierarchical ingestion.
 """
 
-from .models import (
-    NodeClass,
-    Node,
-    Edge,
-    Evidence,
-    CompiledSourcePage,
-    CompiledDocument,
-)
-from .store import Store
+from .config import Settings
+from .engine import DomainEngine
+from .models import Edge, GraphStats, Node, NodeStatus, NodeType, QueryResult
 
 __all__ = [
-    "NodeClass",
+    "Settings",
+    "DomainEngine",
     "Node",
     "Edge",
-    "Evidence",
-    "CompiledSourcePage",
-    "CompiledDocument",
-    "Store",
+    "NodeType",
+    "NodeStatus",
+    "GraphStats",
+    "QueryResult",
 ]

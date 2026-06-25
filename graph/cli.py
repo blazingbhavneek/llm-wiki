@@ -1,156 +1,144 @@
-"""CLI: bootstrap, ingest, import, query, maintain.
+"""Command line interface.
 
-  python -m graph.cli bootstrap [--output output/]
-  python -m graph.cli ingest output/<source>/
-  python -m graph.cli import input/new.md
-  python -m graph.cli query "how do I set up the gpu environment?" [--synthesize]
-  python -m graph.cli maintain
-
-State lives under .wiki/ (catalog.sqlite, graph-policy.yml, synthetic/).
+    python -m graph.cli init
+    python -m graph.cli add output/test
+    python -m graph.cli query keyword "gpu setup"
+    python -m graph.cli query vector "how do I select a device"
+    python -m graph.cli recon input/test.md
+    python -m graph.cli get
+    python -m graph.cli health
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
-from typing import Optional
 
-from .compiler import compile_and_ingest
-from .ingest import Ingestor, ingest_path
-from .llm import LLMClient
-from .maintenance import Maintenance, run_maintenance
-from .policy import ensure_policy_file, load_policy
-from .query import QueryService
-from .store import Store
-from .synthetic import SyntheticManager
+from .config import Settings
+from .engine import DomainEngine
 
 
-def _wiki_root(arg: Optional[str]) -> Path:
-    return Path(arg or ".wiki")
+def _print(value) -> None:
+    print(json.dumps(value, indent=2, ensure_ascii=False, default=str))
 
 
-def _bootstrap_env(wiki_root: Path):
-    wiki_root.mkdir(parents=True, exist_ok=True)
-    store = Store(wiki_root / "catalog.sqlite")
-    policy_path = ensure_policy_file(wiki_root / "graph-policy.yml")
-    policy = load_policy(policy_path)
-    return store, policy
+def _engine(args) -> DomainEngine:
+    settings = Settings.from_env()
+    if args.database:
+        settings.database_path = args.database
+    return DomainEngine(settings)
 
 
-def cmd_bootstrap(args) -> None:
-    store, policy = _bootstrap_env(_wiki_root(args.wiki))
-    llm = LLMClient() if args.llm else None
-    done = Ingestor(store, llm, policy).bootstrap(args.output)
-    print(f"bootstrapped {len(done)} documents: {', '.join(done) or '(none)'}")
-    store.close()
+def cmd_init(args) -> None:
+    eng = _engine(args)
+    eng.close()
+    print(f"database ready: {eng.settings.database_path}")
 
 
-def cmd_ingest(args) -> None:
-    store, policy = _bootstrap_env(_wiki_root(args.wiki))
-    llm = LLMClient() if args.llm else None
-    vid = ingest_path(store, args.output_root, llm, policy)
-    print(f"ingested -> version {vid}")
-    store.close()
-
-
-def cmd_import(args) -> None:
-    """Compile a raw .md with md.py, promote it, then ingest the graph tree."""
-    store, policy = _bootstrap_env(_wiki_root(args.wiki))
-    llm = LLMClient() if args.llm else None
+def cmd_add(args) -> None:
+    eng = _engine(args)
     try:
-        vid = compile_and_ingest(
-            store,
-            args.source_path,
-            output_parent=args.output_parent,
-            llm=llm,
-            policy=policy,
-        )
-        print(f"compiled and ingested -> version {vid}")
+        nodes = eng.ingest_md_output(args.md_output_dir)
+        print(f"ingested {len(nodes)} node(s) from {args.md_output_dir}")
+        for node in nodes[:10]:
+            print(f"- {node.id}: {node.title or node.summary[:80]}")
     finally:
-        store.close()
+        eng.close()
 
 
 def cmd_query(args) -> None:
-    wiki_root = _wiki_root(args.wiki)
-    store, policy = _bootstrap_env(wiki_root)
-    llm = LLMClient() if args.llm else None
-    qs = QueryService(store, policy)
-    sm = SyntheticManager(store, policy, wiki_root, llm)
-
-    cached = sm.lookup(args.text)
-    if cached:
-        print(f"[cache hit] synthetic node {cached.id}")
-        if cached.markdown_path and Path(cached.markdown_path).exists():
-            print(Path(cached.markdown_path).read_text(encoding="utf-8"))
-        store.close()
-        return
-
-    result = qs.query(args.text)
-    print(f"# Query: {args.text}\n")
-    for rn in result.nodes:
-        print(f"- [{rn.score:6.2f}] hop{rn.hop} {rn.node.node_class}/{rn.node.node_subtype} "
-              f"{rn.node.title}  ({rn.node.id})")
-    print("\n## Citations")
-    for c in result.citations:
-        print(f"- {c.title}: {c.document_id} {c.source_version_id} lines {c.source_ranges}")
-
-    # An explicit request synthesizes immediately. Otherwise repeated query
-    # intent is persisted and creates the planned self-growing cache node once
-    # the configured threshold is reached.
-    should_synthesize = sm.should_create(args.text, explicit=args.synthesize)
-    if should_synthesize:
-        node = sm.create_or_refresh(args.text, result, kind=args.kind)
-        if node:
-            mode = "explicit" if args.synthesize else "repeat-query"
-            print(f"\n[synthesized:{mode}] {node.id} -> {node.markdown_path}")
-        else:
-            print("\n[not synthesized] no absolute evidence (policy refused)")
-    store.close()
+    eng = _engine(args)
+    try:
+        _print(eng.query(args.query_type, args.value).model_dump())
+    finally:
+        eng.close()
 
 
-def cmd_maintain(args) -> None:
-    wiki_root = _wiki_root(args.wiki)
-    store, policy = _bootstrap_env(wiki_root)
-    llm = LLMClient() if args.llm else None
-    report = run_maintenance(store, policy, wiki_root, llm)
-    print(report.text())
-    store.close()
+def cmd_recon(args) -> None:
+    eng = _engine(args)
+    try:
+        _print(eng.recon(args.source_file))
+    finally:
+        eng.close()
+
+
+def cmd_get(args) -> None:
+    eng = _engine(args)
+    try:
+        nodes, edges = eng.get()
+        _print({"nodes": [n.model_dump() for n in nodes],
+                "edges": [e.model_dump() for e in edges]})
+    finally:
+        eng.close()
+
+
+def cmd_health(args) -> None:
+    eng = _engine(args)
+    try:
+        _print(eng.health(args.node_id).model_dump())
+    finally:
+        eng.close()
+
+
+def cmd_delete(args) -> None:
+    eng = _engine(args)
+    try:
+        eng.delete(args.node_id)
+        print(f"deleted {args.node_id}")
+    finally:
+        eng.close()
+
+
+def cmd_update(args) -> None:
+    eng = _engine(args)
+    try:
+        body = Path(args.markdown_path).read_text(encoding="utf-8")
+        node = eng.update(args.node_id, body)
+        print(f"updated {node.id}")
+    finally:
+        eng.close()
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="graph", description=__doc__)
-    p.add_argument("--wiki", default=".wiki", help="state directory (default .wiki)")
-    p.add_argument("--llm", action="store_true", help="enable LLM for synthesis/extraction")
-    sub = p.add_subparsers(dest="cmd", required=True)
+    p = argparse.ArgumentParser(prog="graph", description="LLM wiki graph")
+    p.add_argument("--database", help="SQLite path (overrides WIKI_DB)")
+    sub = p.add_subparsers(dest="command", required=True)
 
-    b = sub.add_parser("bootstrap", help="ingest every output/<source>/ tree")
-    b.add_argument("--output", default="output", help="parent of compiled trees")
-    b.set_defaults(func=cmd_bootstrap)
+    sub.add_parser("init", help="create the database").set_defaults(func=cmd_init)
 
-    i = sub.add_parser("ingest", help="ingest one compiled output tree")
-    i.add_argument("output_root", help="path to output/<source>/")
-    i.set_defaults(func=cmd_ingest)
+    add = sub.add_parser("add", help="ingest an md.py output directory")
+    add.add_argument("md_output_dir")
+    add.set_defaults(func=cmd_add)
 
-    raw = sub.add_parser("import", help="compile and ingest one raw Markdown file")
-    raw.add_argument("source_path", help="path to a raw .md source")
-    raw.add_argument("--output-parent", default="output", help="compiled output parent")
-    raw.set_defaults(func=cmd_import)
-
-    q = sub.add_parser("query", help="search + traverse + optional synthesize")
-    q.add_argument("text")
-    q.add_argument("--synthesize", action="store_true")
-    q.add_argument("--kind", default="discovery",
-                   choices=["howto", "discovery", "case", "comparison", "investigation"])
+    q = sub.add_parser("query", help="query by keyword, vector, or id")
+    q.add_argument("query_type", choices=["keyword", "vector", "id"])
+    q.add_argument("value")
     q.set_defaults(func=cmd_query)
 
-    m = sub.add_parser("maintain", help="reindex, refresh stale, health report")
-    m.set_defaults(func=cmd_maintain)
+    rec = sub.add_parser("recon", help="check if a source doc is new/changed")
+    rec.add_argument("source_file")
+    rec.set_defaults(func=cmd_recon)
+
+    sub.add_parser("get", help="dump all nodes and edges").set_defaults(func=cmd_get)
+
+    h = sub.add_parser("health", help="graph health metrics")
+    h.add_argument("node_id", nargs="?")
+    h.set_defaults(func=cmd_health)
+
+    d = sub.add_parser("delete", help="delete one node")
+    d.add_argument("node_id")
+    d.set_defaults(func=cmd_delete)
+
+    u = sub.add_parser("update", help="replace a node body from a markdown file")
+    u.add_argument("node_id")
+    u.add_argument("markdown_path")
+    u.set_defaults(func=cmd_update)
     return p
 
 
-def main(argv: Optional[list[str]] = None) -> None:
-    parser = build_parser()
-    args = parser.parse_args(argv)
+def main(argv: list[str] | None = None) -> None:
+    args = build_parser().parse_args(argv)
     args.func(args)
 
 
