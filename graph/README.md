@@ -8,15 +8,13 @@ LLM, and markdown ingestion consumes the hierarchical `md.py` pipeline output.
 
 | file | role |
 |---|---|
-| `config.py` | `Settings` — endpoints, models, paths (env-driven) |
-| `models.py` | Pydantic `Node`, `Edge`, `GraphStats`, `QueryResult` |
-| `database.py` | SQLite: nodes, edges, `nodes_fts` (FTS5), `vec_body`/`vec_summary` (sqlite-vec) |
-| `embeddings.py` | `Embedder` — OpenAI-compat server, HF-GPU fallback |
-| `llm_client.py` | `LlmClient` — summarize, extract_keywords, suggest_edges, invoke |
-| `md_ingest.py` | `md.py` output dir → nodes + structural edges |
-| `edges.py` | KNN candidates → LLM judge → bidirectional semantic edges |
-| `engine.py` | `DomainEngine` — ingest / query / recon / update / delete / get / health |
-| `health.py` | degree, density, neighbour-overlap metrics |
+| `models.py` | Pydantic graph models plus `Settings` runtime config |
+| `../db/` | swappable storage backends; `db.Database` is the active graph backend |
+| `../embeddings/` | `Embedder` — OpenAI-compat server, HF-GPU fallback |
+| `engine.py` | `DomainEngine` facade: public wiring only |
+| `runtime.py` | runtime services: enrichment, embeddings, semantic edges, query, exogenous nodes, analytics |
+| `revisions.py` | recon / update / supersede / stale / cascade logic |
+| `md_ingest.py` | `MarkdownIngest`: `md.py` output dir → nodes + structural edges |
 | `cli.py` | `python -m graph.cli ...` |
 | `agent.py`, `master_agent.py` | pass-2: query agent + specialist cache (ported from `new/`) |
 
@@ -25,12 +23,14 @@ LLM, and markdown ingestion consumes the hierarchical `md.py` pipeline output.
 ```
 input.md ──md.py──▶ output/<doc>/ (manifest.json + leaf .md hierarchy)
                           │
-              md_ingest.load_md_output
+           MarkdownIngest.load_md_output
                           │  nodes (title/summary/source_ranges) + follows-edges
                           ▼
-        DomainEngine.ingest ── LLM keywords ── embed body+summary ─▶ sqlite-vec
+          DomainEngine.ingest ── GraphRuntime.fill_derived_fields
                           │
-              edges.build_semantic_edges ── KNN ─▶ LLM judge ─▶ bidir edges
+                          ├─ embed body+summary ─▶ sqlite-vec
+                          │
+                          └─ semantic edges ── KNN ─▶ LLM judge ─▶ bidir edges
 ```
 
 ## CLI

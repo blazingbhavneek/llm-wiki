@@ -1,24 +1,78 @@
-"""Pydantic schema shared across the package (matches the canvas).
-
-Embeddings are deliberately NOT fields on ``Node``: vectors live in sqlite-vec
-tables keyed by node id, so the Python object stays light and JSON-friendly.
-"""
+"""Pydantic schema shared across the package."""
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
+import os
 
 from pydantic import BaseModel, Field
 
-
+# region TIMESTAMPS
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+# endregion TIMESTAMPS
+
+# region SETTINGS
+@dataclass
+class Settings:
+    """All tunables for one engine instance."""
+
+    chat_base_url: str = "http://localhost:8000/v1"
+    chat_api_key: str = "local"
+    chat_model: str = "gemma4"
+    chat_temperature: float = 0.2
+
+    embed_backend: str = "server"
+    embed_base_url: str = "http://localhost:8080/v1"
+    embed_api_key: str = "local"
+    embed_model: str = "cl-nagoya/ruri-v3-310m"
+    hf_embed_model: str = "cl-nagoya/ruri-v3-310m"
+    hf_device: str = "cuda:0"
+    embed_dim: int = 768
+
+    database_path: str = ".wiki/wiki.sqlite"
+
+    edge_candidate_k: int = 12
+    vector_query_k: int = 1
+    cascade_max_hops: int = 2
+    cascade_max_nodes: int = 50
+
+    @classmethod
+    def from_env(cls) -> "Settings":
+        env = os.environ.get
+        return cls(
+            chat_base_url=env("OPENAI_BASE_URL", cls.chat_base_url),
+            chat_api_key=env("OPENAI_API_KEY", cls.chat_api_key),
+            chat_model=env("WIKI_MODEL", cls.chat_model),
+            chat_temperature=float(env("WIKI_TEMPERATURE", cls.chat_temperature)),
+            embed_backend=env("WIKI_EMBED_BACKEND", cls.embed_backend),
+            embed_base_url=env(
+                "WIKI_EMBED_BASE_URL",
+                env("OPENAI_EMBED_BASE_URL", cls.embed_base_url),
+            ),
+            embed_api_key=env("WIKI_EMBED_API_KEY", cls.embed_api_key),
+            embed_model=env("WIKI_EMBED_MODEL", cls.embed_model),
+            hf_embed_model=env("WIKI_HF_EMBED_MODEL", cls.hf_embed_model),
+            hf_device=env("WIKI_HF_DEVICE", cls.hf_device),
+            embed_dim=int(env("WIKI_EMBED_DIM", cls.embed_dim)),
+            database_path=env("WIKI_DB", cls.database_path),
+            edge_candidate_k=int(env("WIKI_EDGE_K", cls.edge_candidate_k)),
+            vector_query_k=int(env("WIKI_VECTOR_K", cls.vector_query_k)),
+            cascade_max_hops=int(env("WIKI_CASCADE_MAX_HOPS", cls.cascade_max_hops)),
+            cascade_max_nodes=int(env("WIKI_CASCADE_MAX_NODES", cls.cascade_max_nodes)),
+        )
+
+
+# endregion SETTINGS
+
+# region ENUMS
 class NodeType(str, Enum):
-    endogenous = "endogenous"  # straight from source markdown
-    exogenous = "exogenous"    # agent/user-derived cache
+    endogenous = "endogenous"
+    exogenous = "exogenous"
 
 
 class NodeStatus(str, Enum):
@@ -28,6 +82,9 @@ class NodeStatus(str, Enum):
     deleted = "deleted"
 
 
+# endregion ENUMS
+
+# region CORE GRAPH MODELS
 class Node(BaseModel):
     id: str
     body: str
@@ -57,9 +114,10 @@ class Edge(BaseModel):
     created_at: str = Field(default_factory=now_iso)
 
 
-class EdgeSuggestion(BaseModel):
-    """One LLM-proposed link from the new node to an existing candidate."""
+# endregion CORE GRAPH MODELS
 
+# region LLM EXCHANGE MODELS
+class EdgeSuggestion(BaseModel):
     target_node_id: str
     label: str = "related"
     summary: str = ""
@@ -78,6 +136,9 @@ class ClaimExtraction(BaseModel):
     claims: list[str] = Field(default_factory=list)
 
 
+# endregion LLM EXCHANGE MODELS
+
+# region QUERY AND METRICS
 class QueryResult(BaseModel):
     query_type: str
     value: str
@@ -97,3 +158,12 @@ class GraphStats(BaseModel):
     mean_neighbor_overlap: float
     clusters: dict[str, int] = Field(default_factory=dict)
     target_node_id: str | None = None
+
+
+# endregion QUERY AND METRICS
+
+# region FUTURE COMPATIBILITY
+# add tool-result models here later only if needed.
+# add temporal edge fields here later only if needed.
+# add query-cache model here later only if needed.
+# endregion FUTURE COMPATIBILITY

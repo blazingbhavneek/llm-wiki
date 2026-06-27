@@ -1,193 +1,252 @@
-"""Turn an md.py output directory into graph nodes + structural edges.
-
-Supports both md.py output layouts.
-
-Old layout::
-
-    <out_dir>/manifest.json
-    <out_dir>/NN-<doc>/NN-<section>/NNN-<leaf>.md
-
-New layout::
-
-    <out_dir>/_planning/metadata.json
-    <out_dir>/_planning/coverage.json
-    <out_dir>/docs/001-document-cover.md
-    <out_dir>/docs/002-table-of-contents.md
-    ...
-"""
+"""Turn an md.py output directory into graph nodes and structural edges."""
 
 from __future__ import annotations
 
 import json
 import re
 from pathlib import Path
+from typing import Any
 
-from .ids import make_edge_id, make_node_id
 from .models import Edge, Node, NodeType
+from .utils import make_edge_id, make_node_id
 
 _FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n(.*)$", re.DOTALL)
 _NUMBERED_DOC_RE = re.compile(r"^\d+-(.+\.md)$")
 
 
-def _log(message: str) -> None:
-    """Simple print logger for md ingestion debugging."""
-    print(f"[md_ingest] {message}", flush=True)
+class MarkdownIngest:
+    # region LIFECYCLE
+    def __init__(self) -> None:
+        pass
 
+    # endregion LIFECYCLE
 
-def _split_frontmatter(text: str) -> tuple[dict, str]:
-    m = _FRONTMATTER_RE.match(text)
-    if not m:
-        return {}, text
+    # region PUBLIC API
+    def load_md_output(self, out_dir: str | Path) -> tuple[list[Node], list[Edge]]:
+        """Read one md.py output dir and return ``(nodes, structural_edges)``."""
 
-    meta: dict = {}
+        out_path = Path(out_dir)
 
-    for line in m.group(1).splitlines():
-        if ":" not in line:
-            continue
+        self._log("=" * 80)
+        self._log("Starting md.py output ingest")
+        self._log(f"Input directory: {out_path}")
+        self._log(f"Absolute path: {out_path.resolve()}")
 
-        key, _, val = line.partition(":")
-        meta[key.strip()] = val.strip().strip('"')
+        if not out_path.exists():
+            self._log(f"ERROR: input directory does not exist: {out_path}")
+            raise FileNotFoundError(f"input directory does not exist: {out_path}")
 
-    return meta, m.group(2).strip()
+        if not out_path.is_dir():
+            self._log(f"ERROR: input path is not a directory: {out_path}")
+            raise NotADirectoryError(f"input path is not a directory: {out_path}")
 
+        manifest_path = out_path / "manifest.json"
+        if manifest_path.exists():
+            self._log("Detected OLD md.py layout: manifest.json found")
+            nodes, edges = self._load_old_manifest_output(out_path)
+        else:
+            self._log("manifest.json not found")
+            self._log(
+                "Trying NEW md.py layout: _planning/metadata.json + "
+                "_planning/coverage.json + docs/*.md"
+            )
+            nodes, edges = self._load_new_planning_docs_output(out_path)
 
-def _parse_ranges(value: str | list | None) -> list[tuple[int, int]]:
-    if not value:
-        return []
+        self._log("-" * 80)
+        self._log("Finished md.py output ingest")
+        self._log(f"Final node count: {len(nodes)}")
+        self._log(f"Final structural edge count: {len(edges)}")
+        self._log("=" * 80)
+        return nodes, edges
 
-    if isinstance(value, str):
-        try:
-            value = json.loads(value)
-        except json.JSONDecodeError:
-            _log(f"WARNING: could not parse source range JSON: {value!r}")
-            return []
+    # endregion PUBLIC API
 
-    out = []
+    # region LAYOUT DISPATCH
+    def _load_old_manifest_output(self, out_path: Path) -> tuple[list[Node], list[Edge]]:
+        manifest_path = out_path / "manifest.json"
 
-    for pair in value or []:
-        if isinstance(pair, (list, tuple)) and len(pair) == 2:
-            try:
-                out.append((int(pair[0]), int(pair[1])))
-            except Exception as exc:
-                _log(f"WARNING: invalid source range pair {pair!r}: {exc}")
+        self._log("-" * 80)
+        self._log("Loading old manifest.json layout")
+        self._log(f"Manifest path: {manifest_path}")
 
-    return out
+        if not manifest_path.exists():
+            self._log(f"ERROR: no manifest.json in {out_path}")
+            raise FileNotFoundError(f"no manifest.json in {out_path}")
 
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        source_path = manifest.get("source")
+        document_name = Path(source_path).name if source_path else out_path.name
 
-def load_md_output(out_dir: str | Path) -> tuple[list[Node], list[Edge]]:
-    """Read one md.py output dir. Returns ``(nodes, structural_edges)``.
+        self._log(f"Manifest source path: {source_path}")
+        self._log(f"Resolved document name: {document_name}")
 
-    Supports:
+        files = manifest.get("files", [])
+        self._log(f"Manifest file record count: {len(files)}")
 
-    - old ``manifest.json`` layout
-    - new ``_planning/metadata.json`` + ``_planning/coverage.json`` + ``docs/*.md`` layout
-    """
+        by_filename = {record["filename"]: record for record in files if record.get("filename")}
+        nodes: list[Node] = []
+        sections: dict[str, list[str]] = {}
 
-    out_path = Path(out_dir)
+        for index, (filename, record) in enumerate(by_filename.items(), start=1):
+            built = self._build_old_layout_node(
+                out_path=out_path,
+                filename=filename,
+                record=record,
+                document_name=document_name,
+                source_path=source_path,
+                index=index,
+                total=len(by_filename),
+            )
+            if built is None:
+                continue
 
-    _log("=" * 80)
-    _log(f"Starting md.py output ingest")
-    _log(f"Input directory: {out_path}")
-    _log(f"Absolute path: {out_path.resolve()}")
+            node, section = built
+            nodes.append(node)
+            sections.setdefault(section, []).append(node.id)
 
-    if not out_path.exists():
-        _log(f"ERROR: input directory does not exist: {out_path}")
-        raise FileNotFoundError(f"input directory does not exist: {out_path}")
+        self._log(f"Old layout node count: {len(nodes)}")
+        self._log(f"Old layout section count: {len(sections)}")
 
-    if not out_path.is_dir():
-        _log(f"ERROR: input path is not a directory: {out_path}")
-        raise NotADirectoryError(f"input path is not a directory: {out_path}")
+        edges = self._structural_edges(sections)
+        self._log(f"Old layout structural edge count: {len(edges)}")
+        return nodes, edges
 
-    manifest_path = out_path / "manifest.json"
+    def _load_new_planning_docs_output(
+        self,
+        out_path: Path,
+    ) -> tuple[list[Node], list[Edge]]:
+        planning_dir = out_path / "_planning"
+        docs_dir = out_path / "docs"
 
-    if manifest_path.exists():
-        _log("Detected OLD md.py layout: manifest.json found")
-        nodes, edges = _load_old_manifest_output(out_path)
-    else:
-        _log("manifest.json not found")
-        _log("Trying NEW md.py layout: _planning/metadata.json + _planning/coverage.json + docs/*.md")
-        nodes, edges = _load_new_planning_docs_output(out_path)
+        self._log("-" * 80)
+        self._log("Loading new _planning + docs layout")
+        self._log(f"Planning directory: {planning_dir}")
+        self._log(f"Docs directory: {docs_dir}")
 
-    _log("-" * 80)
-    _log(f"Finished md.py output ingest")
-    _log(f"Final node count: {len(nodes)}")
-    _log(f"Final structural edge count: {len(edges)}")
-    _log("=" * 80)
+        if not planning_dir.exists():
+            self._log(f"WARNING: _planning directory not found: {planning_dir}")
+            self._log("Continuing with empty metadata/coverage fallback")
 
-    return nodes, edges
+        if not docs_dir.exists():
+            self._log(f"ERROR: no manifest.json and no docs directory found in {out_path}")
+            raise FileNotFoundError(
+                f"no manifest.json and no docs directory found in {out_path}"
+            )
 
+        metadata_path = planning_dir / "metadata.json"
+        coverage_path = planning_dir / "coverage.json"
+        metadata = self._read_json(metadata_path, default={})
+        coverage = self._read_json(coverage_path, default={})
 
-# ── old manifest.json layout ────────────────────────────────────────────
-
-
-def _load_old_manifest_output(out_path: Path) -> tuple[list[Node], list[Edge]]:
-    manifest_path = out_path / "manifest.json"
-
-    _log("-" * 80)
-    _log("Loading old manifest.json layout")
-    _log(f"Manifest path: {manifest_path}")
-
-    if not manifest_path.exists():
-        _log(f"ERROR: no manifest.json in {out_path}")
-        raise FileNotFoundError(f"no manifest.json in {out_path}")
-
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-
-    source_path = manifest.get("source")
-    document_name = Path(source_path).name if source_path else out_path.name
-
-    _log(f"Manifest source path: {source_path}")
-    _log(f"Resolved document name: {document_name}")
-
-    files = manifest.get("files", [])
-    _log(f"Manifest file record count: {len(files)}")
-
-    by_filename = {f["filename"]: f for f in files if f.get("filename")}
-
-    nodes: list[Node] = []
-
-    # section dir, relative parent -> node ids, for sibling edges + cluster.
-    sections: dict[str, list[str]] = {}
-
-    for index, (filename, rec) in enumerate(by_filename.items(), start=1):
-        leaf = out_path / filename
-
-        _log(f"[old:{index}/{len(by_filename)}] Processing: {filename}")
-        _log(f"[old:{index}/{len(by_filename)}] Full path: {leaf}")
-
-        if not leaf.exists():
-            _log(f"[old:{index}/{len(by_filename)}] SKIP: file does not exist")
-            continue
-
-        text = leaf.read_text(encoding="utf-8", errors="ignore")
-        meta, body = _split_frontmatter(text)
-
-        _log(f"[old:{index}/{len(by_filename)}] Frontmatter keys: {sorted(meta.keys())}")
-
-        if not body:
-            _log(f"[old:{index}/{len(by_filename)}] SKIP: empty body after frontmatter split")
-            continue
-
-        title = rec.get("title") or meta.get("title", "")
-        summary = rec.get("summary") or meta.get("summary", "")
-
-        ranges = (
-            _parse_ranges(rec.get("source_ranges"))
-            or _parse_ranges(meta.get("source_lines"))
+        document_name = (
+            metadata.get("original_file_name")
+            or metadata.get("inferred_file_name")
+            or out_path.name
         )
 
-        section = str(Path(filename).parent)
-        cluster = _humanize(Path(filename).parent.name)
+        self._log(f"Metadata path: {metadata_path}")
+        self._log(f"Coverage path: {coverage_path}")
+        self._log(f"Resolved document name: {document_name!r}")
 
+        metadata_files = metadata.get("files", [])
+        coverage_files = coverage.get("files", [])
+        self._log(f"metadata.json files count: {len(metadata_files)}")
+        self._log(f"coverage.json files count: {len(coverage_files)}")
+        self._log(f"coverage source_line_count: {coverage.get('source_line_count')}")
+        self._log(f"coverage file_count: {coverage.get('file_count')}")
+
+        metadata_by_name = {
+            item.get("name"): item
+            for item in metadata_files
+            if item.get("name")
+        }
+        coverage_by_name = {
+            item.get("filename"): item
+            for item in coverage_files
+            if item.get("filename")
+        }
+        self._log(f"Metadata lookup keys count: {len(metadata_by_name)}")
+        self._log(f"Coverage lookup keys count: {len(coverage_by_name)}")
+
+        md_files = sorted(docs_dir.glob("*.md"), key=self._doc_sort_key)
+        self._log(f"Markdown files found in docs/: {len(md_files)}")
+        for index, md_file in enumerate(md_files, start=1):
+            self._log(f"  docs file {index:03d}: {md_file.name}")
+
+        nodes: list[Node] = []
+        ordered_ids: list[str] = []
+
+        for index, md_file in enumerate(md_files, start=1):
+            canonical_name = self._canonical_doc_name(md_file.name)
+            node = self._build_new_layout_node(
+                md_file=md_file,
+                document_name=document_name,
+                metadata_rec=metadata_by_name.get(canonical_name, {}),
+                coverage_rec=coverage_by_name.get(canonical_name, {}),
+                index=index,
+                total=len(md_files),
+            )
+            if node is None:
+                continue
+
+            nodes.append(node)
+            ordered_ids.append(node.id)
+
+        self._log("-" * 80)
+        self._log(f"New layout node count: {len(nodes)}")
+
+        edges = self._linear_structural_edges(ordered_ids)
+        self._log(f"New layout structural edge count: {len(edges)}")
+        return nodes, edges
+
+    # endregion LAYOUT DISPATCH
+
+    # region OLD LAYOUT HELPERS
+    def _build_old_layout_node(
+        self,
+        *,
+        out_path: Path,
+        filename: str,
+        record: dict[str, Any],
+        document_name: str,
+        source_path: str | None,
+        index: int,
+        total: int,
+    ) -> tuple[Node, str] | None:
+        leaf = out_path / filename
+
+        self._log(f"[old:{index}/{total}] Processing: {filename}")
+        self._log(f"[old:{index}/{total}] Full path: {leaf}")
+
+        if not leaf.exists():
+            self._log(f"[old:{index}/{total}] SKIP: file does not exist")
+            return None
+
+        text = leaf.read_text(encoding="utf-8", errors="ignore")
+        meta, body = self._split_frontmatter(text)
+
+        self._log(f"[old:{index}/{total}] Frontmatter keys: {sorted(meta.keys())}")
+        if not body:
+            self._log(f"[old:{index}/{total}] SKIP: empty body after frontmatter split")
+            return None
+
+        title = record.get("title") or meta.get("title", "")
+        summary = record.get("summary") or meta.get("summary", "")
+        ranges = (
+            self._parse_ranges(record.get("source_ranges"))
+            or self._parse_ranges(meta.get("source_lines"))
+        )
+        section = str(Path(filename).parent)
+        cluster = self._humanize(Path(filename).parent.name)
         node_id = make_node_id(body, document_name)
 
-        _log(f"[old:{index}/{len(by_filename)}] Node id: {node_id}")
-        _log(f"[old:{index}/{len(by_filename)}] Title: {title!r}")
-        _log(f"[old:{index}/{len(by_filename)}] Summary length: {len(summary)}")
-        _log(f"[old:{index}/{len(by_filename)}] Body length: {len(body)}")
-        _log(f"[old:{index}/{len(by_filename)}] Source ranges: {ranges}")
-        _log(f"[old:{index}/{len(by_filename)}] Section: {section}")
-        _log(f"[old:{index}/{len(by_filename)}] Cluster: {cluster}")
+        self._log(f"[old:{index}/{total}] Node id: {node_id}")
+        self._log(f"[old:{index}/{total}] Title: {title!r}")
+        self._log(f"[old:{index}/{total}] Summary length: {len(summary)}")
+        self._log(f"[old:{index}/{total}] Body length: {len(body)}")
+        self._log(f"[old:{index}/{total}] Source ranges: {ranges}")
+        self._log(f"[old:{index}/{total}] Section: {section}")
+        self._log(f"[old:{index}/{total}] Cluster: {cluster}")
 
         node = Node(
             id=node_id,
@@ -202,173 +261,80 @@ def _load_old_manifest_output(out_path: Path) -> tuple[list[Node], list[Edge]]:
             keywords=[],
         )
 
-        nodes.append(node)
-        sections.setdefault(section, []).append(node.id)
+        self._log(f"[old:{index}/{total}] Node created successfully")
+        return node, section
 
-        _log(f"[old:{index}/{len(by_filename)}] Node created successfully")
+    # endregion OLD LAYOUT HELPERS
 
-    _log(f"Old layout node count: {len(nodes)}")
-    _log(f"Old layout section count: {len(sections)}")
-
-    edges = _structural_edges(sections)
-
-    _log(f"Old layout structural edge count: {len(edges)}")
-
-    return nodes, edges
-
-
-# ── new _planning + docs layout ─────────────────────────────────────────
-
-
-def _load_new_planning_docs_output(out_path: Path) -> tuple[list[Node], list[Edge]]:
-    planning_dir = out_path / "_planning"
-    docs_dir = out_path / "docs"
-
-    _log("-" * 80)
-    _log("Loading new _planning + docs layout")
-    _log(f"Planning directory: {planning_dir}")
-    _log(f"Docs directory: {docs_dir}")
-
-    if not planning_dir.exists():
-        _log(f"WARNING: _planning directory not found: {planning_dir}")
-        _log("Continuing with empty metadata/coverage fallback")
-
-    if not docs_dir.exists():
-        _log(f"ERROR: no manifest.json and no docs directory found in {out_path}")
-        raise FileNotFoundError(
-            f"no manifest.json and no docs directory found in {out_path}"
-        )
-
-    metadata_path = planning_dir / "metadata.json"
-    coverage_path = planning_dir / "coverage.json"
-
-    metadata = _read_json(metadata_path, default={})
-    coverage = _read_json(coverage_path, default={})
-
-    document_name = (
-        metadata.get("original_file_name")
-        or metadata.get("inferred_file_name")
-        or out_path.name
-    )
-
-    _log(f"Metadata path: {metadata_path}")
-    _log(f"Coverage path: {coverage_path}")
-    _log(f"Resolved document name: {document_name!r}")
-
-    metadata_files = metadata.get("files", [])
-    coverage_files = coverage.get("files", [])
-
-    _log(f"metadata.json files count: {len(metadata_files)}")
-    _log(f"coverage.json files count: {len(coverage_files)}")
-    _log(f"coverage source_line_count: {coverage.get('source_line_count')}")
-    _log(f"coverage file_count: {coverage.get('file_count')}")
-
-    metadata_by_name = {
-        item.get("name"): item
-        for item in metadata_files
-        if item.get("name")
-    }
-
-    coverage_by_name = {
-        item.get("filename"): item
-        for item in coverage_files
-        if item.get("filename")
-    }
-
-    _log(f"Metadata lookup keys count: {len(metadata_by_name)}")
-    _log(f"Coverage lookup keys count: {len(coverage_by_name)}")
-
-    md_files = sorted(docs_dir.glob("*.md"), key=_doc_sort_key)
-
-    _log(f"Markdown files found in docs/: {len(md_files)}")
-
-    for i, md_file in enumerate(md_files, start=1):
-        _log(f"  docs file {i:03d}: {md_file.name}")
-
-    nodes: list[Node] = []
-    ordered_ids: list[str] = []
-
-    for index, md_file in enumerate(md_files, start=1):
-        _log("-" * 80)
-        _log(f"[new:{index}/{len(md_files)}] Processing docs file: {md_file.name}")
-        _log(f"[new:{index}/{len(md_files)}] Full path: {md_file}")
+    # region NEW LAYOUT HELPERS
+    def _build_new_layout_node(
+        self,
+        *,
+        md_file: Path,
+        document_name: str,
+        metadata_rec: dict[str, Any],
+        coverage_rec: dict[str, Any],
+        index: int,
+        total: int,
+    ) -> Node | None:
+        self._log("-" * 80)
+        self._log(f"[new:{index}/{total}] Processing docs file: {md_file.name}")
+        self._log(f"[new:{index}/{total}] Full path: {md_file}")
 
         text = md_file.read_text(encoding="utf-8", errors="ignore")
-        meta, body = _split_frontmatter(text)
-
+        meta, body = self._split_frontmatter(text)
         body = body.strip()
 
-        _log(f"[new:{index}/{len(md_files)}] Raw text length: {len(text)}")
-        _log(f"[new:{index}/{len(md_files)}] Body length after frontmatter split: {len(body)}")
-        _log(f"[new:{index}/{len(md_files)}] Frontmatter keys: {sorted(meta.keys())}")
+        self._log(f"[new:{index}/{total}] Raw text length: {len(text)}")
+        self._log(f"[new:{index}/{total}] Body length after frontmatter split: {len(body)}")
+        self._log(f"[new:{index}/{total}] Frontmatter keys: {sorted(meta.keys())}")
 
         if not body:
-            _log(f"[new:{index}/{len(md_files)}] SKIP: empty body")
-            continue
+            self._log(f"[new:{index}/{total}] SKIP: empty body")
+            return None
 
-        canonical_name = _canonical_doc_name(md_file.name)
-
-        _log(f"[new:{index}/{len(md_files)}] Canonical metadata filename: {canonical_name}")
-
-        metadata_rec = metadata_by_name.get(canonical_name, {})
-        coverage_rec = coverage_by_name.get(canonical_name, {})
-
-        if metadata_rec:
-            _log(f"[new:{index}/{len(md_files)}] metadata.json match: yes")
-        else:
-            _log(f"[new:{index}/{len(md_files)}] metadata.json match: no")
-
-        if coverage_rec:
-            _log(f"[new:{index}/{len(md_files)}] coverage.json match: yes")
-        else:
-            _log(f"[new:{index}/{len(md_files)}] coverage.json match: no")
+        canonical_name = self._canonical_doc_name(md_file.name)
+        self._log(f"[new:{index}/{total}] Canonical metadata filename: {canonical_name}")
+        self._log(
+            f"[new:{index}/{total}] metadata.json match: {'yes' if metadata_rec else 'no'}"
+        )
+        self._log(
+            f"[new:{index}/{total}] coverage.json match: {'yes' if coverage_rec else 'no'}"
+        )
 
         title = (
             coverage_rec.get("title")
             or meta.get("title")
             or metadata_rec.get("header")
-            or _title_from_markdown(body)
-            or _humanize(canonical_name.removesuffix(".md"))
+            or self._title_from_markdown(body)
+            or self._humanize(canonical_name.removesuffix(".md"))
         )
-
-        summary = (
-            coverage_rec.get("summary")
-            or meta.get("summary")
-            or ""
-        )
-
-        cluster = (
-            coverage_rec.get("header")
-            or metadata_rec.get("header")
-            or "General"
-        )
+        summary = coverage_rec.get("summary") or meta.get("summary") or ""
+        cluster = coverage_rec.get("header") or metadata_rec.get("header") or "General"
 
         ranges: list[tuple[int, int]] = []
-
         source_start = coverage_rec.get("source_start")
         source_end = coverage_rec.get("source_end")
-
         if source_start is not None and source_end is not None:
             try:
                 ranges = [(int(source_start), int(source_end))]
             except Exception as exc:
-                _log(
-                    f"[new:{index}/{len(md_files)}] WARNING: invalid coverage source range "
+                self._log(
+                    f"[new:{index}/{total}] WARNING: invalid coverage source range "
                     f"source_start={source_start!r}, source_end={source_end!r}: {exc}"
                 )
                 ranges = []
         else:
-            ranges = _parse_ranges(meta.get("source_lines"))
+            ranges = self._parse_ranges(meta.get("source_lines"))
 
         node_id = make_node_id(body, document_name)
-
-        _log(f"[new:{index}/{len(md_files)}] Node id: {node_id}")
-        _log(f"[new:{index}/{len(md_files)}] Title: {title!r}")
-        _log(f"[new:{index}/{len(md_files)}] Cluster: {cluster!r}")
-        _log(f"[new:{index}/{len(md_files)}] Summary length: {len(summary)}")
-        _log(f"[new:{index}/{len(md_files)}] Source ranges: {ranges}")
-        _log(f"[new:{index}/{len(md_files)}] Original document name: {document_name!r}")
-        _log(f"[new:{index}/{len(md_files)}] Source path stored on node: {str(md_file)!r}")
+        self._log(f"[new:{index}/{total}] Node id: {node_id}")
+        self._log(f"[new:{index}/{total}] Title: {title!r}")
+        self._log(f"[new:{index}/{total}] Cluster: {cluster!r}")
+        self._log(f"[new:{index}/{total}] Summary length: {len(summary)}")
+        self._log(f"[new:{index}/{total}] Source ranges: {ranges}")
+        self._log(f"[new:{index}/{total}] Original document name: {document_name!r}")
+        self._log(f"[new:{index}/{total}] Source path stored on node: {str(md_file)!r}")
 
         node = Node(
             id=node_id,
@@ -383,145 +349,139 @@ def _load_new_planning_docs_output(out_path: Path) -> tuple[list[Node], list[Edg
             keywords=[],
         )
 
-        nodes.append(node)
-        ordered_ids.append(node.id)
+        self._log(f"[new:{index}/{total}] Node created successfully")
+        return node
 
-        _log(f"[new:{index}/{len(md_files)}] Node created successfully")
+    # endregion NEW LAYOUT HELPERS
 
-    _log("-" * 80)
-    _log(f"New layout node count: {len(nodes)}")
+    # region MARKDOWN PARSING
+    def _split_frontmatter(self, text: str) -> tuple[dict[str, str], str]:
+        match = _FRONTMATTER_RE.match(text)
+        if not match:
+            return {}, text
 
-    edges = _linear_structural_edges(ordered_ids)
+        meta: dict[str, str] = {}
+        for line in match.group(1).splitlines():
+            if ":" not in line:
+                continue
+            key, _, value = line.partition(":")
+            meta[key.strip()] = value.strip().strip('"')
 
-    _log(f"New layout structural edge count: {len(edges)}")
+        return meta, match.group(2).strip()
 
-    return nodes, edges
+    def _parse_ranges(self, value: str | list[object] | None) -> list[tuple[int, int]]:
+        if not value:
+            return []
 
+        if isinstance(value, str):
+            try:
+                value = json.loads(value)
+            except json.JSONDecodeError:
+                self._log(f"WARNING: could not parse source range JSON: {value!r}")
+                return []
 
-def _read_json(path: Path, default):
-    if not path.exists():
-        _log(f"JSON not found, using default: {path}")
-        return default
+        ranges: list[tuple[int, int]] = []
+        for pair in value or []:
+            if isinstance(pair, (list, tuple)) and len(pair) == 2:
+                try:
+                    ranges.append((int(pair[0]), int(pair[1])))
+                except Exception as exc:
+                    self._log(f"WARNING: invalid source range pair {pair!r}: {exc}")
 
-    _log(f"Reading JSON: {path}")
+        return ranges
 
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
-        _log(f"ERROR: invalid JSON in {path}: {exc}")
-        raise
+    def _title_from_markdown(self, body: str) -> str | None:
+        for line in body.splitlines():
+            stripped = line.strip()
+            if stripped.startswith("#"):
+                return stripped.lstrip("#").strip() or None
+        return None
 
-    if isinstance(data, dict):
-        _log(f"JSON loaded successfully: {path}")
-        _log(f"Top-level JSON keys: {sorted(data.keys())}")
-    else:
-        _log(f"JSON loaded successfully: {path}")
-        _log(f"Top-level JSON type: {type(data).__name__}")
+    def _humanize(self, dirname: str) -> str:
+        name = re.sub(r"^\d+-", "", dirname).replace("-", " ").strip()
+        return name.title()[:80] or "General"
 
-    return data
+    # endregion MARKDOWN PARSING
 
+    # region PLANNING DOC HELPERS
+    def _read_json(self, path: Path, default: Any) -> Any:
+        if not path.exists():
+            self._log(f"JSON not found, using default: {path}")
+            return default
 
-def _canonical_doc_name(filename: str) -> str:
-    """Convert ``001-document-cover.md`` to ``document-cover.md``.
+        self._log(f"Reading JSON: {path}")
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            self._log(f"ERROR: invalid JSON in {path}: {exc}")
+            raise
 
-    The new docs directory uses numbered filenames, while metadata.json and
-    coverage.json use unnumbered filenames.
-    """
+        self._log(f"JSON loaded successfully: {path}")
+        if isinstance(data, dict):
+            self._log(f"Top-level JSON keys: {sorted(data.keys())}")
+        else:
+            self._log(f"Top-level JSON type: {type(data).__name__}")
+        return data
 
-    match = _NUMBERED_DOC_RE.match(filename)
+    def _canonical_doc_name(self, filename: str) -> str:
+        match = _NUMBERED_DOC_RE.match(filename)
+        return match.group(1) if match else filename
 
-    if match:
-        return match.group(1)
+    def _doc_sort_key(self, path: Path) -> tuple[int, str]:
+        first = path.name.split("-", 1)[0]
+        if first.isdigit():
+            return int(first), path.name
+        return 10**9, path.name
 
-    return filename
+    # endregion PLANNING DOC HELPERS
 
+    # region STRUCTURAL EDGES
+    def _structural_edges(self, sections: dict[str, list[str]]) -> list[Edge]:
+        self._log("Building structural edges for old sectioned layout")
+        self._log(f"Section count: {len(sections)}")
 
-def _doc_sort_key(path: Path) -> tuple[int, str]:
-    """Sort ``001-foo.md`` before ``002-bar.md``.
+        edges: list[Edge] = []
+        for section_name, node_ids in sections.items():
+            self._log(f"Section {section_name!r}: {len(node_ids)} node(s)")
+            for prev_id, next_id in zip(node_ids, node_ids[1:]):
+                self._log(f"Creating follows edge: {prev_id} -> {next_id}")
+                edges.append(
+                    Edge(
+                        id=make_edge_id(prev_id, next_id, "follows"),
+                        source_node_id=prev_id,
+                        target_node_id=next_id,
+                        label="follows",
+                        summary="Adjacent page in the same source section.",
+                    )
+                )
 
-    Files without a numeric prefix are sorted after numbered files.
-    """
+        self._log(f"Created {len(edges)} old-layout structural follows edge(s)")
+        return edges
 
-    first = path.name.split("-", 1)[0]
+    def _linear_structural_edges(self, node_ids: list[str]) -> list[Edge]:
+        self._log("Building linear structural edges for new docs layout")
+        self._log(f"Ordered node id count: {len(node_ids)}")
 
-    if first.isdigit():
-        return int(first), path.name
-
-    return 10**9, path.name
-
-
-def _title_from_markdown(body: str) -> str | None:
-    for line in body.splitlines():
-        stripped = line.strip()
-
-        if stripped.startswith("#"):
-            return stripped.lstrip("#").strip() or None
-
-    return None
-
-
-# ── structural edges ────────────────────────────────────────────────────
-
-
-def _structural_edges(sections: dict[str, list[str]]) -> list[Edge]:
-    """Link consecutive leaf pages within the same section as ``follows``."""
-
-    _log("Building structural edges for old sectioned layout")
-    _log(f"Section count: {len(sections)}")
-
-    edges: list[Edge] = []
-
-    for section_name, ids in sections.items():
-        _log(f"Section {section_name!r}: {len(ids)} node(s)")
-
-        for prev_id, next_id in zip(ids, ids[1:]):
-            edge_id = make_edge_id(prev_id, next_id, "follows")
-
-            _log(f"Creating follows edge: {prev_id} -> {next_id}")
-
+        edges: list[Edge] = []
+        for prev_id, next_id in zip(node_ids, node_ids[1:]):
+            self._log(f"Creating follows edge: {prev_id} -> {next_id}")
             edges.append(
                 Edge(
-                    id=edge_id,
+                    id=make_edge_id(prev_id, next_id, "follows"),
                     source_node_id=prev_id,
                     target_node_id=next_id,
                     label="follows",
-                    summary="Adjacent page in the same source section.",
+                    summary="Next page in the source document.",
                 )
             )
 
-    _log(f"Created {len(edges)} old-layout structural follows edge(s)")
+        self._log(f"Created {len(edges)} new-layout structural follows edge(s)")
+        return edges
 
-    return edges
+    # endregion STRUCTURAL EDGES
 
+    # region LOGGING
+    def _log(self, message: str) -> None:
+        print(f"[md_ingest] {message}", flush=True)
 
-def _linear_structural_edges(node_ids: list[str]) -> list[Edge]:
-    """Link consecutive docs as ``follows`` for the new flat docs layout."""
-
-    _log("Building linear structural edges for new docs layout")
-    _log(f"Ordered node id count: {len(node_ids)}")
-
-    edges: list[Edge] = []
-
-    for prev_id, next_id in zip(node_ids, node_ids[1:]):
-        edge_id = make_edge_id(prev_id, next_id, "follows")
-
-        _log(f"Creating follows edge: {prev_id} -> {next_id}")
-
-        edges.append(
-            Edge(
-                id=edge_id,
-                source_node_id=prev_id,
-                target_node_id=next_id,
-                label="follows",
-                summary="Next page in the source document.",
-            )
-        )
-
-    _log(f"Created {len(edges)} new-layout structural follows edge(s)")
-
-    return edges
-
-
-def _humanize(dirname: str) -> str:
-    name = re.sub(r"^\d+-", "", dirname).replace("-", " ").strip()
-    return name.title()[:80] or "General"
+    # endregion LOGGING

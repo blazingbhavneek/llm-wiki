@@ -1,8 +1,4 @@
-"""SQLite storage: nodes, edges, FTS5 keyword index, sqlite-vec vector index.
-
-One file holds everything. Vectors are stored in ``vec0`` virtual tables keyed
-by node id; full-text lives in an FTS5 table kept in sync manually on write.
-"""
+"""Current raw SQLite backend used by the graph package."""
 
 from __future__ import annotations
 
@@ -12,19 +8,19 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator
 
-from .models import Edge, Node, NodeStatus, now_iso
+from graph.models import Edge, Node, NodeStatus, now_iso
+
+from .base import BaseDatabase
 
 _FTS_SPECIAL = re.compile(r'["()*:^]')
 
 
 def _fts_query(text: str) -> str:
-    """Turn free text into a safe FTS5 OR-query of quoted terms."""
-
     terms = [t for t in _FTS_SPECIAL.sub(" ", text).split() if t]
     return " OR ".join(f'"{t}"' for t in terms)
 
 
-class Database:
+class RawSqliteDatabase(BaseDatabase):
     def __init__(self, path: str | Path = ".wiki/wiki.sqlite") -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -34,8 +30,6 @@ class Database:
         self._dim: int | None = None
         self._create_core_tables()
         self._restore_dim()
-
-    # ── extension / schema ──────────────────────────────────────────────
 
     def _load_vec_extension(self) -> None:
         import sqlite_vec
@@ -134,8 +128,6 @@ class Database:
             self._dim = int(row["value"])
 
     def ensure_vec_tables(self, dim: int) -> None:
-        """Create the vec0 tables once the real embedding dim is known."""
-
         if self._dim is not None:
             if self._dim != dim:
                 raise ValueError(
@@ -169,8 +161,6 @@ class Database:
     def close(self) -> None:
         self.connection.close()
 
-    # ── nodes ───────────────────────────────────────────────────────────
-
     def upsert_node(self, node: Node) -> None:
         import json
 
@@ -199,13 +189,23 @@ class Database:
                 updated_at=excluded.updated_at
             """,
             (
-                node.id, node.body, node.type.value, node.title,
-                node.original_document_name, node.source_path,
-                json.dumps(node.source_ranges), node.source_version,
-                node.source_material_hash, node.entity,
-                json.dumps(node.claims), json.dumps(node.keywords),
-                node.summary, node.cluster, node.status.value,
-                node.created_at, node.updated_at,
+                node.id,
+                node.body,
+                node.type.value,
+                node.title,
+                node.original_document_name,
+                node.source_path,
+                json.dumps(node.source_ranges),
+                node.source_version,
+                node.source_material_hash,
+                node.entity,
+                json.dumps(node.claims),
+                json.dumps(node.keywords),
+                node.summary,
+                node.cluster,
+                node.status.value,
+                node.created_at,
+                node.updated_at,
             ),
         )
         self._reindex_fts(node)
@@ -253,8 +253,6 @@ class Database:
         sql += " ORDER BY updated_at DESC"
         return [_row_to_node(r) for r in self.connection.execute(sql, params).fetchall()]
 
-    # ── edges ───────────────────────────────────────────────────────────
-
     def upsert_edge(self, edge: Edge) -> None:
         self.connection.execute(
             """
@@ -262,8 +260,14 @@ class Database:
             VALUES (?,?,?,?,?,?)
             ON CONFLICT(id) DO UPDATE SET label=excluded.label, summary=excluded.summary
             """,
-            (edge.id, edge.source_node_id, edge.target_node_id, edge.label,
-             edge.summary, edge.created_at),
+            (
+                edge.id,
+                edge.source_node_id,
+                edge.target_node_id,
+                edge.label,
+                edge.summary,
+                edge.created_at,
+            ),
         )
         self.connection.commit()
 
@@ -314,8 +318,6 @@ class Database:
         )
         self.connection.commit()
 
-    # ── sources (recon dedup) ───────────────────────────────────────────
-
     def record_source(self, document_name: str, source_hash: str) -> None:
         stamp = now_iso()
         with self.transaction() as conn:
@@ -337,8 +339,6 @@ class Database:
             (document_name,),
         ).fetchone()
         return (row["source_hash"], row["ingested_at"]) if row else None
-
-    # ── search ──────────────────────────────────────────────────────────
 
     def _reindex_fts(self, node: Node) -> None:
         self.connection.execute("DELETE FROM nodes_fts WHERE node_id=?", (node.id,))
@@ -380,8 +380,6 @@ class Database:
     def vector_search(
         self, vector: list[float], table: str = "vec_body", limit: int = 20
     ) -> list[tuple[str, float]]:
-        """Return (node_id, distance) nearest neighbours; deleted nodes filtered."""
-
         import sqlite_vec
 
         if self._dim is None:
@@ -407,7 +405,10 @@ def _row_to_node(row: sqlite3.Row) -> Node:
     import json
 
     return Node(
-        id=row["id"], body=row["body"], type=row["type"], title=row["title"] or "",
+        id=row["id"],
+        body=row["body"],
+        type=row["type"],
+        title=row["title"] or "",
         original_document_name=row["original_document_name"],
         source_path=row["source_path"],
         source_ranges=[tuple(r) for r in json.loads(row["source_ranges_json"] or "[]")],
@@ -416,14 +417,23 @@ def _row_to_node(row: sqlite3.Row) -> Node:
         entity=row["entity"] or "",
         claims=json.loads(row["claims_json"] or "[]"),
         keywords=json.loads(row["keywords_json"] or "[]"),
-        summary=row["summary"] or "", cluster=row["cluster"], status=row["status"],
-        created_at=row["created_at"], updated_at=row["updated_at"],
+        summary=row["summary"] or "",
+        cluster=row["cluster"],
+        status=row["status"],
+        created_at=row["created_at"],
+        updated_at=row["updated_at"],
     )
 
 
 def _row_to_edge(row: sqlite3.Row) -> Edge:
     return Edge(
-        id=row["id"], source_node_id=row["source_node_id"],
-        target_node_id=row["target_node_id"], label=row["label"],
-        summary=row["summary"] or "", created_at=row["created_at"],
+        id=row["id"],
+        source_node_id=row["source_node_id"],
+        target_node_id=row["target_node_id"],
+        label=row["label"],
+        summary=row["summary"] or "",
+        created_at=row["created_at"],
     )
+
+
+Database = RawSqliteDatabase

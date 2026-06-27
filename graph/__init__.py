@@ -1,21 +1,27 @@
-"""LLM wiki graph package.
+"""Public graph package exports."""
 
-Real implementation: sqlite-vec vector search, FTS5 keyword search, LLM-driven
-summaries/keywords/edges, md.py hierarchical ingestion.
-"""
-
-from .config import Settings
 from .engine import DomainEngine
-from .models import ClaimExtraction, Edge, GraphStats, Node, NodeStatus, NodeType, QueryResult
+from .models import (
+    ClaimExtraction,
+    Edge,
+    GraphStats,
+    Node,
+    NodeStatus,
+    NodeType,
+    QueryResult,
+    Settings,
+)
 
+# region EXPORTS
 __all__ = [
-    "Settings",
     "DomainEngine",
+    "Settings",
     "Node",
     "Edge",
     "NodeType",
     "NodeStatus",
     "ClaimExtraction",
-    "GraphStats",
     "QueryResult",
+    "GraphStats",
 ]
+# endregion EXPORTS

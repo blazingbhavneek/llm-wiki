@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import logging
 
-from .config import Settings
+from graph.models import Settings
 
 log = logging.getLogger(__name__)
 
@@ -31,8 +31,6 @@ class Embedder:
 
         # Do availability decision once, up front.
         self._initialize_backend()
-
-    # ── backend construction ────────────────────────────────────────────
 
     def _build_server(self):
         from langchain_openai import OpenAIEmbeddings
@@ -51,8 +49,6 @@ class Embedder:
             model_name=self.settings.hf_embed_model,
             model_kwargs={"device": self.settings.hf_device},
         )
-
-    # ── initialization / fallback ───────────────────────────────────────
 
     def _initialize_backend(self) -> None:
         """Build the selected backend.
@@ -103,7 +99,6 @@ class Embedder:
         self._backend = "hf"
         self._client = self._build_hf()
 
-        # Optional but useful: probe HF once too, so dim is known early.
         vector = self._client.embed_query("local HF embedding availability probe")
         self._dim = len(vector)
 
@@ -119,8 +114,6 @@ class Embedder:
             self._initialize_backend()
         return self._client
 
-    # ── public api ──────────────────────────────────────────────────────
-
     @property
     def dim(self) -> int:
         if self._dim is None:
@@ -132,10 +125,6 @@ class Embedder:
             return []
 
         client = self._ensure_client()
-
-        # No runtime fallback here.
-        # If the server/HF backend throws context-length, bad request, CUDA, etc.,
-        # let the caller handle it.
         vectors = client.embed_documents(texts)
 
         if vectors:
@@ -145,10 +134,6 @@ class Embedder:
 
     def embed_query(self, text: str) -> list[float]:
         client = self._ensure_client()
-
-        # No runtime fallback here.
-        # Context-length errors now bubble up to DomainEngine or caller.
         vector = client.embed_query(text)
-
         self._dim = len(vector)
         return vector

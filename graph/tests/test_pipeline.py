@@ -10,10 +10,9 @@ import tempfile
 import json
 from pathlib import Path
 
-from ..config import Settings
 from ..engine import DomainEngine
-from ..ids import make_node_id
-from ..models import Node, NodeType
+from ..models import Node, NodeType, Settings
+from ..utils import make_node_id
 from .fakes import FakeEmbedder, FakeLlm
 
 
@@ -104,6 +103,27 @@ def test_delete_and_recon() -> None:
         src = Path(tempfile.mkdtemp()) / "doc.md"
         src.write_text("# title\nbody text", encoding="utf-8")
         assert eng.recon(src)["status"] == "new"
+    finally:
+        eng.close()
+
+
+def test_tool_compatibility_api() -> None:
+    eng = _engine()
+    try:
+        a = _node("CUDA streams overlap kernel execution and copies")
+        b = _node("CUDA events measure stream execution timing")
+        eng.ingest(a)
+        eng.ingest(b)
+
+        hits = eng.search("CUDA stream", limit=5)
+        assert {node.id for node in hits} >= {a.id, b.id}
+
+        read_back = eng.read(a.id)
+        assert read_back is not None
+        assert read_back.id == a.id
+
+        neighbors = eng.follow_link(a.id, direction="both")
+        assert any(node.id == b.id for _edge, node in neighbors)
     finally:
         eng.close()
 
