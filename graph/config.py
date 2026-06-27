@@ -16,18 +16,18 @@ class Settings:
     """All tunables for one engine instance."""
 
     # Chat LLM (OpenAI-compatible: vLLM / llama.cpp / work-pc gpt-oss).
-    chat_base_url: str = "http://10.160.144.101:51021/v1"
+    chat_base_url: str = "http://localhost:8000/v1"
     chat_api_key: str = "local"
-    chat_model: str = "openai/gpt-oss-120b"
+    chat_model: str = "gemma4"
     chat_temperature: float = 0.2
 
     # Embeddings. backend = "server" (OpenAI-compatible) or "hf" (local GPU).
     # "server" auto-falls-back to "hf" when the endpoint is unreachable.
     embed_backend: str = "server"
-    embed_base_url: str = "http://10.160.144.101:51025/v1"
+    embed_base_url: str = "http://localhost:8080/v1"
     embed_api_key: str = "local"
     embed_model: str = "cl-nagoya/ruri-v3-310m"
-    hf_embed_model: str = "sentence-transformers/all-MiniLM-L6-v2"
+    hf_embed_model: str = "cl-nagoya/ruri-v3-310m"
     hf_device: str = "cuda:0"
     embed_dim: int = 768  # asserted against the live model on first embed.
 
@@ -36,7 +36,7 @@ class Settings:
 
     # Graph behaviour.
     edge_candidate_k: int = 12  # KNN neighbours considered per new node.
-    vector_query_k: int = 20
+    vector_query_k: int = 1
     cascade_max_hops: int = 2
     cascade_max_nodes: int = 50
 

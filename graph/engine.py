@@ -26,6 +26,25 @@ _TOKEN_RE = re.compile(r"[a-z0-9_./:-]+")
 _CASCADE_MATCH_THRESHOLD = 0.45
 _UNCHANGED_CLAIM_THRESHOLD = 0.9
 
+_IMAGE_UNIT_RE = re.compile(
+    r"<image-unit\b[^>]*>.*?</image-unit>",
+    re.IGNORECASE | re.DOTALL,
+)
+
+_IMAGE_DESCRIPTION_RE = re.compile(
+    r"<image-description\b[^>]*>(.*?)</image-description>",
+    re.IGNORECASE | re.DOTALL,
+)
+
+_IMAGE_MEDIA_RE = re.compile(
+    r"<image-media\b[^>]*>.*?</image-media>",
+    re.IGNORECASE | re.DOTALL,
+)
+
+_DATA_IMAGE_URI_RE = re.compile(
+    r"data:image/[a-zA-Z0-9.+-]+;base64,[A-Za-z0-9+/=\r\n]+",
+    re.IGNORECASE,
+)
 
 class DomainEngine:
     def __init__(
@@ -50,14 +69,122 @@ class DomainEngine:
             self.database.ensure_vec_tables(self.embedder.dim)
             self._vec_ready = True
 
+    def _embed_with_context_fallback(self, text: str) -> list[float]:
+        try:
+            return self.embedder.embed_query(text)
+        except Exception as exc:
+            if not self._is_context_length_error(exc):
+                raise
+
+        lines = text.splitlines()
+        if not lines:
+            raise
+
+        chunk_count = 2
+
+        while chunk_count <= max(2, len(lines)):
+            chunks = self._split_lines_into_chunks(lines, chunk_count)
+
+            try:
+                vectors = [self.embedder.embed_query(chunk) for chunk in chunks if chunk.strip()]
+                return self._mean_vectors(vectors)
+            except Exception as exc:
+                if not self._is_context_length_error(exc):
+                    raise
+                chunk_count += 1
+
+        raise RuntimeError(
+            f"embedding failed even after splitting into {chunk_count - 1} line chunks"
+        )
+
+
+    def _is_context_length_error(self, exc: Exception) -> bool:
+        msg = str(exc).lower()
+        return (
+            "maximum context length" in msg
+            or "context length" in msg
+            or "input_tokens" in msg
+            or "too many tokens" in msg
+        )
+
+
+    def _split_lines_into_chunks(self, lines: list[str], chunk_count: int) -> list[str]:
+        chunk_count = max(1, min(chunk_count, len(lines)))
+        size = max(1, (len(lines) + chunk_count - 1) // chunk_count)
+
+        return [
+            "\n".join(lines[i:i + size])
+            for i in range(0, len(lines), size)
+        ]
+
+
+    def _mean_vectors(self, vectors: list[list[float]]) -> list[float]:
+        if not vectors:
+            raise ValueError("cannot average empty embedding vector list")
+
+        dim = len(vectors[0])
+
+        return [
+            sum(vec[i] for vec in vectors) / len(vectors)
+            for i in range(dim)
+        ]
+
+    def _text_for_embedding(self, text: str) -> str:
+        """Return embedding-safe text.
+
+        Source node bodies may contain image units with inline base64 data URIs.
+        Base64 is not useful for text embeddings and can exceed model context limits.
+
+        For embedding only:
+        - replace each image unit with its image-description text
+        - remove image-media/base64 payloads
+        - leave the original node.body unchanged in the database
+        """
+
+        if not text:
+            return ""
+
+        def replace_image_unit(match: re.Match) -> str:
+            image_unit = match.group(0)
+            desc_match = _IMAGE_DESCRIPTION_RE.search(image_unit)
+
+            if desc_match:
+                description = desc_match.group(1).strip()
+                if description:
+                    return f"\n\n[Embedded image description]\n{description}\n[/Embedded image description]\n\n"
+
+            return "\n\n[Embedded image omitted: no description available]\n\n"
+
+        cleaned = _IMAGE_UNIT_RE.sub(replace_image_unit, text)
+
+        # Safety pass for malformed/partial image blocks.
+        cleaned = _IMAGE_MEDIA_RE.sub(
+            "\n\n[Embedded image media omitted]\n\n",
+            cleaned,
+        )
+
+        # Safety pass for any remaining raw base64 data image URI.
+        cleaned = _DATA_IMAGE_URI_RE.sub(
+            "data:image;base64,[omitted]",
+            cleaned,
+        )
+
+        return cleaned
+
+
     def _store_vectors(self, node: Node) -> tuple[list[float], list[float] | None]:
         self._ensure_vec()
-        body_vec = self.embedder.embed_query(node.body)
+
+        body_embedding_text = self._text_for_embedding(node.body)
+        body_vec = self._embed_with_context_fallback(body_embedding_text)
         self.database.set_vector(node.id, "vec_body", body_vec)
+
         summary_vec = None
         if node.summary.strip():
-            summary_vec = self.embedder.embed_query(node.summary)
+            summary_embedding_text = self._text_for_embedding(node.summary)
+            summary_vec = self._embed_with_context_fallback(summary_embedding_text)
             self.database.set_vector(node.id, "vec_summary", summary_vec)
+
         return body_vec, summary_vec
 
     # ── ingest ──────────────────────────────────────────────────────────
@@ -112,12 +239,21 @@ class DomainEngine:
     def _source_version_for_nodes(self, nodes: list[Node]) -> str:
         if not nodes:
             return source_hash("")
-        source_path = nodes[0].source_path
-        if source_path and Path(source_path).exists():
-            return source_hash(
-                Path(source_path).read_text(encoding="utf-8", errors="ignore")
-            )
-        return source_hash("\n\n".join(node.body for node in nodes))
+
+        parts: list[str] = []
+
+        for node in nodes:
+            if node.source_path and Path(node.source_path).exists():
+                parts.append(
+                    Path(node.source_path).read_text(
+                        encoding="utf-8",
+                        errors="ignore",
+                    )
+                )
+            else:
+                parts.append(node.body)
+
+        return source_hash("\n\n--- NODE BREAK ---\n\n".join(parts))
 
     # ── query ───────────────────────────────────────────────────────────
 

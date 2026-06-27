@@ -94,6 +94,8 @@ Current numbered source lines to summarize:
 Return one concise factual summary of this exact range. `topics` should list the
 important subjects in source order. `suggested_heading` should be a short label
 for this range. Do not claim facts not present in the source.
+
+Dont overthink it, answer quickly.
 """,
         ),
     ]

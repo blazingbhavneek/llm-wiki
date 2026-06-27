@@ -76,24 +76,22 @@ def make_llm(
         api_key=api_key,
         temperature=temperature,
         timeout=timeout,
-        max_tokens=64000,
     )
-
 
 async def structured_ainvoke(
     llm: ChatOpenAI,
     schema_cls: type[BaseModel],
     messages: list[Any],
+    max_output_tokens: int | None = None,
 ) -> BaseModel:
-    """
-    Uses LangChain with_structured_output first.
-
-    If the local server does not support structured output, falls back to
-    JSON-only prompting and manual Pydantic validation.
-    """
+    call_llm = (
+        llm.bind(max_tokens=max_output_tokens)
+        if max_output_tokens is not None
+        else llm
+    )
 
     try:
-        structured = llm.with_structured_output(schema_cls)
+        structured = call_llm.with_structured_output(schema_cls)
         result = await structured.ainvoke(messages)
 
         if isinstance(result, schema_cls):
@@ -109,13 +107,13 @@ async def structured_ainvoke(
             HumanMessage(
                 content=(
                     "Return ONLY valid JSON matching this JSON Schema. "
-                    "Do not include Markdown fences, comments, or prose.\n\n"
+                    "Be concise. Do not include extra prose.\n\n"
                     f"{schema_json}"
                 )
             )
         )
 
-        raw = await llm.ainvoke(fallback_messages)
+        raw = await call_llm.ainvoke(fallback_messages)
         text = raw.content if hasattr(raw, "content") else str(raw)
         data = extract_json_from_text(text)
         return schema_cls.model_validate(data)

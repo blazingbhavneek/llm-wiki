@@ -59,18 +59,18 @@ from pydantic import BaseModel, Field
 # Runtime config
 # ---------------------------------------------------------------------
 
-SOURCE_PATH = "/home/seigyo/llm-wiki/input/"
-OUTPUT_ROOT = "/home/seigyo/llm-wiki/output/"
+SOURCE_PATH = "/run/media/blaze/Common/Code/llm-wiki/input/"
+OUTPUT_ROOT = "/run/media/blaze/Common/Code/llm-wiki/output/"
 
 PHASE = "all"  # all | generate | generate-flat | verify | repair
 
-BASE_URL = os.environ.get("OPENAI_BASE_URL", "http://10.160.144.101:51021/v1")
+BASE_URL = os.environ.get("OPENAI_BASE_URL", "http://localhost:8000/v1")
 API_KEY = os.environ.get("OPENAI_API_KEY", "local")
 
-GEN_MODEL = "openai/gpt-oss-120b"
-VERIFY_MODEL = "openai/gpt-oss-120b"
+GEN_MODEL = "gemma4"
+VERIFY_MODEL = "gemma4"
 
-GENERATION_LINES = 500
+GENERATION_LINES = 200
 VERIFICATION_LINES = 25
 MAX_CHUNK_EXTRA = 50
 
@@ -78,9 +78,9 @@ MAX_CHUNK_EXTRA = 50
 CONCURRENCY = 20
 
 # Number of input markdown files processed at the same time.
-FILE_CONCURRENCY = 5
+FILE_CONCURRENCY = 4
 
-TEMPERATURE = 0.3
+TEMPERATURE = 0.7
 TIMEOUT = 300
 
 CLEAN_OUTPUT = True
