@@ -139,8 +139,8 @@ class MarkdownIngest:
         coverage = self._read_json(coverage_path, default={})
 
         document_name = (
-            metadata.get("original_file_name")
-            or metadata.get("inferred_file_name")
+            metadata.get("inferred_file_name")
+            or metadata.get("original_file_name")
             or out_path.name
         )
 

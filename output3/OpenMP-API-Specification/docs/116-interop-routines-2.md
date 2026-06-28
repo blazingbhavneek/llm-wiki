@@ -1,0 +1,309 @@
+# 26 Interoperability Routines
+
+This section describes interoperability routines, which have the interoperability-routine property. These routines provide mechanisms to inspect the properties associated with an interoperability object. Each interoperability routine takes an interop argument of the interop OpenMP type. Most interoperability routines also take a property\_id argument of the interop\_property OpenMP type and a ret\_code argument of (pointer to) interop\_rc OpenMP type.
+
+Interoperability-property-retrieving routines, which have the interoperability-property-retrieving property, retrieve an interoperability property from an interoperability object. For these routines, if a non-null pointer is passed to the ret\_code argument, an interop\_rc OpenMP type value that indicates the return code is stored in the object to which ret\_code points. If an error occurred, the stored value is negative and matches the error as defined in Table 20.3. On success, omp\_irc\_success is stored. If no error occurred but no meaningful value can be returned, omp\_irc\_no\_value is stored.
+
+Interoperability-property-retrieving routines return the requested interoperability property, if available, and zero if an error occurs or no value is available. If the interop argument is omp\_interop\_none, an empty error occurs. If the property\_id argument is greater than or equal to omp\_get\_num\_interop\_properties(interop) or less than omp\_ipr\_first, an out-of-range error occurs. If the requested property value is not convertible into a value of the type that the specific interoperability-property-retrieving routine retrieves, a type error occurs.
+
+## Restrictions
+
+Restrictions to interoperability routines are as follows:
+
+• Providing an invalid interoperability object for the interop argument results in unspecified behavior.
+
+• For any interoperability routine that returns a pointer, memory referenced by the pointer is managed by the OpenMP implementation and should not be freed or modified and memory referenced by that pointer cannot be accessed after the interoperability object that was used to obtain the pointer is destroyed.
+
+## Cross References
+
+• OpenMP Interoperability Support Types, see Section 20.7
+
+## 26.1 omp\_get\_num\_interop\_properties Routine
+
+<table><tr><td>Name: omp_get_num_interop_propertiesCategory: function</td><td>Properties: interoperability-routine</td></tr></table>
+
+## Return Type and Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td></td><td>integer</td><td>default</td></tr><tr><td>interop</td><td>interop</td><td>intent(in)</td></tr></table>
+
+## Prototypes
+
+C / C++
+
+int omp\_get\_num\_interop\_properties(const omp\_interop\_t interop);
+
+C / C++
+
+Fortran
+
+integer function omp\_get\_num\_interop\_properties(interop)
+
+integer (kind=omp\_interop\_kind), intent(in) :: interop
+
+Fortran
+
+Effect
+
+The omp\_get\_num\_interop\_properties routine returns the number of implementation defined interoperability properties available for interop. The total number of properties available for interop is the returned value minus omp\_ipr\_first.
+
+Cross References
+
+• OpenMP interop Type, see Section 20.7.1
+
+## 26.2 omp\_get\_interop\_int Routine
+
+<table><tr><td>Name: omp_get_interop_intCategory: function</td><td>Properties: interoperability-property-retrieving, interoperability-routine</td></tr></table>
+
+## Return Type and Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td></td><td>intptr</td><td>default</td></tr><tr><td>interop</td><td>interop</td><td>omp, opaque, intent(in)</td></tr><tr><td>property_id</td><td>interop_property</td><td>omp</td></tr><tr><td>ret_code</td><td>interop_rc</td><td>omp, intent(out), optional</td></tr></table>
+
+## Prototypes
+
+C / C++
+
+omp\_intptr\_t <sub>\*</sub>omp\_get\_interop\_int(const omp\_interop\_t interop,omp\_interop\_property\_t property\_id, omp\_interop\_rc\_t <sub>\*</sub>ret\_code);
+
+C / C++
+
+Fortran
+
+integer (kind=c\_intptr\_t) function omp\_get\_interop\_int(interop, & property\_id, ret\_code)
+
+use, intrinsic :: iso\_c\_binding, only : c\_intptr\_t
+
+integer (kind=omp\_interop\_kind), intent(in) :: interop
+
+integer (kind=omp\_interop\_property\_kind) property\_id
+
+integer (kind=omp\_interop\_rc\_kind), intent(out), optional :: & ret\_code
+
+Fortran
+
+## Effect
+
+The omp\_get\_interop\_int routine is an interoperability-property-retrieving routine that retrieves an interoperability property of integer type, if available.
+
+## Cross References
+
+• OpenMP interop Type, see Section 20.7.1
+
+• OpenMP interop\_property Type, see Section 20.7.3
+
+• OpenMP interop\_rc Type, see Section 20.7.4
+
+• omp\_get\_num\_interop\_properties Routine, see Section 26.1
+
+## 26.3 omp\_get\_interop\_ptr Routine
+
+<table><tr><td>Name: omp_get_interop_ptrCategory: function</td><td>Properties: interoperability-property-retrieving, interoperability-routine</td></tr></table>
+
+## Return Type and Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td></td><td>c_ptr</td><td>default</td></tr><tr><td>interop</td><td>interop</td><td>omp, opaque, intent(in)</td></tr><tr><td>property_id</td><td>interop_property</td><td>omp</td></tr><tr><td>ret_code</td><td>interop_rc</td><td>omp, intent(out), optional</td></tr></table>
+
+## Prototypes
+
+C / C++
+
+void <sub>\*</sub>omp\_get\_interop\_ptr(const omp\_interop\_t interop,
+
+omp\_interop\_property\_t property\_id, omp\_interop\_rc\_t <sub>\*</sub>ret\_code);
+
+C / C++
+
+Fortran
+
+type (c\_ptr) function omp\_get\_interop\_ptr(interop, property\_id, & ret\_code)
+
+use, intrinsic :: iso\_c\_binding, only : c\_ptr
+
+integer (kind=omp\_interop\_kind), intent(in) :: interop
+
+integer (kind=omp\_interop\_property\_kind) property\_id
+
+integer (kind=omp\_interop\_rc\_kind), intent(out), optional :: & ret\_code
+
+Fortran
+
+## Effect
+
+The omp\_get\_interop\_ptr routine is an interoperability-property-retrieving routine that retrieves an interoperability property of pointer type, if available.
+
+## Cross References
+
+• OpenMP interop Type, see Section 20.7.1
+
+• OpenMP interop\_property Type, see Section 20.7.3
+
+• OpenMP interop\_rc Type, see Section 20.7.4
+
+• omp\_get\_num\_interop\_properties Routine, see Section 26.1
+
+## 26.4 omp\_get\_interop\_str Routine
+
+<table><tr><td>Name: omp_get_interop_strCategory: function</td><td>Properties: interoperability-property-retrieving, interoperability-routine</td></tr></table>
+
+## Return Type and Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td></td><td>const char</td><td>pointer</td></tr><tr><td>interop</td><td>interop</td><td>omp, opaque, intent(in)</td></tr><tr><td>property_id</td><td>interop_property</td><td>omp</td></tr><tr><td>ret_code</td><td>interop_rc</td><td>omp, intent(out), optional</td></tr></table>
+
+## Prototypes
+
+C / C++
+
+const char <sub>\*</sub>omp\_get\_interop\_str(const omp\_interop\_t interop,omp\_interop\_property\_t property\_id, omp\_interop\_rc\_t <sub>\*</sub>ret\_code);
+
+C / C++
+
+Fortran
+
+character(:) function omp\_get\_interop\_str(interop, property\_id, & ret\_code)
+
+pointer :: omp\_get\_interop\_str
+
+integer (kind=omp\_interop\_kind), intent(in) :: interop
+
+integer (kind=omp\_interop\_property\_kind) property\_id
+
+integer (kind=omp\_interop\_rc\_kind), intent(out), optional :: & ret\_code
+
+Fortran
+
+## Effect
+
+The omp\_get\_interop\_str routine is an interoperability-property-retrieving routine that retrieves an interoperability string property type as a string, if available.
+
+## Cross References
+
+• OpenMP interop Type, see Section 20.7.1
+
+• OpenMP interop\_property Type, see Section 20.7.3
+
+• OpenMP interop\_rc Type, see Section 20.7.4
+
+• omp\_get\_num\_interop\_properties Routine, see Section 26.1
+
+## 26.5 omp\_get\_interop\_name Routine
+
+<table><tr><td>Name: omp_get_interop_nameCategory: function</td><td>Properties: interoperability-routine</td></tr></table>
+
+## Return Type and Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td></td><td>const char</td><td>pointer</td></tr><tr><td>interop</td><td>interop</td><td>omp, opaque, intent(in)</td></tr><tr><td>property_id</td><td>interop_property</td><td>omp</td></tr></table>
+
+## Prototypes
+
+C / C++
+
+const char <sub>\*</sub>omp\_get\_interop\_name(const omp\_interop\_t interop,omp\_interop\_property\_t property\_id);
+
+C / C++
+
+Fortran
+
+character(:) function omp\_get\_interop\_name(interop, property\_id)
+
+pointer :: omp\_get\_interop\_name
+
+integer (kind=omp\_interop\_kind), intent(in) :: interop
+
+integer (kind=omp\_interop\_property\_kind) property\_id
+
+Fortran
+
+## Effect
+
+The omp\_get\_interop\_name routine returns, as a string, the name of the interoperability property identified by property\_id. Property names for non-implementation defined interoperability properties are listed in Table 20.2. If the property\_id is less than omp\_ipr\_first or greater than or equal to omp\_get\_num\_interop\_properties(interop), NULL is returned.
+
+Cross References
+
+• OpenMP interop Type, see Section 20.7.1
+
+• OpenMP interop\_property Type, see Section 20.7.3
+
+• omp\_get\_num\_interop\_properties Routine, see Section 26.1
+
+## 26.6 omp\_get\_interop\_type\_desc Routine
+
+<table><tr><td>Name: omp_get_interop_type_descCategory: function</td><td>Properties: interoperability-routine</td></tr></table>
+
+## Return Type and Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td></td><td>const char</td><td>pointer</td></tr><tr><td>interop</td><td>interop</td><td>omp, opaque, intent(in)</td></tr><tr><td>property_id</td><td>interop_property</td><td>omp</td></tr></table>
+
+## Prototypes
+
+C / C++
+
+const char <sub>\*</sub>omp\_get\_interop\_type\_desc(
+
+const omp\_interop\_t interop, omp\_interop\_property\_t property\_id);
+
+C / C++
+
+Fortran
+
+character(:) function omp\_get\_interop\_type\_desc(interop, & property\_id) pointer :: omp\_get\_interop\_type\_desc integer (kind=omp\_interop\_kind), intent(in) :: interop integer (kind=omp\_interop\_property\_kind) property\_id
+
+Fortran
+
+## Effect
+
+The omp\_get\_interop\_type\_desc routine returns a string that describes the type of the interoperability property identified by property\_id in human-readable form. The description may contain a valid type declaration, possibly followed by a description or name of the type. If interop has the value omp\_interop\_none, or if the property\_id is less than omp\_ipr\_first or greater than or equal to omp\_get\_num\_interop\_properties(interop), NULL is returned.
+
+## Cross References
+
+• OpenMP interop Type, see Section 20.7.1
+
+• OpenMP interop\_property Type, see Section 20.7.3
+
+• omp\_get\_num\_interop\_properties Routine, see Section 26.1
+
+## 26.7 omp\_get\_interop\_rc\_desc Routine
+
+<table><tr><td>Name: omp_get_interop_rc_descCategory: function</td><td>Properties: interoperability-routine</td></tr></table>
+
+## Return Type and Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td></td><td>const char</td><td>pointer</td></tr><tr><td>interop</td><td>interop</td><td>omp, opaque, intent(in)</td></tr><tr><td>ret_code</td><td>interop_rc</td><td>omp</td></tr></table>
+
+## Prototypes
+
+C / C++
+
+const char <sub>\*</sub>omp\_get\_interop\_rc\_desc(const omp\_interop\_t interop, omp\_interop\_rc\_t ret\_code);
+
+C / C++
+
+Fortran
+
+character(:) function omp\_get\_interop\_rc\_desc(interop, ret\_code)
+
+pointer :: omp\_get\_interop\_rc\_desc
+
+integer (kind=omp\_interop\_kind), intent(in) :: interop
+
+integer (kind=omp\_interop\_rc\_kind) ret\_code
+
+## Fortran
+
+## Effect
+
+The omp\_get\_interop\_rc\_desc routine returns a string that describes the return code ret\_code associated with an interoperability object in human-readable form.
+
+## Restrictions
+
+Restrictions to the omp\_get\_interop\_rc\_desc routine are as follows:
+
+• The behavior of the routine is unspecified if ret\_code was not last written by an interoperability routine invoked with the interoperability object interop.
+
+## Cross References
+
+• OpenMP interop Type, see Section 20.7.1
+
+• OpenMP interop\_property Type, see Section 20.7.3
+
+• OpenMP interop\_rc Type, see Section 20.7.4
+
+• omp\_get\_num\_interop\_properties Routine, see Section 26.1

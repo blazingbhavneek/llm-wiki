@@ -1,0 +1,718 @@
+{
+  "files": [
+    {
+      "title": "CUDA C++ Programming Guide - Front Matter and Contents (1-102)",
+      "filename": "cuda-guide-front-matter-contents.md",
+      "source_start": 1,
+      "source_end": 753,
+      "summary": "Covers the title page, release information, and the complete Table of Contents for the CUDA C++ Programming Guide, listing all major sections from Overview through Compute Modes."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Overview and Introduction (754-814)",
+      "filename": "cuda-guide-overview-introduction.md",
+      "source_start": 754,
+      "source_end": 814,
+      "summary": "Chapters 1-3 covering Overview, What Is the CUDA C Programming Guide, and Introduction including benefits of GPUs, CUDA platform description, and scalable programming model."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Changelog (815-820)",
+      "filename": "cuda-guide-changelog.md",
+      "source_start": 815,
+      "source_end": 820,
+      "summary": "Chapter 4 Changelog detailing changes in CUDA versions 13.0, 12.9, and 12.8."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Programming Model (821-931)",
+      "filename": "cuda-guide-programming-model.md",
+      "source_start": 821,
+      "source_end": 931,
+      "summary": "Chapter 5 on Programming Model, covering kernels, thread hierarchy, thread block clusters, shared memory, and synchronization."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Cluster Launch Control Examples",
+      "filename": "cuda-guide-cluster-launch-examples.md",
+      "source_start": 932,
+      "source_end": 1004,
+      "summary": "Continuation of the previous chunk covering Thread Block Clusters, including examples of compile-time and runtime cluster launch configurations."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Thread Block Clusters and Hierarchy",
+      "filename": "cuda-guide-thread-block-clusters.md",
+      "source_start": 1005,
+      "source_end": 1035,
+      "summary": "Covers the synchronization and distributed shared memory capabilities of thread block clusters, the 'Blocks as Clusters' compilation attribute, and introduces the memory hierarchy."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Heterogeneous and Asynchronous Programming",
+      "filename": "cuda-guide-heterogeneous-asynchronous.md",
+      "source_start": 1036,
+      "source_end": 1076,
+      "summary": "Explains heterogeneous programming (host/device separation, Unified Memory), the asynchronous SIMT programming model, asynchronous operations, and thread scopes."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Compute Capability",
+      "filename": "cuda-guide-compute-capability.md",
+      "source_start": 1077,
+      "source_end": 1103,
+      "summary": "Defines compute capability versions, maps them to GPU architectures (Hopper, Ampere, Volta, etc.), and clarifies the distinction between compute capability and CUDA platform versions."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Programming Interface and Compilation",
+      "filename": "cuda-guide-programming-interface-compilation.md",
+      "source_start": 1104,
+      "source_end": 1211,
+      "summary": "Introduces the Programming Interface chapter, including the CUDA Runtime and Driver API. Details nvcc compilation workflows (offline and JIT), binary/PTX compatibility rules, application compatibility, and C++/64-bit compatibility."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - CUDA Runtime and Device Memory",
+      "filename": "cuda-guide-runtime-device-memory.md",
+      "source_start": 1212,
+      "source_end": 1390,
+      "summary": "Describes the CUDA Runtime library, initialization, device memory management (linear memory, CUDA arrays, pitch allocations), and provides code examples for memory allocation and copying."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Global Memory Access and L2 Cache Management",
+      "filename": "cuda-guide-global-memory-l2-cache.md",
+      "source_start": 1391,
+      "source_end": 1504,
+      "summary": "Continuation of previous section covering global variable access, then detailed explanation of L2 cache management including set-aside for persisting accesses, access policy windows, hit ratios, access properties (streaming, persisting, normal), and examples for CUDA Streams and Graphs."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - L2 Cache Management (Continued)",
+      "filename": "cuda-guide-l2-cache-management-continued.md",
+      "source_start": 1505,
+      "source_end": 1626,
+      "summary": "Continues L2 cache management topics: hit ratio implications, managing utilization across concurrent streams, querying L2 properties, and controlling set-aside size via CUDA runtime API."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Shared Memory",
+      "filename": "cuda-guide-shared-memory.md",
+      "source_start": 1627,
+      "source_end": 1850,
+      "summary": "Covers shared memory allocation, performance benefits over global memory, and detailed matrix multiplication examples demonstrating optimization using shared memory to reduce global memory bandwidth usage."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Distributed Shared Memory",
+      "filename": "cuda-guide-distributed-shared-memory.md",
+      "source_start": 1851,
+      "source_end": 1971,
+      "summary": "Explains Distributed Shared Memory (DSM) available in compute capability 9.0+, allowing thread blocks within a cluster to access each other's shared memory. Includes a histogram kernel example and launch configuration details."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Page-Locked Host Memory (Continued)",
+      "filename": "cuda-guide-page-locked-host-memory.md",
+      "source_start": 1972,
+      "source_end": 2023,
+      "summary": "Continuation of the previous section covering page-locked host memory, including subsections on Portable Memory, Write-Combining Memory, and Mapped Memory."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Memory Synchronization Domains",
+      "filename": "cuda-guide-memory-synchronization-domains.md",
+      "source_start": 2024,
+      "source_end": 2116,
+      "summary": "Covers Memory Synchronization Domains, including memory fence interference, isolating traffic with domains, and using domains in CUDA via launch attributes and stream mapping."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Asynchronous Concurrent Execution",
+      "filename": "cuda-guide-asynchronous-concurrent-execution.md",
+      "source_start": 2117,
+      "source_end": 2511,
+      "summary": "Covers asynchronous concurrent execution, host-device concurrency, concurrent kernels, data transfer overlaps, streams (creation, default stream, synchronization, callbacks, priorities), and programmatic dependent launch."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - CUDA Graphs",
+      "filename": "cuda-guide-cuda-graphs.md",
+      "source_start": 2512,
+      "source_end": 3032,
+      "summary": "Continuation of the previous chunk covering stream capture examples, prohibited operations, invalidation, CUDA User Objects, and the beginning of the section on Updating Instantiated Graphs."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Updating Instantiated Graphs and Device Graphs",
+      "filename": "cuda-guide-graph-update-device.md",
+      "source_start": 3033,
+      "source_end": 3282,
+      "summary": "Covers the remainder of Updating Instantiated Graphs (Whole Graph Update, Individual Node Update, Enable/Disable), followed by Using Graph APIs, Device Graph Launch (creation, requirements, upload, update, launch modes, fire-and-forget, tail launch, sibling launch), and the beginning of Conditional Graph Nodes (general requirements, handles, and IF nodes)."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Conditional Nodes and Events (Continued)",
+      "filename": "cuda-guide-conditional-events.md",
+      "source_start": 3283,
+      "source_end": 3401,
+      "summary": "Continuation of the previous section covering the creation of graphs with WHILE and SWITCH conditional nodes, including code examples and diagrams."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Events, Synchronous Calls, and Multi-Device Systems",
+      "filename": "cuda-guide-events-multi-device.md",
+      "source_start": 3402,
+      "source_end": 3597,
+      "summary": "Covers CUDA events for timing and synchronization, synchronous function behavior, and multi-device system features including device enumeration, selection, stream/event behavior across devices, peer-to-peer memory access, and peer-to-peer memory copy."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Unified Virtual Address Space, IPC, and Error Checking",
+      "filename": "cuda-guide-uvspace-ipc-errors.md",
+      "source_start": 3598,
+      "source_end": 3642,
+      "summary": "Describes the Unified Virtual Address Space (UVA), Interprocess Communication (IPC) API for sharing memory and events between processes, and error checking mechanisms including asynchronous error handling and call stack limits."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Texture and Surface Memory",
+      "filename": "cuda-guide-texture-surface.md",
+      "source_start": 3643,
+      "source_end": 3990,
+      "summary": "Detailed documentation on texture and surface memory, including texture objects, 16-bit floating-point textures, layered and cubemap textures, texture gather, surface objects, cubemap surfaces, CUDA arrays, and read/write coherency rules."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Graphics Interoperability (OpenGL)",
+      "filename": "cuda-guide-graphics-interop-opengl.md",
+      "source_start": 3991,
+      "source_end": 4118,
+      "summary": "Covers the introduction to Graphics Interoperability and detailed OpenGL interoperability features, including buffer and texture registration, usage flags, and a code sample for dynamic vertex buffer modification."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Graphics Interoperability (Direct3D)",
+      "filename": "cuda-guide-graphics-interop-d3d.md",
+      "source_start": 4119,
+      "source_end": 4507,
+      "summary": "Details Direct3D interoperability support for D3D9Ex, D3D10, and D3D11, including device creation requirements, resource registration, and code samples for each version demonstrating vertex buffer manipulation."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - SLI and External Resource Interoperability",
+      "filename": "cuda-guide-sli-external-interop.md",
+      "source_start": 4508,
+      "source_end": 4527,
+      "summary": "Covers SLI interoperability considerations and the general introduction to External Resource Interoperability, including memory and synchronization object import concepts."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Vulkan Interoperability",
+      "filename": "cuda-guide-vulkan-interop.md",
+      "source_start": 4528,
+      "source_end": 4956,
+      "summary": "Details Vulkan interoperability, including device UUID matching, importing memory objects (FD, NT handles), mapping buffers and mipmapped arrays, importing synchronization objects, and signaling/waiting on semaphores."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - OpenGL and Direct3D 12 Interoperability",
+      "filename": "cuda-guide-opengl-d3d12-interop.md",
+      "source_start": 4957,
+      "source_end": 5335,
+      "summary": "Covers OpenGL interoperability via Vulkan, and Direct3D 12 interoperability including device LUID matching, importing memory objects (heaps and committed resources) via NT and named handles, mapping buffers and mipmapped arrays, and signaling/waiting on imported fence synchronization objects."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Direct3D 11 Interoperability",
+      "filename": "cuda-guide-d3d11-interop.md",
+      "source_start": 5336,
+      "source_end": 5790,
+      "summary": "Covers Direct3D 11 interoperability including matching device LUIDs, importing memory objects (NT, named, KMT handles), mapping buffers and mipmapped arrays, importing synchronization objects (fences, keyed mutexes), and signaling/waiting on these objects."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - NVSCI Interoperability",
+      "filename": "cuda-guide-nvsci-interop.md",
+      "source_start": 5791,
+      "source_end": 6073,
+      "summary": "Covers NVIDIA Software Communication Interface (NVSCI) interoperability, including importing memory objects (NvSciBuf), mapping buffers and mipmapped arrays, importing synchronization objects (NvSciSync), and signaling/waiting on these objects."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Versioning, Compute Modes, and Mode Switches",
+      "filename": "cuda-guide-versioning-compute-modes.md",
+      "source_start": 6074,
+      "source_end": 6116,
+      "summary": "Covers driver API versioning and compatibility rules, compute modes (default, exclusive-process, prohibited), and the impact of display mode switches on CUDA applications."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Tesla Compute Cluster Mode and Hardware Implementation",
+      "filename": "cuda-guide-tcc-hardware-implementation.md",
+      "source_start": 6117,
+      "source_end": 6177,
+      "summary": "Describes Tesla Compute Cluster (TCC) mode for Windows and introduces the Hardware Implementation chapter, including SIMT architecture and hardware multithreading concepts."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Performance Guidelines (Continued)",
+      "filename": "cuda-guide-performance-guidelines.md",
+      "source_start": 6178,
+      "source_end": 6616,
+      "summary": "Continues the Performance Guidelines chapter, covering optimization strategies for utilization, memory throughput, and instruction throughput. Includes detailed sections on host-device data transfers, global/shared/local/constant/texture memory access patterns, and the occupancy calculator API. Concludes with the start of Chapter 10 on C++ Language Extensions, specifically function execution space specifiers (__global__, __device__, __host__) and inline hints."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - C++ Language Extensions (continued): Memory Specifiers and Built-in Types",
+      "filename": "cuda-cpp-extensions-memory-types.md",
+      "source_start": 6617,
+      "source_end": 6850,
+      "summary": "Continues from previous chunk with inline qualifiers, then covers variable memory space specifiers (__device__, __constant__, __shared__, __grid_constant__, __managed, __restrict__), and built-in vector types including alignment requirements."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Built-in Variables and Synchronization",
+      "filename": "cuda-cpp-builtins-synchronization.md",
+      "source_start": 6851,
+      "source_end": 7057,
+      "summary": "Covers built-in variables (gridDim, blockIdx, blockDim, threadIdx, warpSize), memory fence functions (__threadfence, __threadfence_block, __threadfence_system) with examples, and synchronization functions (__syncthreads, __syncwarp)."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Texture Object API",
+      "filename": "cuda-cpp-texture-api.md",
+      "source_start": 7058,
+      "source_end": 7387,
+      "summary": "Documents the Texture Object API functions for 1D, 2D, 3D, layered, and cubemap textures, including variations for LOD, gradients, and sparse arrays."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Surface Functions",
+      "filename": "cuda-cpp-surface-api.md",
+      "source_start": 7388,
+      "source_end": 7591,
+      "summary": "Documents the Surface Object API functions for 1D, 2D, 3D, layered, and cubemap surfaces, including read and write operations with boundary mode handling."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Cache Load and Store Functions",
+      "filename": "cuda-cpp-cache-functions.md",
+      "source_start": 7592,
+      "source_end": 7616,
+      "summary": "Continuation of the previous chunk covering read-only cache loads, load functions with cache hints, and store functions with cache hints."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Time and Atomic Functions Overview",
+      "filename": "cuda-cpp-time-and-atomics-overview.md",
+      "source_start": 7617,
+      "source_end": 7785,
+      "summary": "Documentation for the clock() time functions and an overview of atomic functions, including memory order, thread scope, and compiler builtin support."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Arithmetic Atomic Functions",
+      "filename": "cuda-cpp-arithmetic-atomics.md",
+      "source_start": 7786,
+      "source_end": 8098,
+      "summary": "Detailed documentation for arithmetic atomic operations including atomicAdd, atomicSub, atomicExch, atomicMin, atomicMax, atomicInc, atomicDec, atomicCAS, and the new __nv_atomic_* variants introduced in CUDA 12.8."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Bitwise Atomic Functions",
+      "filename": "cuda-cpp-bitwise-atomics.md",
+      "source_start": 8099,
+      "source_end": 8193,
+      "summary": "Documentation for bitwise atomic functions including atomicAnd, atomicOr, atomicXor, and their CUDA 12.8 equivalents (__nv_atomic_*) with memory ordering and scope support."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Other Atomic Functions",
+      "filename": "cuda-cpp-other-atomics.md",
+      "source_start": 8194,
+      "source_end": 8277,
+      "summary": "Documentation for other atomic operations including load, store, and thread fence functions (__nv_atomic_load, __nv_atomic_store, __nv_atomic_thread_fence) introduced in CUDA 12.8."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Address Space Functions",
+      "filename": "cuda-cpp-address-space.md",
+      "source_start": 8278,
+      "source_end": 8421,
+      "summary": "Documentation for address space predicate functions (__isGlobal, __isShared, etc.) and address space conversion functions (__cvta_*) that allow interoperating with PTX and optimizing memory representations."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Alloca and Compiler Optimization Hints",
+      "filename": "cuda-cpp-alloca-compiler-hints.md",
+      "source_start": 8422,
+      "source_end": 8563,
+      "summary": "Documentation for the alloca function for stack allocation and compiler optimization hint functions such as __builtin_assume_aligned, __builtin_assume, __assume, __builtin_expect, and __builtin_unreachable."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Warp Vote, Match, Reduce, Shuffle, Nanosleep, Matrix, DPX (Continued)",
+      "filename": "cuda-cpp-warp-functions.md",
+      "source_start": 8564,
+      "source_end": 9117,
+      "summary": "Continuation of warp-level synchronization and manipulation functions including __match_sync, __reduce_sync, __shfl_sync, __nanosleep, Warp Matrix (WMMA) operations, and DPX (Dynamic Parallelism eXtensions) instructions."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Asynchronous Barrier and Data Copies",
+      "filename": "cuda-cpp-asynchronous-barrier.md",
+      "source_start": 9118,
+      "source_end": 9537,
+      "summary": "Continues from previous chunk. Covers the end of the Intrinsics section (lines 9118-9150), then the full Asynchronous Barrier section (10.26), including simple synchronization, temporal splitting, bootstrap initialization, phase management, spatial partitioning (warp specialization), early exit, completion functions, and the memory barrier primitives interface (up to line 9537)."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Asynchronous Data Copies and Pipeline",
+      "filename": "cuda-cpp-asynchronous-data-copies.md",
+      "source_start": 9538,
+      "source_end": 9631,
+      "summary": "Continuation of previous chunk covering cooperative_groups::memcpy_async examples and introduction to cuda::barrier asynchronous copies."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Asynchronous Data Copies using cuda::barrier and Pipeline Performance Guidance",
+      "filename": "cuda-cpp-pipeline-performance.md",
+      "source_start": 9632,
+      "source_end": 9778,
+      "summary": "Covers asynchronous data copies using cuda::barrier, and detailed performance guidance for memcpy_async including alignment, trivially copyable types, and warp entanglement effects on commit, wait, and arrive operations."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Asynchronous Data Copies using cuda::pipeline",
+      "filename": "cuda-cpp-pipeline-api.md",
+      "source_start": 9779,
+      "source_end": 10131,
+      "summary": "Details the cuda::pipeline API for managing asynchronous data movement, including single-stage and multi-stage examples, specialized producer/consumer roles, and optimized thread-scope usage."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Asynchronous Data Copies using the Tensor Memory Accelerator (TMA)",
+      "filename": "cuda-cpp-tma.md",
+      "source_start": 10132,
+      "source_end": 10645,
+      "summary": "Continuation of the previous chunk, covering the C-like Pipeline Primitives Interface (__pipeline_memcpy_async, __pipeline_commit, __pipeline_wait_prior, __pipeline_arrive_on) and the introduction to Tensor Memory Accelerator (TMA), including its naming, dimensions, source/destination capabilities, asynchronous nature, and completion mechanisms table. Ends with the start of the TMA section and the beginning of the 1D array transfer example code."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - TMA 1D and 2D Array Transfers",
+      "filename": "cuda-cpp-tma-1d-2d.md",
+      "source_start": 10646,
+      "source_end": 10835,
+      "summary": "Covers the complete example for using TMA to transfer one-dimensional arrays, including alignment requirements. Then details using TMA to transfer multi-dimensional arrays, including host-side creation via cuTensorMapEncodeTiled, passing the tensor map to the device (__grid_constant__, __constant__, global memory), and a complete kernel example for 2D tile read-modify-write. Includes alignment requirements for multi-dimensional operations and PTX wrapper function signatures for bulk tensor copies. Finally, introduces TMA Swizzle to avoid shared memory bank conflicts, with a matrix transpose example and swizzle mode details."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Device-side Tensor Map Encoding",
+      "filename": "cuda-cpp-tma-device-encoding.md",
+      "source_start": 10836,
+      "source_end": 11048,
+      "summary": "Explains how to encode a tensor map on the device, useful for batch processing tensors of various sizes. Covers the high-level pattern of creating a template on the host and modifying it on the device using cuda::ptx::tensormap_replace functions. Provides code examples for device-side encoding and modification, as well as the usage of a modified tensor map in a consumer kernel, including the necessary release-acquire fencing patterns."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Tensor Map, Profiler, Assertions, and Debugging Functions",
+      "filename": "cuda-tensormap-debugging.md",
+      "source_start": 11049,
+      "source_end": 11146,
+      "summary": "Covers creating template tensor maps via the Driver API, the profiler trigger function, and assertion handling including error messages and compilation flags."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Trap, Breakpoint, and Printf",
+      "filename": "cuda-trap-breakpoint-printf.md",
+      "source_start": 11147,
+      "source_end": 11302,
+      "summary": "Details the __trap() and __brkpt() functions for kernel interruption, and the __printf() function including format specifiers, limitations, host-side API, and examples."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Dynamic Global Memory Allocation",
+      "filename": "cuda-dynamic-global-memory.md",
+      "source_start": 11303,
+      "source_end": 11456,
+      "summary": "Explains dynamic global memory allocation using malloc, free, and related functions, including heap configuration, interoperability constraints, and examples for per-thread and per-block allocation."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Execution Configuration and Launch Bounds",
+      "filename": "cuda-execution-config-launch-bounds.md",
+      "source_start": 11457,
+      "source_end": 11655,
+      "summary": "Continuation of the previous chunk covering persistent allocation examples, followed by sections on execution configuration syntax, launch bounds qualifiers, maximum registers, unrolling pragmas, SIMD video instructions, diagnostic pragmas, and custom ABI pragmas."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Memory and Execution Models",
+      "filename": "cuda-memory-execution-models.md",
+      "source_start": 11656,
+      "source_end": 11924,
+      "summary": "Covers the CUDA C++ Memory Model and CUDA C++ Execution Model sections, which extend the ISO C++ models."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Cooperative Groups Introduction",
+      "filename": "cooperative-groups-intro.md",
+      "source_start": 11925,
+      "source_end": 12007,
+      "summary": "Covers the introduction to Cooperative Groups, version changes (CUDA 13.0 to 12.0), and the programming model concept including composition examples and header usage."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Cooperative Groups Implicit Groups (Continued)",
+      "filename": "cooperative-groups-implicit.md",
+      "source_start": 12008,
+      "source_end": 12200,
+      "summary": "Continuation of the composition example and detailed API documentation for implicit group types: thread_block, cluster_group, and grid_group, including their member functions and examples."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Cooperative Groups Explicit Groups",
+      "filename": "cooperative-groups-explicit.md",
+      "source_start": 12201,
+      "source_end": 12462,
+      "summary": "Documentation for explicit group types including thread_block_tile (with tiled partitioning, warp-synchronous patterns, and single thread groups) and coalesced_groups, including discovery patterns and examples."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Cooperative Groups Partitioning and Collectives (Continued)",
+      "filename": "cooperative-groups-partitioning-collectives-continued.md",
+      "source_start": 12463,
+      "source_end": 13204,
+      "summary": "Continuation of Cooperative Groups API documentation covering memcpy_async, wait/wait_prior, reduce, reduce operators, inclusive/exclusive scan, invoke_one, and grid synchronization. This section details the APIs for asynchronous memory transfers, reduction operations, scan operations, and inter-block synchronization via cooperative launches."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Cluster Launch Control",
+      "filename": "cluster-launch-control.md",
+      "source_start": 13205,
+      "source_end": 13627,
+      "summary": "Documentation for Cluster Launch Control introduced in Compute Capability 10.0. Covers the introduction, API details, thread block cancellation steps and constraints, and example kernels for vector-scalar multiplication using fixed work, fixed blocks, and cluster launch control approaches. Includes specific handling for thread block clusters."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - CUDA Dynamic Parallelism (Introduction, Execution Environment, Memory Model)",
+      "filename": "cuda-dynamic-parallelism-intro-exec-mem.md",
+      "source_start": 13628,
+      "source_end": 13820,
+      "summary": "Covers the introduction, glossary, execution environment (parent/child grids, synchronization, streams/events), and memory model (coherence, global, zero-copy, constant, shared/local, texture) for CUDA Dynamic Parallelism."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - CUDA Dynamic Parallelism (Programming Interface)",
+      "filename": "cuda-dynamic-parallelism-interface.md",
+      "source_start": 13821,
+      "source_end": 14050,
+      "summary": "Details the CUDA C++ programming interface for Dynamic Parallelism, including device-side kernel launch syntax, asynchronous behavior, launch configuration, streams (NULL, Fire-and-Forget, Tail Launch), events, synchronization, device management, memory declarations, symbol addresses, API errors, and a reference table of supported API functions."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - CUDA Dynamic Parallelism (PTX Support and Toolkit)",
+      "filename": "cuda-dynamic-parallelism-ptx-toolkit.md",
+      "source_start": 14051,
+      "source_end": 14175,
+      "summary": "Continuation of the previous chunk covering PTX-level kernel launch APIs (cudaLaunchDevice, cudaGetParameterBuffer), parameter buffer layout, and toolkit support including compilation and linking instructions."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Programming Guidelines and Implementation Restrictions",
+      "filename": "cuda-dynamic-parallelism-programming-guidelines.md",
+      "source_start": 14176,
+      "source_end": 14289,
+      "summary": "Covers programming basics, performance overhead, and implementation restrictions including memory footprint, pending launch limits, configuration options, memory allocation semantics, and the differences between CDP2 and legacy CDP1 interfaces."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Legacy CUDA Dynamic Parallelism (CDP1) Environment and Memory Model",
+      "filename": "cuda-dynamic-parallelism-cdp1-environment-memory.md",
+      "source_start": 14290,
+      "source_end": 14482,
+      "summary": "Details the legacy CDP1 execution environment, parent-child grid nesting, synchronization, streams, events, ordering, and the memory model including coherence for global, zero-copy, constant, shared, local, and texture memory."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Legacy CUDA Dynamic Parallelism (CDP1) Programming Interface",
+      "filename": "cuda-dynamic-parallelism-cdp1-interface.md",
+      "source_start": 14483,
+      "source_end": 14685,
+      "summary": "Covers the CDP1 Device Runtime API reference, including kernel launch syntax, asynchronous behavior, stream and event handling, synchronization constraints, memory declarations, and supported API functions."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Legacy CUDA Dynamic Parallelism (CDP1) PTX and Toolkit Support",
+      "filename": "cuda-dynamic-parallelism-cdp1-ptx-toolkit.md",
+      "source_start": 14686,
+      "source_end": 14822,
+      "summary": "Details device-side kernel launch from PTX (cudaLaunchDevice, cudaGetParameterBuffer, parameter buffer layout) and toolkit support including compilation and linking requirements for the device runtime."
+    },
+    {
+      "title": "CUDA C++ Programming Guide - Legacy CUDA Dynamic Parallelism (CDP1) Programming Guidelines",
+      "filename": "cuda-dynamic-parallelism-cdp1-guidelines.md",
+      "source_start": 14823,
+      "source_end": 14985,
+      "summary": "Provides programming guidelines, performance considerations, and implementation restrictions including memory footprint, nesting depth limits, pending launch counts, configuration options, and memory allocation semantics."
+    },
+    {
+      "title": "CUDA Programming Guide - Virtual Memory Management Introduction and Allocation",
+      "filename": "virtual-memory-management-intro-allocation.md",
+      "source_start": 14986,
+      "source_end": 15128,
+      "summary": "Introduces Virtual Memory Management APIs for managing unified virtual address space, including querying support, allocating physical memory, shareable memory allocations for IPC, and compressible memory features."
+    },
+    {
+      "title": "CUDA Programming Guide - Virtual Memory Management Address Reservation, Aliasing, Mapping, Access, Fabric, and Multicast",
+      "filename": "virtual-memory-management-address-aliasing.md",
+      "source_start": 15129,
+      "source_end": 15389,
+      "summary": "Continues from the previous chunk. Covers reserving virtual address ranges, virtual aliasing support, mapping memory, controlling access rights, Fabric Memory support, and Multicast support including querying, creating, adding devices, binding memory, and using multimem PTX instructions."
+    },
+    {
+      "title": "CUDA Programming Guide - Stream Ordered Memory Allocator",
+      "filename": "stream-ordered-memory-allocator.md",
+      "source_start": 15390,
+      "source_end": 15885,
+      "summary": "Covers Chapter 15 on Stream Ordered Memory Allocator, including introduction, support queries, core APIs (cudaMallocAsync/cudaFreeAsync), memory pools, caching behavior, statistics, reuse policies, multi-GPU accessibility, IPC support, and synchronization actions."
+    },
+    {
+      "title": "CUDA Programming Guide - Graph Memory Nodes (continued)",
+      "filename": "graph-memory-nodes.md",
+      "source_start": 15886,
+      "source_end": 16363,
+      "summary": "Continuation of the Graph Memory Nodes section, covering API fundamentals, stream capture, accessing memory outside graphs, auto-free on launch, optimized memory reuse, performance considerations, physical memory footprint, peer access, and memory nodes in child graphs."
+    },
+    {
+      "title": "CUDA Programming Guide - Mathematical Functions",
+      "filename": "mathematical-functions.md",
+      "source_start": 16364,
+      "source_end": 16485,
+      "summary": "Chapter 17 covering mathematical functions supported in device code, including accuracy information (ULP errors) for single-precision, double-precision, and quad-precision standard functions, as well as intrinsic functions affected by fast math options."
+    },
+    {
+      "title": "CUDA Programming Guide - C++ Language Support (C++11-14 Features)",
+      "filename": "cpp-language-support-features.md",
+      "source_start": 16486,
+      "source_end": 16513,
+      "summary": "Continues the previous chunk, completing the C++11 feature table and covering C++14 and C++17 feature support summaries."
+    },
+    {
+      "title": "CUDA Programming Guide - C++20 Features",
+      "filename": "cpp-language-support-cpp20.md",
+      "source_start": 16514,
+      "source_end": 16528,
+      "summary": "Covers C++20 language features support in nvcc version 12.0 and later."
+    },
+    {
+      "title": "CUDA Programming Guide - Restrictions (Host Extensions, Preprocessor, Qualifiers)",
+      "filename": "cpp-language-support-restrictions-part1.md",
+      "source_start": 16529,
+      "source_end": 16703,
+      "summary": "Covers restrictions on host compiler extensions, preprocessor symbols (__CUDA_ARCH__), and memory space qualifiers (__device__, __managed__, etc.)."
+    },
+    {
+      "title": "CUDA Programming Guide - Restrictions (Volatile, Pointers, Operators, RTTI, Exceptions, Standard Library, Namespaces)",
+      "filename": "cpp-language-support-restrictions-part2.md",
+      "source_start": 16704,
+      "source_end": 16937,
+      "summary": "Covers restrictions on volatile qualifier usage, pointer dereferencing, operators, RTTI, exception handling, standard library, and namespace reservations."
+    },
+    {
+      "title": "CUDA Programming Guide - Function Restrictions (Part 4)",
+      "filename": "cuda-function-restrictions-part4.md",
+      "source_start": 16938,
+      "source_end": 17232,
+      "summary": "Continues the previous section on function restrictions, covering external linkage, implicitly-declared/non-virtual explicitly-defaulted functions, function parameter limits and processing (including memcpy and destructor issues), toolkit/driver compatibility for large parameters, link compatibility, and static variables within functions."
+    },
+    {
+      "title": "CUDA Programming Guide - Function Restrictions (Part 5)",
+      "filename": "cuda-function-restrictions-part5.md",
+      "source_start": 17233,
+      "source_end": 17450,
+      "summary": "Covers function pointers, recursion, friend functions, operator functions, and allocation/deallocation function restrictions. Also includes a new major section on Classes (data members, function members, virtual functions, virtual base classes, anonymous unions, and Windows-specific layout issues) and Templates restrictions."
+    },
+    {
+      "title": "CUDA Programming Guide - C++ Language Features and Attributes (Part 2)",
+      "filename": "cuda-cpp-features-attributes-part2.md",
+      "source_start": 17451,
+      "source_end": 17741,
+      "summary": "Continuation of C++ language features: Long Double, Deprecation, Noreturn, Likely/Unlikely, const/pure attributes, __nv_pure, Intel compiler specifics, C++11 features (Lambdas, initializer_list, rvalue refs, constexpr, inline namespaces), and restrictions on inline unnamed namespaces."
+    },
+    {
+      "title": "CUDA Programming Guide - C++11 Global Functions and C++14/17/20 Features",
+      "filename": "cuda-cpp-cpp11-global-cpp14-20.md",
+      "source_start": 17742,
+      "source_end": 18027,
+      "summary": "C++11 __global__ function restrictions, __managed__/__shared__ variables, defaulted functions. C++14 features (deduced return types, variable templates). C++17 features (inline variables, structured bindings)."
+    },
+    {
+      "title": "CUDA Programming Guide - C++20 Features and Polymorphic Function Wrappers",
+      "filename": "cuda-cpp-cpp20-function-wrappers.md",
+      "source_start": 18028,
+      "source_end": 18231,
+      "summary": "Continuation of C++20 feature support details, covering modules, coroutines, three-way comparison, and consteval functions. Includes the introduction and full API specification for nvstd::function polymorphic function wrappers, including usage examples and restrictions on host/device interactions."
+    },
+    {
+      "title": "CUDA Programming Guide - Extended Lambdas",
+      "filename": "cuda-extended-lambdas.md",
+      "source_start": 18232,
+      "source_end": 18739,
+      "summary": "Continuation of the previous chunk covering extended lambda definitions, type traits, and restrictions 1-14."
+    },
+    {
+      "title": "CUDA Programming Guide - Extended Lambda Restrictions Continued",
+      "filename": "cuda-extended-lambdas-restrictions.md",
+      "source_start": 18740,
+      "source_end": 19041,
+      "summary": "Continues extended lambda restrictions (15-18), notes on __host__ __device__ lambdas, and *this capture by value."
+    },
+    {
+      "title": "CUDA Programming Guide - Extended Lambda Additional Notes and Relaxed Constexpr",
+      "filename": "cuda-extended-lambdas-additional.md",
+      "source_start": 19042,
+      "source_end": 19239,
+      "summary": "Covers ADL lookup issues with extended lambdas, the -expt-relaxed-constexpr flag behavior for cross-execution space calls, and code samples for data aggregation, derived classes, templates, and functors."
+    },
+    {
+      "title": "CUDA Programming Guide - Texture Fetching",
+      "filename": "cuda-texture-fetching.md",
+      "source_start": 19240,
+      "source_end": 19437,
+      "summary": "Legacy documentation for Texture Fetching, including formulas and figures for Nearest-Point Sampling, Linear Filtering, and Table Lookup modes for 1D, 2D, and 3D textures."
+    },
+    {
+      "title": "CUDA Programming Guide - Compute Capabilities Overview and Specifications",
+      "filename": "cuda-compute-capabilities-overview.md",
+      "source_start": 19438,
+      "source_end": 19551,
+      "summary": "Covers the overview of Compute Capabilities, feature availability including architecture-specific and family-specific features, compiler targets, and detailed tables for feature support and technical specifications. Includes the Floating-Point Standard compliance section."
+    },
+    {
+      "title": "CUDA Programming Guide - Compute Capability 5.x, 6.x, and 7.x Architecture Details",
+      "filename": "cuda-compute-capability-5-6-7.md",
+      "source_start": 19552,
+      "source_end": 20058,
+      "summary": "Detailed architecture specifications for Compute Capabilities 5.x through 7.x, including SM composition, memory hierarchy (L1, L2, Shared, Global), and specific features like Independent Thread Scheduling and dynamic shared memory carveouts."
+    },
+    {
+      "title": "CUDA Driver API Overview and Core Concepts",
+      "filename": "cuda-driver-api-overview.md",
+      "source_start": 20059,
+      "source_end": 20324,
+      "summary": "Chapter 21 covers the CUDA Driver API introduction, including the list of objects (handles), initialization, context management, module loading, and kernel execution parameters/alignment. This section establishes the foundational concepts of the driver API before moving to interoperability or advanced entry point access."
+    },
+    {
+      "title": "CUDA Driver API Interoperability and Entry Point Access",
+      "filename": "cuda-driver-api-interoperability.md",
+      "source_start": 20325,
+      "source_end": 20605,
+      "summary": "This section details the interoperability between Runtime and Driver APIs, followed by the Driver Entry Point Access APIs (cuGetProcAddress). It covers function typedefs, retrieving function pointers by version, handling per-thread default streams, and guidelines for accessing new CUDA features and debugging failure reasons."
+    },
+    {
+      "title": "CUDA Environment Variables",
+      "filename": "cuda-environment-variables.md",
+      "source_start": 20606,
+      "source_end": 20661,
+      "summary": "Chapter 22 provides a comprehensive table of CUDA environment variables, including settings for device enumeration, compilation caching, execution behavior, module loading, and graph instantiation."
+    },
+    {
+      "title": "Error Log Management",
+      "filename": "cuda-error-log-management.md",
+      "source_start": 20662,
+      "source_end": 20753,
+      "summary": "Documentation on the CUDA Error Log Management feature, including background, activation via environment variables, output format, API descriptions for callbacks and log dumping, and known limitations."
+    },
+    {
+      "title": "Unified Memory Programming: Introduction and Allocation",
+      "filename": "cuda-unified-memory-programming-intro.md",
+      "source_start": 20754,
+      "source_end": 21099,
+      "summary": "Introduction to CUDA Unified Memory programming, covering system requirements, support levels, programming models, allocation APIs (System-Allocated, cudaMallocManaged, __managed__), and differences from mapped memory."
+    },
+    {
+      "title": "Unified Memory Programming: Advanced Concepts and Performance Hints",
+      "filename": "cuda-unified-memory-programming-advanced.md",
+      "source_start": 21100,
+      "source_end": 21408,
+      "summary": "Covers the differences between Unified and Mapped Memory, pointer attribute detection, runtime support detection, oversubscription, and detailed performance hints including prefetching, discarding, and usage advice APIs."
+    },
+    {
+      "title": "System-Allocated Memory: In-Depth Examples and IPC",
+      "filename": "cuda-unified-memory-system-allocated-and-tuning.md",
+      "source_start": 21409,
+      "source_end": 21757,
+      "summary": "Continuation of the previous chunk covering in-depth examples of system-allocated memory (malloc, managed, stack, static, global, extern), file-backed unified memory, and inter-process communication (IPC) with unified memory."
+    },
+    {
+      "title": "Unified Memory Performance Tuning",
+      "filename": "cuda-unified-memory-performance-tuning.md",
+      "source_start": 21758,
+      "source_end": 21816,
+      "summary": "Covers performance tuning strategies for Unified Memory, including memory paging, page sizes, hardware vs software coherency, direct host access, native atomics, and memcpy/memset behaviors."
+    },
+    {
+      "title": "Unified Memory on Devices Without Full Support",
+      "filename": "cuda-unified-memory-legacy-devices.md",
+      "source_start": 21817,
+      "source_end": 22075,
+      "summary": "Details Unified Memory support on devices with only CUDA Managed Memory support (pre-6.x or Windows), including data migration, oversubscription, multi-GPU constraints, coherency issues, stream association, and memory visibility rules."
+    },
+    {
+      "title": "Lazy Loading",
+      "filename": "cuda-lazy-loading.md",
+      "source_start": 22076,
+      "source_end": 22200,
+      "summary": "Explains the Lazy Loading feature in CUDA, including its definition, version support, triggering mechanisms, querying status, and potential issues related to concurrent execution, allocators, and autotuning."
+    },
+    {
+      "title": "Extended GPU Memory (EGM) Interface and Usage",
+      "filename": "cuda-extended-gpu-memory-interface.md",
+      "source_start": 22201,
+      "source_end": 22394,
+      "summary": "Continuation of the EGM documentation covering preliminaries, platform topologies, NUMA identifier usage, and detailed code examples for Single-Node Single-GPU, Single-Node Multi-GPU (using VMM and Memory Pools), and Multi-Node Single-GPU configurations."
+    },
+    {
+      "title": "Notices and Legal",
+      "filename": "cuda-notices-and-legal.md",
+      "source_start": 22395,
+      "source_end": 22427,
+      "summary": "Chapter 27 containing NVIDIA's general notices, OpenCL trademark information, general trademarks, and copyright information."
+    }
+  ]
+}

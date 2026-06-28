@@ -2,6 +2,7 @@
 
 from .engine import DomainEngine
 from .models import (
+    AgentAnswer,
     ClaimExtraction,
     Edge,
     GraphStats,
@@ -23,5 +24,6 @@ __all__ = [
     "ClaimExtraction",
     "QueryResult",
     "GraphStats",
+    "AgentAnswer",
 ]
 # endregion EXPORTS

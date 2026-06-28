@@ -52,6 +52,14 @@ def cmd_query(args: argparse.Namespace) -> None:
         engine.close()
 
 
+def cmd_ask(args: argparse.Namespace) -> None:
+    engine = _engine(args)
+    try:
+        _print(engine.ask(args.question, persist=not args.no_persist).model_dump())
+    finally:
+        engine.close()
+
+
 def cmd_recon(args: argparse.Namespace) -> None:
     engine = _engine(args)
     try:
@@ -127,6 +135,11 @@ def build_parser() -> argparse.ArgumentParser:
     query.add_argument("query_type", choices=["keyword", "vector", "id"])
     query.add_argument("value")
     query.set_defaults(func=cmd_query)
+
+    ask = subcommands.add_parser("ask", help="answer a question via the reasoning agent")
+    ask.add_argument("question")
+    ask.add_argument("--no-persist", action="store_true", help="do not save the answer node")
+    ask.set_defaults(func=cmd_ask)
 
     recon = subcommands.add_parser("recon", help="check if a source doc is new/changed")
     recon.add_argument("source_file")

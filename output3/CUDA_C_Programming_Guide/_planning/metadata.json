@@ -1,0 +1,458 @@
+{
+  "original_file_name": "CUDA_C_Programming_Guide.md",
+  "inferred_file_name": "complete-cuda-c-programming-guide-reference.md",
+  "files": [
+    {
+      "name": "cuda-guide-front-matter-contents.md",
+      "header": "Front Matter and Table of Contents"
+    },
+    {
+      "name": "cuda-guide-hardware-implementation.md",
+      "header": "Hardware Implementation"
+    },
+    {
+      "name": "cuda-guide-performance-guidelines.md",
+      "header": "Performance Guidelines"
+    },
+    {
+      "name": "cuda-guide-cuda-enabled-gpus.md",
+      "header": "CUDA-Enabled GPUs"
+    },
+    {
+      "name": "cuda-guide-cpp-extensions-part1.md",
+      "header": "C++ Language Extensions Part 1"
+    },
+    {
+      "name": "cuda-guide-mathematical-functions.md",
+      "header": "Mathematical Functions"
+    },
+    {
+      "name": "cuda-guide-cpp-language-support.md",
+      "header": "C++ Language Support"
+    },
+    {
+      "name": "cuda-guide-texture-fetching.md",
+      "header": "Texture Fetching"
+    },
+    {
+      "name": "cuda-guide-compute-capabilities.md",
+      "header": "Compute Capabilities"
+    },
+    {
+      "name": "cuda-guide-environment-variables.md",
+      "header": "CUDA Environment Variables"
+    },
+    {
+      "name": "cuda-guide-error-log-management.md",
+      "header": "Error Log Management"
+    },
+    {
+      "name": "cuda-guide-notices.md",
+      "header": "Notices"
+    },
+    {
+      "name": "cuda-guide-overview-introduction.md",
+      "header": "Overview and Introduction"
+    },
+    {
+      "name": "cuda-guide-changelog.md",
+      "header": "Changelog"
+    },
+    {
+      "name": "cuda-guide-programming-model.md",
+      "header": "Programming Model"
+    },
+    {
+      "name": "cuda-guide-cluster-launch-examples.md",
+      "header": "Thread Block Clusters"
+    },
+    {
+      "name": "cuda-guide-thread-block-clusters.md",
+      "header": "Synchronization and Memory Hierarchy"
+    },
+    {
+      "name": "cuda-guide-heterogeneous-asynchronous.md",
+      "header": "Heterogeneous and Asynchronous Programming"
+    },
+    {
+      "name": "cuda-guide-compute-capability.md",
+      "header": "Compute Capability"
+    },
+    {
+      "name": "cuda-guide-programming-interface-compilation.md",
+      "header": "Programming Interface and Compilation"
+    },
+    {
+      "name": "cuda-guide-runtime-device-memory.md",
+      "header": "CUDA Runtime and Device Memory"
+    },
+    {
+      "name": "cuda-guide-global-memory-l2-cache.md",
+      "header": "Global Memory Access and L2 Cache Management"
+    },
+    {
+      "name": "cuda-guide-l2-cache-management-continued.md",
+      "header": "Global Memory Access and L2 Cache Management"
+    },
+    {
+      "name": "cuda-guide-shared-memory.md",
+      "header": "Shared Memory"
+    },
+    {
+      "name": "cuda-guide-distributed-shared-memory.md",
+      "header": "Distributed Shared Memory"
+    },
+    {
+      "name": "cuda-guide-page-locked-host-memory.md",
+      "header": "Page-Locked Host Memory"
+    },
+    {
+      "name": "cuda-guide-memory-synchronization-domains.md",
+      "header": "Memory Synchronization Domains"
+    },
+    {
+      "name": "cuda-guide-asynchronous-concurrent-execution.md",
+      "header": "Asynchronous Concurrent Execution"
+    },
+    {
+      "name": "cuda-guide-cuda-graphs.md",
+      "header": "CUDA Graphs"
+    },
+    {
+      "name": "cuda-guide-graph-update-device.md",
+      "header": "Updating Instantiated Graphs and Device Graphs"
+    },
+    {
+      "name": "cuda-guide-conditional-events.md",
+      "header": "Conditional Nodes and Events"
+    },
+    {
+      "name": "cuda-guide-events-multi-device.md",
+      "header": "Events, Synchronous Calls, and Multi-Device Systems"
+    },
+    {
+      "name": "cuda-guide-uvspace-ipc-errors.md",
+      "header": "Unified Virtual Address Space, IPC, and Error Checking"
+    },
+    {
+      "name": "cuda-guide-texture-surface.md",
+      "header": "Texture and Surface Memory"
+    },
+    {
+      "name": "cuda-guide-graphics-interop-opengl.md",
+      "header": "Graphics Interoperability (OpenGL)"
+    },
+    {
+      "name": "cuda-guide-graphics-interop-d3d.md",
+      "header": "Graphics Interoperability (Direct3D)"
+    },
+    {
+      "name": "cuda-guide-sli-external-interop.md",
+      "header": "SLI and External Resource Interoperability"
+    },
+    {
+      "name": "cuda-guide-vulkan-interop.md",
+      "header": "Vulkan Interoperability"
+    },
+    {
+      "name": "cuda-guide-opengl-d3d12-interop.md",
+      "header": "OpenGL and Direct3D 12 Interoperability"
+    },
+    {
+      "name": "cuda-guide-d3d11-interop.md",
+      "header": "Direct3D 11 Interoperability"
+    },
+    {
+      "name": "cuda-guide-nvsci-interop.md",
+      "header": "NVSCI Interoperability"
+    },
+    {
+      "name": "cuda-guide-versioning-compute-modes.md",
+      "header": "Versioning, Compute Modes, and Mode Switches"
+    },
+    {
+      "name": "cuda-guide-tcc-hardware-implementation.md",
+      "header": "Tesla Compute Cluster Mode and Hardware Implementation"
+    },
+    {
+      "name": "cuda-guide-performance-guidelines.md",
+      "header": "Performance Guidelines (Continued)"
+    },
+    {
+      "name": "cuda-cpp-extensions-memory-types.md",
+      "header": "C++ Language Extensions: Memory Specifiers and Built-in Types"
+    },
+    {
+      "name": "cuda-cpp-builtins-synchronization.md",
+      "header": "Built-in Variables and Synchronization"
+    },
+    {
+      "name": "cuda-cpp-texture-api.md",
+      "header": "Texture Object API"
+    },
+    {
+      "name": "cuda-cpp-surface-api.md",
+      "header": "Surface Functions"
+    },
+    {
+      "name": "cuda-cpp-cache-functions.md",
+      "header": "Cache Load and Store Functions"
+    },
+    {
+      "name": "cuda-cpp-time-and-atomics-overview.md",
+      "header": "Time and Atomic Functions"
+    },
+    {
+      "name": "cuda-cpp-arithmetic-atomics.md",
+      "header": "Arithmetic Atomic Functions"
+    },
+    {
+      "name": "cuda-cpp-bitwise-atomics.md",
+      "header": "Bitwise Atomic Functions"
+    },
+    {
+      "name": "cuda-cpp-other-atomics.md",
+      "header": "Other Atomic Functions"
+    },
+    {
+      "name": "cuda-cpp-address-space.md",
+      "header": "Address Space Functions"
+    },
+    {
+      "name": "cuda-cpp-alloca-compiler-hints.md",
+      "header": "Alloca and Compiler Optimization Hints"
+    },
+    {
+      "name": "cuda-cpp-warp-functions.md",
+      "header": "Warp Vote, Match, Reduce, Shuffle, Nanosleep, Matrix, DPX (Continued)"
+    },
+    {
+      "name": "cuda-cpp-asynchronous-barrier.md",
+      "header": "Asynchronous Barrier and Data Copies"
+    },
+    {
+      "name": "cuda-cpp-asynchronous-data-copies.md",
+      "header": "Asynchronous Barrier and Data Copies"
+    },
+    {
+      "name": "cuda-cpp-pipeline-performance.md",
+      "header": "Performance Guidance for Asynchronous Data Copies"
+    },
+    {
+      "name": "cuda-cpp-pipeline-api.md",
+      "header": "Asynchronous Data Copies using cuda::pipeline"
+    },
+    {
+      "name": "cuda-cpp-tma.md",
+      "header": "Asynchronous Data Copies using the Tensor Memory Accelerator (TMA)"
+    },
+    {
+      "name": "cuda-cpp-tma-1d-2d.md",
+      "header": "TMA 1D and 2D Array Transfers and Swizzle"
+    },
+    {
+      "name": "cuda-cpp-tma-device-encoding.md",
+      "header": "Device-side Tensor Map Encoding"
+    },
+    {
+      "name": "cuda-tensormap-debugging.md",
+      "header": "Tensor Map, Profiler, Assertions, and Debugging Functions"
+    },
+    {
+      "name": "cuda-trap-breakpoint-printf.md",
+      "header": "Trap, Breakpoint, and Printf"
+    },
+    {
+      "name": "cuda-dynamic-global-memory.md",
+      "header": "Dynamic Global Memory Allocation"
+    },
+    {
+      "name": "cuda-execution-config-launch-bounds.md",
+      "header": "Execution Configuration and Launch Bounds"
+    },
+    {
+      "name": "cuda-memory-execution-models.md",
+      "header": "Memory and Execution Models"
+    },
+    {
+      "name": "cooperative-groups-intro.md",
+      "header": "Cooperative Groups Introduction"
+    },
+    {
+      "name": "cooperative-groups-implicit.md",
+      "header": "Cooperative Groups Implicit Groups"
+    },
+    {
+      "name": "cooperative-groups-explicit.md",
+      "header": "Cooperative Groups Explicit Groups"
+    },
+    {
+      "name": "cooperative-groups-partitioning-collectives-continued.md",
+      "header": "Cooperative Groups Partitioning and Collectives (Continued)"
+    },
+    {
+      "name": "cluster-launch-control.md",
+      "header": "Cluster Launch Control"
+    },
+    {
+      "name": "cuda-dynamic-parallelism-intro-exec-mem.md",
+      "header": "CUDA Dynamic Parallelism"
+    },
+    {
+      "name": "cuda-dynamic-parallelism-interface.md",
+      "header": "CUDA Dynamic Parallelism Programming Interface"
+    },
+    {
+      "name": "cuda-dynamic-parallelism-ptx-toolkit.md",
+      "header": "CUDA Dynamic Parallelism PTX Support and Toolkit"
+    },
+    {
+      "name": "cuda-dynamic-parallelism-programming-guidelines.md",
+      "header": "Programming Guidelines and Implementation Restrictions"
+    },
+    {
+      "name": "cuda-dynamic-parallelism-cdp1-environment-memory.md",
+      "header": "Legacy CUDA Dynamic Parallelism (CDP1) Environment and Memory Model"
+    },
+    {
+      "name": "cuda-dynamic-parallelism-cdp1-interface.md",
+      "header": "Legacy CUDA Dynamic Parallelism (CDP1) Programming Interface"
+    },
+    {
+      "name": "cuda-dynamic-parallelism-cdp1-ptx-toolkit.md",
+      "header": "Legacy CUDA Dynamic Parallelism (CDP1) PTX and Toolkit Support"
+    },
+    {
+      "name": "cuda-dynamic-parallelism-cdp1-guidelines.md",
+      "header": "Programming Guidelines"
+    },
+    {
+      "name": "virtual-memory-management-intro-allocation.md",
+      "header": "Virtual Memory Management Introduction and Allocation"
+    },
+    {
+      "name": "virtual-memory-management-address-aliasing.md",
+      "header": "Virtual Memory Management Address Reservation, Aliasing, Mapping, Access, Fabric, and Multicast"
+    },
+    {
+      "name": "stream-ordered-memory-allocator.md",
+      "header": "Stream Ordered Memory Allocator"
+    },
+    {
+      "name": "graph-memory-nodes.md",
+      "header": "Graph Memory Nodes"
+    },
+    {
+      "name": "mathematical-functions.md",
+      "header": "Mathematical Functions"
+    },
+    {
+      "name": "cpp-language-support-features.md",
+      "header": "C++ Language Support (C++11-14 Features)"
+    },
+    {
+      "name": "cpp-language-support-cpp20.md",
+      "header": "C++ Language Support (C++20 Features)"
+    },
+    {
+      "name": "cpp-language-support-restrictions-part1.md",
+      "header": "Language Support Restrictions"
+    },
+    {
+      "name": "cpp-language-support-restrictions-part2.md",
+      "header": "Language Support Restrictions"
+    },
+    {
+      "name": "cuda-function-restrictions-part4.md",
+      "header": "Language Support Restrictions"
+    },
+    {
+      "name": "cuda-function-restrictions-part5.md",
+      "header": "Function and Class Restrictions"
+    },
+    {
+      "name": "cuda-cpp-features-attributes-part2.md",
+      "header": "C++ Language Features and Attributes"
+    },
+    {
+      "name": "cuda-cpp-cpp11-global-cpp14-20.md",
+      "header": "C++11 Global Functions and C++14/17/20 Features"
+    },
+    {
+      "name": "cuda-cpp-cpp20-function-wrappers.md",
+      "header": "C++20 Features and Polymorphic Function Wrappers"
+    },
+    {
+      "name": "cuda-extended-lambdas.md",
+      "header": "Extended Lambdas"
+    },
+    {
+      "name": "cuda-extended-lambdas-restrictions.md",
+      "header": "Extended Lambdas"
+    },
+    {
+      "name": "cuda-extended-lambdas-additional.md",
+      "header": "Extended Lambdas"
+    },
+    {
+      "name": "cuda-texture-fetching.md",
+      "header": "Texture Fetching"
+    },
+    {
+      "name": "cuda-compute-capabilities-overview.md",
+      "header": "Compute Capabilities"
+    },
+    {
+      "name": "cuda-compute-capability-5-6-7.md",
+      "header": "Compute Capabilities 5.x, 6.x, and 7.x"
+    },
+    {
+      "name": "cuda-driver-api-overview.md",
+      "header": "CUDA Driver API Overview and Core Concepts"
+    },
+    {
+      "name": "cuda-driver-api-interoperability.md",
+      "header": "CUDA Driver API Interoperability and Entry Point Access"
+    },
+    {
+      "name": "cuda-environment-variables.md",
+      "header": "CUDA Environment Variables"
+    },
+    {
+      "name": "cuda-error-log-management.md",
+      "header": "Error Log Management"
+    },
+    {
+      "name": "cuda-unified-memory-programming-intro.md",
+      "header": "Unified Memory Programming: Introduction and Allocation"
+    },
+    {
+      "name": "cuda-unified-memory-programming-advanced.md",
+      "header": "Unified Memory Programming: Advanced Concepts and Performance Hints"
+    },
+    {
+      "name": "cuda-unified-memory-system-allocated-and-tuning.md",
+      "header": "System-Allocated Memory: In-Depth Examples and IPC"
+    },
+    {
+      "name": "cuda-unified-memory-performance-tuning.md",
+      "header": "Unified Memory Performance Tuning"
+    },
+    {
+      "name": "cuda-unified-memory-legacy-devices.md",
+      "header": "Unified Memory on Devices Without Full Support"
+    },
+    {
+      "name": "cuda-lazy-loading.md",
+      "header": "Lazy Loading"
+    },
+    {
+      "name": "cuda-extended-gpu-memory-interface.md",
+      "header": "Extended GPU Memory Interface and Usage"
+    },
+    {
+      "name": "cuda-notices-and-legal.md",
+      "header": "Notices and Legal"
+    }
+  ]
+}

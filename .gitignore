@@ -1,6 +1,8 @@
 __pycache__/
 .venv/
-output/
-.wiki/
+# output/
+# .wiki/
 *.pyc
 mineru/
+Qwen/
+todo/

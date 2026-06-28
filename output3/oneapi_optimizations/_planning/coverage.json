@@ -1,0 +1,678 @@
+{
+  "source_line_count": 20110,
+  "file_count": 84,
+  "files": [
+    {
+      "title": "oneAPI GPU Optimization Guide - Front Matter and Introduction",
+      "filename": "oneapi-gpu-optimization-guide-intro.md",
+      "source_start": 1,
+      "source_end": 151,
+      "summary": "Covers the table of contents, welcome message, and introductory sections including Productive Performance, Performance Considerations, Profiling and Tuning, and Source Code Examples.",
+      "header": "Introduction and Overview"
+    },
+    {
+      "title": "Getting Started and Parallelization Basics",
+      "filename": "getting-started-and-parallelization.md",
+      "source_start": 152,
+      "source_end": 234,
+      "summary": "Covers Amdahl’s Law, Locality, Work Size, Parallelization methods (Language/APIs, Compilers, Libraries), and the detailed breakdown of the Intel Xe GPU Architecture from Xe-LP EUs through Xe-Stacks.",
+      "header": "Getting Started and Parallelization Basics"
+    },
+    {
+      "title": "Intel Xe GPU Architecture Variants and Summary",
+      "filename": "xe-gpu-architecture-variants.md",
+      "source_start": 235,
+      "source_end": 307,
+      "summary": "Covers Xe-HPC 2-Stack, Xe-HPG, Intel Data Center GPU Flex Series, and the Terminology/Configuration Summary tables mapping legacy terms to new Xe architectures and hardware specs.",
+      "header": "Intel Xe GPU Architecture Variants and Summary"
+    },
+    {
+      "title": "General-Purpose Computing on GPU and Execution Model",
+      "filename": "gpgpu-execution-model.md",
+      "source_start": 308,
+      "source_end": 395,
+      "summary": "Covers GPGPU introduction, Execution Model Overview (Host/Device, Command Queues, Work-Items/Groups), Thread Hierarchy (nd_range, Sub-groups), and Thread Synchronization mechanisms.",
+      "header": "General-Purpose Computing on GPU and Execution Model"
+    },
+    {
+      "title": "Thread Mapping and GPU Occupancy Optimization",
+      "filename": "thread-mapping-and-occupancy.md",
+      "source_start": 396,
+      "source_end": 865,
+      "summary": "Covers the selection of work-group size and sub-group size to maximize GPU occupancy on Intel X<sup>e</sup>-LP architecture. Explains the relationship between thread contexts, SIMD units, and hardware resources. Includes detailed examples (VectorAdd1-4) demonstrating how different group sizes affect occupancy and performance, supported by VTune analyzer data and timelines. Concludes with an introduction to the Intel GPU Occupancy Calculator.",
+      "header": "Thread Mapping and GPU Occupancy Optimization"
+    },
+    {
+      "title": "Kernels and Sub-Groups",
+      "filename": "kernels-and-sub-groups.md",
+      "source_start": 866,
+      "source_end": 1006,
+      "summary": "Continuation of the previous chunk, concluding the introduction to occupancy and starting the 'Kernels' section, covering the overview and the beginning of 'Sub-Groups and SIMD Vectorization' with examples of sub-group IDs and sizes.",
+      "header": "Thread Mapping and GPU Occupancy Optimization"
+    },
+    {
+      "title": "Sub-Group Details and Vectorization",
+      "filename": "sub-group-details-and-vectorization.md",
+      "source_start": 1007,
+      "source_end": 1229,
+      "summary": "Covers the rest of the sub-group size examples, querying valid sub-group sizes, vectorization and memory access patterns (contiguous vs scattered), maximizing memory bandwidth utilization, memory block load/store, and data sharing via shuffle functions.",
+      "header": "Sub-Group Details and Vectorization"
+    },
+    {
+      "title": "Sub-Group Size Nuances and Removing Conditional Checks",
+      "filename": "sub-group-size-nuances-and-removing-conditional-checks.md",
+      "source_start": 1230,
+      "source_end": 1467,
+      "summary": "Discusses the difference between sub-group size and maximum sub-group size when work-group sizes are not divisible, and then transitions to optimizing performance by removing conditional checks through padding and using relational functions.",
+      "header": "Sub-Group Size Nuances and Removing Conditional Checks"
+    },
+    {
+      "title": "Registers and Performance",
+      "filename": "registers-and-performance.md",
+      "source_start": 1468,
+      "source_end": 1541,
+      "summary": "Introduction to register performance, register pressure, and using unitrace to identify kernels with register spills.",
+      "header": "Registers and Performance"
+    },
+    {
+      "title": "GRF Mode Selection",
+      "filename": "grf-mode-selection.md",
+      "source_start": 1542,
+      "source_end": 1657,
+      "summary": "Explanation of Small vs Large GRF modes, command-line options for IGC, and specific usage for OpenMP and SYCL in AOT and JIT compilation.",
+      "header": "GRF Mode Selection"
+    },
+    {
+      "title": "Performance Tuning Using GRF Mode Selection",
+      "filename": "grf-mode-performance-tuning.md",
+      "source_start": 1658,
+      "source_end": 1753,
+      "summary": "Analysis of how unroll factors and team counts interact with GRF modes to affect performance, using an OpenMP offloading example.",
+      "header": "Performance Tuning Using GRF Mode Selection"
+    },
+    {
+      "title": "Optimizing Register Spills",
+      "filename": "optimizing-register-spills.md",
+      "source_start": 1754,
+      "source_end": 1808,
+      "summary": "List of techniques to reduce register pressure, including keeping live ranges short, avoiding excessive unrolling, using USM pointers, and breaking down large structures.",
+      "header": "Optimizing Register Spills"
+    },
+    {
+      "title": "Choosing Smaller Data Types",
+      "filename": "choosing-smaller-data-types.md",
+      "source_start": 1809,
+      "source_end": 1903,
+      "summary": "Example demonstrating how changing from unsigned long to unsigned int for histogram bins reduces register pressure and improves performance.",
+      "header": "Choosing Smaller Data Types"
+    },
+    {
+      "title": "Volatile and Pointer Issues (Continued) and Register Sharing Strategies",
+      "filename": "volatile-and-pointer-issues-continued.md",
+      "source_start": 1904,
+      "source_end": 2070,
+      "summary": "Continues the discussion on volatile variables and pointer usage pitfalls, then transitions into strategies for optimizing register usage by sharing private variables within sub-groups.",
+      "header": "Volatile and Pointer Issues (Continued) and Register Sharing Strategies"
+    },
+    {
+      "title": "Sub-group Block Load/Store and Shared Local Memory",
+      "filename": "sub-group-block-load-store-and-slm.md",
+      "source_start": 2071,
+      "source_end": 2209,
+      "summary": "Explains how to use sub-group block load/store instructions to reduce register pressure for addresses, and introduces Shared Local Memory (SLM) for handling large private data sets.",
+      "header": "Sub-group Block Load/Store and Shared Local Memory"
+    },
+    {
+      "title": "Porting Code with High Register Pressure to Intel Max GPUs",
+      "filename": "porting-high-register-pressure.md",
+      "source_start": 2210,
+      "source_end": 2430,
+      "summary": "Details the differences in General-Purpose Register File (GRF) sizes between NVIDIA and Intel GPUs, demonstrating how register spills occur on Intel hardware and how to mitigate them using Large GRF mode and reduced SIMD width.",
+      "header": "Porting Code with High Register Pressure to Intel Max GPUs"
+    },
+    {
+      "title": "Special Considerations When Porting to SIMD 16",
+      "filename": "special-considerations-simd-16.md",
+      "source_start": 2431,
+      "source_end": 2614,
+      "summary": "Continuation of the previous section discussing special cases when porting code, specifically focusing on the transition from SIMD 32 to SIMD 16. It details how switching SIMD modes can cause incorrect results due to synchronization issues in Shared Local Memory (SLM) and provides a code example demonstrating the need for explicit barriers. It concludes with a performance table showing execution times across different GRF and SIMD configurations.",
+      "header": "Special Considerations When Porting to SIMD 16"
+    },
+    {
+      "title": "Shared Local Memory",
+      "filename": "shared-local-memory.md",
+      "source_start": 2615,
+      "source_end": 2701,
+      "summary": "An introduction to Shared Local Memory (SLM) in Intel GPUs, explaining its role in high-bandwidth, low-latency data sharing among work-items within a work-group. It covers SLM size limits, relationship with work-group size, and bank conflicts, including code examples illustrating how to avoid bank conflicts to achieve full memory bandwidth.",
+      "header": "Shared Local Memory"
+    },
+    {
+      "title": "Data Sharing and Work-group Barriers",
+      "filename": "data-sharing-and-work-group-barriers.md",
+      "source_start": 2702,
+      "source_end": 2866,
+      "summary": "Detailed explanation of using SLM for data sharing with work-group barriers, using a histogram example. It demonstrates initializing histogram bins in SLM, performing atomic updates, and synchronizing with barriers to ensure correctness before writing results back to global memory. It also discusses the cost of barriers and the importance of tuning work-group sizes.",
+      "header": "Shared Local Memory"
+    },
+    {
+      "title": "Using SLM as Cache",
+      "filename": "using-slm-as-cache.md",
+      "source_start": 2867,
+      "source_end": 2994,
+      "summary": "Demonstrates using SLM as an explicit cache for hot data, illustrated with a 1-D convolution example. It shows how to preload neighboring input elements into SLM for the entire work-group, use barriers to synchronize loading, and then perform computation using the faster SLM data instead of global memory.",
+      "header": "Shared Local Memory"
+    },
+    {
+      "title": "Troubleshooting SLM Errors and Pointer Aliasing",
+      "filename": "troubleshooting-slm-errors-and-pointer-aliasing.md",
+      "source_start": 2995,
+      "source_end": 3243,
+      "summary": "Covers troubleshooting Shared Local Memory (SLM) errors using debug keys, and explains pointer aliasing concepts including the restrict directive, loop unrolling, and load/store reordering optimizations.",
+      "header": "Troubleshooting SLM Errors and Pointer Aliasing"
+    },
+    {
+      "title": "Synchronization and Atomic Operations",
+      "filename": "synchronization-and-atomic-operations.md",
+      "source_start": 3244,
+      "source_end": 3568,
+      "summary": "Continuation of the previous chunk. Covers the overview of synchronization methods in SYCL, including accessors, atomics, fences, barriers, and hierarchical dispatch. Details atomic operations, data type support (int vs float/double), hardware limitations, and assembly-level performance impacts. Discusses atomic operations in global vs local address spaces and USM data. Concludes with a comparison of local barriers vs global atomics for reduction tasks.",
+      "header": "Synchronization and Atomic Operations"
+    },
+    {
+      "title": "Work-Group Size and Tuning",
+      "filename": "work-group-size-and-tuning.md",
+      "source_start": 3569,
+      "source_end": 3803,
+      "summary": "Explores the considerations for selecting work-group sizes in SYCL and OpenMP offload modes. Demonstrates how work-group size impacts performance in kernels using atomics and barriers versus those that do not. Includes code examples for reduction and vector copy kernels. Explains how to tune kernels using environment variables (OMP_THREAD_LIMIT, OMP_NUM_TEAMS) in OpenMP offload mode.",
+      "header": "Work-Group Size and Tuning"
+    },
+    {
+      "title": "Memory Prefetching",
+      "filename": "memory-prefetching.md",
+      "source_start": 3804,
+      "source_end": 4019,
+      "summary": "Details the use of prefetch operations to hide memory latency in SYCL kernels. Covers the asynchronous nature of prefetch, its limitations, and how to use sycl::global_ptr::prefetch. Introduces low-level built-in functions for L1/L3 cache control (LSC_LDCC) for Intel GPUs. Provides code examples comparing naive access, standard prefetch, and L1-specific prefetch with bounds checking.",
+      "header": "Memory Prefetching"
+    },
+    {
+      "title": "Reduction Techniques",
+      "filename": "reduction-techniques.md",
+      "source_start": 4020,
+      "source_end": 4343,
+      "summary": "Covers various reduction techniques in SYCL, from naive atomic operations to optimized tree reductions, blocking, and sub-group loads, highlighting performance considerations and architecture-specific optimizations.",
+      "header": "Reduction Techniques"
+    },
+    {
+      "title": "Kernel Launch and Profiling",
+      "filename": "kernel-launch-profiling.md",
+      "source_start": 4344,
+      "source_end": 4448,
+      "summary": "Explains the phases of kernel launch (submission, launch, completion) and demonstrates how to measure these timings using SYCL's profiling API and visualization tools like Intel VTune and unitrace.",
+      "header": "Kernel Launch and Profiling"
+    },
+    {
+      "title": "Executing Multiple Kernels on the Device at the Same Time",
+      "filename": "multiple-kernel-execution.md",
+      "source_start": 4449,
+      "source_end": 4572,
+      "summary": "Explains the difference between in-order and out-of-order queues in SYCL, demonstrating how out-of-order queues enable parallel kernel execution for better performance, and introduces static device partitioning via sub-devices.",
+      "header": "Executing Multiple Kernels on the Device at the Same Time"
+    },
+    {
+      "title": "Submitting Kernels to Multiple Queues",
+      "filename": "submitting-kernels-to-multiple-queues.md",
+      "source_start": 4573,
+      "source_end": 4761,
+      "summary": "Analyzes the performance implications of submitting kernels to single vs. multiple queues with shared or distinct contexts, highlighting the overhead of JIT compilation and memory transfers when contexts differ.",
+      "header": "Submitting Kernels to Multiple Queues"
+    },
+    {
+      "title": "Avoiding Redundant Queue Constructions",
+      "filename": "avoiding-redundant-queue-constructions.md",
+      "source_start": 4762,
+      "source_end": 4978,
+      "summary": "Demonstrates the performance cost of creating new queues (and contexts) inside loops versus reusing a single queue or sharing contexts across multiple queues, providing code examples for reduction operations.",
+      "header": "Avoiding Redundant Queue Constructions"
+    },
+    {
+      "title": "Programming Intel® XMX Using SYCL Joint Matrix Extension",
+      "filename": "programming-intel-xmx-sycl-joint-matrix.md",
+      "source_start": 4979,
+      "source_end": 5102,
+      "summary": "Covers the introduction to the SYCL Joint Matrix Extension, including its purpose, API overview (joint_matrix, load, store, mad, apply), code examples for GEMM computation, querying device capabilities, and performance tuning techniques for Intel XMX such as blocking and register file configuration.",
+      "header": "Programming Intel® XMX Using SYCL Joint Matrix Extension"
+    },
+    {
+      "title": "Doing I/O in the Kernel",
+      "filename": "sycl-stream-io-debugging.md",
+      "source_start": 5103,
+      "source_end": 5242,
+      "summary": "Explains how to perform I/O in SYCL kernels using the sycl::stream class. It covers constructor parameters, usage similar to std::cout, handling buffer sizes, output ordering with multiple work items, and the behavior when kernels fault or throw exceptions.",
+      "header": "Doing I/O in the Kernel"
+    },
+    {
+      "title": "Optimizing Explicit SIMD Kernels",
+      "filename": "optimizing-esimd-kernels.md",
+      "source_start": 5243,
+      "source_end": 5579,
+      "summary": "Covers register utilization control, SIMD width control, cross-lane data sharing, indirect register access, and conditional operations in ESIMD kernels, including code examples and assembly output analysis.",
+      "header": "Optimizing Explicit SIMD Kernels"
+    },
+    {
+      "title": "ESIMD Math and Memory Functions",
+      "filename": "esimd-math-memory-functions.md",
+      "source_start": 5580,
+      "source_end": 5733,
+      "summary": "Details the use of math functions (like bfn and reduction) and memory functions (block load/store, prefetch, cache hints, address space casts) in ESIMD for performance optimization.",
+      "header": "Optimizing Explicit SIMD Kernels"
+    },
+    {
+      "title": "Using Libraries for GPU Offload",
+      "filename": "using-libraries-for-gpu-offload.md",
+      "source_start": 5734,
+      "source_end": 6447,
+      "summary": "Covers using performance libraries like oneMKL and oneDNN for matrix multiplication and random number generation. Includes a detailed example of implementing Fourier correlation using oneMKL, comparing explicit buffering versus Unified Shared Memory (USM) approaches.",
+      "header": "Using Libraries for GPU Offload"
+    },
+    {
+      "title": "Boost Matrix Multiplication Performance with Intel® Xe Matrix Extensions",
+      "filename": "boost-matrix-multiplication-performance-with-intel-xe-matrix-extensions.md",
+      "source_start": 6448,
+      "source_end": 6483,
+      "summary": "Introduces Intel XMX hardware for low-precision AI/ML workloads. Explains how to use oneDNN and oneMKL to leverage XMX via bf16 algorithms, comparing performance against single-precision theoretical peaks.",
+      "header": "Leveraging Intel Xe Matrix Extensions for Performance"
+    },
+    {
+      "title": "Host/Device Memory, Buffer and USM",
+      "filename": "host-device-memory-buffer-and-usm.md",
+      "source_start": 6484,
+      "source_end": 6588,
+      "summary": "Covers the introduction to memory hierarchy, USM allocations (malloc_device, malloc_host, malloc_shared), OpenMP USM allocation APIs, and the performance impact of USM and Buffers, including the initial code examples for serial, buffer, and USM approaches.",
+      "header": "Managing Host and Device Memory with USM and Buffers"
+    },
+    {
+      "title": "Performance Considerations and Optimization Strategies",
+      "filename": "performance-considerations-and-optimization-strategies.md",
+      "source_start": 6589,
+      "source_end": 6988,
+      "summary": "Details performance considerations for buffers, shared allocations, and device allocations. It provides extensive code examples demonstrating how to avoid moving data back and forth between host and device, including strategies like kernel fusion to optimize iterative computations.",
+      "header": "Performance Considerations and Optimization Strategies"
+    },
+    {
+      "title": "Optimizing Data Transfers in SYCL",
+      "filename": "optimizing-data-transfers-sycl.md",
+      "source_start": 6989,
+      "source_end": 7286,
+      "summary": "Covers the introduction to optimizing data transfers using Unified Shared Memory (USM). Details SYCL-specific techniques including buffer-based transfers with environment variables, explicit data movement APIs (prepare/release), and provides a complete benchmarking example (sycl_prepare_bench.cpp) with compilation/run commands and performance measurement results demonstrating the impact of using prepare APIs.",
+      "header": "Optimizing Data Transfers in SYCL"
+    },
+    {
+      "title": "Optimizing Data Transfers in OpenMP",
+      "filename": "optimizing-data-transfers-openmp.md",
+      "source_start": 7287,
+      "source_end": 7448,
+      "summary": "Details OpenMP-specific optimization techniques using register/unregister APIs and host USM allocators. Presents three Fortran examples comparing system memory, host USM, and registered system memory. Includes compilation/run commands, performance comparison tables, and a summary of recommendations for repeated data transfers in both SYCL and OpenMP, followed by references.",
+      "header": "Optimizing Data Transfers in OpenMP"
+    },
+    {
+      "title": "Avoiding Declaring Buffers in a Loop (Continued)",
+      "filename": "avoiding-declaring-buffers-in-loop-continued.md",
+      "source_start": 7449,
+      "source_end": 7579,
+      "summary": "Continues the section on avoiding buffer declaration in loops, showing the performance impact of declaring buffers inside versus outside a for-loop with code examples.",
+      "header": "Avoiding Declaring Buffers in a Loop (Continued)"
+    },
+    {
+      "title": "Buffer Accessor Modes",
+      "filename": "buffer-accessor-modes.md",
+      "source_start": 7580,
+      "source_end": 7906,
+      "summary": "Explains SYCL buffer accessor modes (read_only, write_only, read_write), their impact on execution order, data movement, and performance, with multiple code examples demonstrating correct usage and scope management.",
+      "header": "Buffer Accessor Modes"
+    },
+    {
+      "title": "Host/Device Coordination",
+      "filename": "host-device-coordination.md",
+      "source_start": 7907,
+      "source_end": 8239,
+      "summary": "Covers host/device coordination including bandwidth considerations, asynchronous data transfers, overlapping transfers with computation, and using multiple heterogeneous devices to overlap compute workloads.",
+      "header": "Host/Device Coordination"
+    },
+    {
+      "title": "Compilation Strategies",
+      "filename": "compilation-strategies.md",
+      "source_start": 8240,
+      "source_end": 8656,
+      "summary": "Covers JIT and AOT compilation modes, specialization constants, and the modified STREAM Triad example demonstrating performance gains from specialization.",
+      "header": "Compilation Strategies"
+    },
+    {
+      "title": "Accuracy Versus Performance Tradeoffs in Floating-Point Computations",
+      "filename": "accuracy-performance-tradeoffs.md",
+      "source_start": 8657,
+      "source_end": 9339,
+      "summary": "Covers the tradeoffs between floating-point accuracy and performance, including compiler options for OpenMP and SYCL (-fp-model, -cl-fast-relaxed-math), source-level controls for math functions (std::log vs sycl::log), and performance experiment results demonstrating the impact of these options.",
+      "header": "Accuracy Versus Performance Tradeoffs in Floating-Point Computations"
+    },
+    {
+      "title": "OpenMP Offloading Tuning Guide",
+      "filename": "openmp-offloading-tuning-guide.md",
+      "source_start": 9340,
+      "source_end": 9702,
+      "summary": "Covers OpenMP directives, execution model, terminology, compilation options (JIT and AOT), runtime routines, and environment variables for debugging and performance tuning on Intel GPUs.",
+      "header": "OpenMP Offloading Tuning Guide"
+    },
+    {
+      "title": "Offloading oneMKL Computations onto the GPU",
+      "filename": "offloading-onemkl-computations-gpu.md",
+      "source_start": 9703,
+      "source_end": 10232,
+      "summary": "Covers the use of the dispatch directive to offload oneMKL routines to the GPU, including memory accessibility requirements, Fortran usage examples, and verification using unitrace. It also details batching of GEMM calls using cblas_dgemm_batch, strategies for speeding up independent consecutive GEMM calls (parallelism and nowait clauses), and matrix padding techniques to optimize leading dimensions for better cache utilization and performance.",
+      "header": "Offloading oneMKL Computations onto the GPU"
+    },
+    {
+      "title": "Tools for Analyzing Performance of OpenMP Applications",
+      "filename": "tools-for-analyzing-performance-of-openmp-applications.md",
+      "source_start": 10233,
+      "source_end": 10322,
+      "summary": "Describes tools and mechanisms for analyzing OpenMP performance, including Intel VTune Profiler and the unitrace tracing tool. It explains how to interpret trace outputs to confirm offloading and identifies kernels. Additionally, it covers debugging environment variables like SYCL_PI_TRACE and LIBOMPTARGET_DEBUG, and methods for dumping compiler-generated assembly and IR files to inspect GPU resource usage and compilation details.",
+      "header": "Tools for Analyzing Performance of OpenMP Applications"
+    },
+    {
+      "title": "OpenMP Offload Best Practices: Using More GPU Resources",
+      "filename": "openmp-offload-best-practices-using-more-gpu-resources.md",
+      "source_start": 10323,
+      "source_end": 10574,
+      "summary": "Introduces best practices for improving offloaded application performance, focusing on maximizing GPU resource utilization. It details the use of the collapse clause to increase parallelism in loop nests, demonstrating how collapsing loops affects ND-range partitioning and work-group counts. Performance comparisons show significant speedups when using collapse clauses (collapse(2) through collapse(4)) compared to non-collapsed versions, along with notes on vectorization and loop structure.",
+      "header": "OpenMP Offload Best Practices: Using More GPU Resources"
+    },
+    {
+      "title": "OpenMP Offload Best Practices: Minimizing Data Transfers",
+      "filename": "openmp-offload-best-practices-minimizing-data-transfers.md",
+      "source_start": 10575,
+      "source_end": 10732,
+      "summary": "Continuation of the previous chunk. The text ends mid-explanation of the default data transfer behavior when using standard map clauses in OpenMP target constructs, setting up the comparison with the optimized approach using target enter/exit data directives.",
+      "header": "OpenMP Offload Best Practices: Minimizing Data Transfers"
+    },
+    {
+      "title": "OpenMP Offload: Using Target Enter/Exit Data Directives",
+      "filename": "openmp-offload-target-enter-exit-data.md",
+      "source_start": 10733,
+      "source_end": 10924,
+      "summary": "Demonstrates the use of target enter data and target exit data directives to minimize data transfers between host and device. Includes code examples, compilation/run commands, LIBOMPTARGET_DEBUG output analysis, and performance comparisons showing reduced runtime.",
+      "header": "OpenMP Offload: Using Target Enter/Exit Data Directives"
+    },
+    {
+      "title": "OpenMP Offload: Choosing Map Types Appropriately",
+      "filename": "openmp-offload-choosing-map-types.md",
+      "source_start": 10925,
+      "source_end": 11071,
+      "summary": "Explains the importance of selecting specific map types (to/from) instead of tofrom for variables in target constructs. Provides code examples, performance measurements, and debug output analysis to illustrate the reduction in unnecessary data transfers.",
+      "header": "OpenMP Offload: Choosing Map Types Appropriately"
+    },
+    {
+      "title": "OpenMP Offload: Handling Read-Only Scalar Variables",
+      "filename": "openmp-offload-read-only-scalars.md",
+      "source_start": 11072,
+      "source_end": 11289,
+      "summary": "Explains why read-only scalar variables should be listed in a firstprivate clause rather than a map(to:) clause in OpenMP target constructs. It details how map(to:) causes unnecessary memory allocation and data transfer, whereas firstprivate passes the value as a kernel argument. Includes code examples, compilation/run commands, and LIBOMPTARGET debug output comparing memory usage and data transfers for both approaches.",
+      "header": "OpenMP Offload: Handling Read-Only Scalar Variables"
+    },
+    {
+      "title": "OpenMP Offload: Loop Bounds and ND-Range Partitioning",
+      "filename": "openmp-offload-loop-bounds-partitioning.md",
+      "source_start": 11290,
+      "source_end": 11460,
+      "summary": "Describes how mapping loop bounds (e.g., using map(to:upper)) affects ND-range partitioning and performance. When bounds are mapped, the runtime may choose suboptimal partitioning because it doesn't know the iteration count at compile time. Using firstprivate allows the runtime to partition the ND-range exactly to the number of iterations, improving performance and reducing wasted work-items.",
+      "header": "OpenMP Offload: Loop Bounds and ND-Range Partitioning"
+    },
+    {
+      "title": "OpenMP Offload: Allocating Device Memory",
+      "filename": "openmp-offload-device-memory-allocation.md",
+      "source_start": 11461,
+      "source_end": 11767,
+      "summary": "Covers strategies for allocating memory directly on the device to avoid unnecessary data transfers. It compares using map(to:) clauses, declare target/end declare target directives, and map(alloc:) clauses, providing code examples and performance benchmarks for each approach.",
+      "header": "OpenMP Offload: Device Memory Allocation Strategies"
+    },
+    {
+      "title": "OpenMP Offload: Making Better Use of OpenMP Constructs",
+      "filename": "openmp-offload-better-use-constructs.md",
+      "source_start": 11768,
+      "source_end": 12013,
+      "summary": "Explains how to reduce synchronization overhead using the nowait clause on target constructs. It demonstrates asynchronous execution where the host thread continues work while the device processes the target region, comparing performance with and without nowait in both C/C++ and Fortran.",
+      "header": "OpenMP Offload: Optimizing Synchronization with Nowait"
+    },
+    {
+      "title": "OpenMP Offload: Memory Allocation Types and Routines (continued)",
+      "filename": "openmp-offload-memory-allocation-types-routines.md",
+      "source_start": 12014,
+      "source_end": 12784,
+      "summary": "Covers the usage of omp_target_alloc, omp_target_alloc_device, omp_target_alloc_host, omp_target_alloc_shared, and omp_target_memcpy for managing device memory, including code examples and specific notes for each routine.",
+      "header": "OpenMP Offload: Memory Allocation Types and Routines"
+    },
+    {
+      "title": "OpenMP Offload: Performance Considerations and Fortran Examples",
+      "filename": "openmp-offload-performance-fortran-examples.md",
+      "source_start": 12785,
+      "source_end": 13048,
+      "summary": "Continues the previous section with performance analysis of various offload techniques (map, target data, omp_target_alloc variants) and provides Fortran examples demonstrating target data and device memory allocation.",
+      "header": "OpenMP Offload: Performance Considerations and Fortran Examples"
+    },
+    {
+      "title": "OpenMP Offload: Fortran Optimization Examples",
+      "filename": "openmp-offload-fortran-optimization-examples.md",
+      "source_start": 13049,
+      "source_end": 13498,
+      "summary": "Illustrates how choosing memory allocations appropriately in Fortran can avoid redundant data transfers and boost performance, comparing three versions of an SGEMM example and showing the resulting performance differences.",
+      "header": "OpenMP Offload: Fortran Optimization Examples"
+    },
+    {
+      "title": "OpenMP Offload: Device Pointer Clauses",
+      "filename": "openmp-offload-device-pointer-clauses.md",
+      "source_start": 13499,
+      "source_end": 13826,
+      "summary": "Documentation for the OpenMP clauses is_device_ptr, use_device_ptr, has_device_addr, and use_device_addr, including usage rules for C/C++ and Fortran, code examples, and a summary table.",
+      "header": "OpenMP Offload: Device Pointer Clauses"
+    },
+    {
+      "title": "OpenMP Offload: Prefetching",
+      "filename": "openmp-offload-prefetching.md",
+      "source_start": 13827,
+      "source_end": 14188,
+      "summary": "Documentation for the Intel OpenMP prefetch extension, including syntax, parameters, and examples in C and Fortran for both standard and SIMD programming models, along with compilation and performance profiling results.",
+      "header": "OpenMP Offload: Prefetching"
+    },
+    {
+      "title": "OpenMP Offload: Atomics with SLM",
+      "filename": "openmp-offload-atomics-slm.md",
+      "source_start": 14189,
+      "source_end": 14397,
+      "summary": "Covers the implementation and evaluation of OpenMP atomic directives with Shared Local Memory (SLM) for histogram operations, comparing performance against critical sections and global memory accesses.",
+      "header": "OpenMP Offload: Atomics with SLM"
+    },
+    {
+      "title": "OpenMP Interop with SYCL",
+      "filename": "openmp-interop-sycl.md",
+      "source_start": 14398,
+      "source_end": 14985,
+      "summary": "Covers OpenMP interop with SYCL, including creating interop objects, accessing SYCL queues, using dispatch constructs with MKL, Fortran/C++ interop examples, and performance comparison between OpenMP and SYCL implementations.",
+      "header": "OpenMP Interop with SYCL"
+    },
+    {
+      "title": "Offloading DO CONCURRENT",
+      "filename": "offloading-do-concurrent.md",
+      "source_start": 14986,
+      "source_end": 15210,
+      "summary": "Details offloading DO CONCURRENT loops using compiler flags, hybrid techniques with target data regions, and OpenMP 6.0's loop directive, including performance analysis and recommendations.",
+      "header": "Offloading DO CONCURRENT"
+    },
+    {
+      "title": "Multi-GPU and Multi-Stack Architecture and Programming",
+      "filename": "multi-gpu-multi-stack-architecture.md",
+      "source_start": 15211,
+      "source_end": 15540,
+      "summary": "Covers the introduction to Multi-Stack GPU architecture, memory system details, device hierarchy exposure modes (FLAT vs COMPOSITE), environment variables, and debugging tools.",
+      "header": "Multi-GPU and Multi-Stack Architecture"
+    },
+    {
+      "title": "FLAT Mode Programming Examples (Continued)",
+      "filename": "flat-mode-programming-examples-continued.md",
+      "source_start": 15541,
+      "source_end": 15870,
+      "summary": "Continuation of FLAT mode programming guide. Covers memory architecture in FLAT mode, SYCL examples for single and multiple device offloading, OpenMP examples for single and multiple device offloading, and runtime debug logs for single-card and multi-card systems.",
+      "header": "Multi-GPU and Multi-Stack Architecture"
+    },
+    {
+      "title": "COMPOSITE Mode Programming: Explicit Scaling",
+      "filename": "composite-mode-explicit-scaling.md",
+      "source_start": 15871,
+      "source_end": 16404,
+      "summary": "Covers COMPOSITE mode overview, explicit scaling concepts, SYCL subdevice/context/queue/buffer management, full SYCL explicit scaling example, OpenMP explicit scaling APIs, contexts, and full OpenMP explicit scaling example.",
+      "header": "COMPOSITE Mode Programming: Explicit Scaling"
+    },
+    {
+      "title": "COMPOSITE Mode Programming: Implicit Scaling",
+      "filename": "composite-mode-implicit-scaling.md",
+      "source_start": 16405,
+      "source_end": 16916,
+      "summary": "Covers the principles of implicit scaling in COMPOSITE mode, including work scheduling, memory distribution (coloring and static partitioning), STREAM benchmark examples, programming principles for minimizing cross-stack traffic, and analysis of cross-stack bandwidth impact.",
+      "header": "COMPOSITE Mode Programming: Implicit Scaling"
+    },
+    {
+      "title": "Using oneMKL: Scaling Performance in SYCL",
+      "filename": "using-onemkl-scaling-sycl.md",
+      "source_start": 16917,
+      "source_end": 17359,
+      "summary": "Describes how to use Intel oneAPI Math Kernel Library (oneMKL) to scale performance across multiple devices in FLAT mode using SYCL. Includes a detailed GEMM example showing device detection, memory allocation, matrix splitting, parallel execution, and result collection.",
+      "header": "Using oneMKL: Scaling Performance in SYCL"
+    },
+    {
+      "title": "Using oneMKL: Scaling Performance in OpenMP",
+      "filename": "using-onemkl-scaling-openmp.md",
+      "source_start": 17360,
+      "source_end": 17540,
+      "summary": "Continuation of the previous chunk. Covers the full C code example for scaling AXPY computation across multiple GPUs using oneMKL and OpenMP, including setup, device detection, parallel execution logic, and build commands.",
+      "header": "Using oneMKL: Scaling Performance in OpenMP"
+    },
+    {
+      "title": "Using Intel MPI Library",
+      "filename": "using-intel-mpi-library.md",
+      "source_start": 17541,
+      "source_end": 18010,
+      "summary": "Covers GPU support in Intel MPI Library, including topology detection, execution models (Naïve, GPU-Aware, Kernel Based Collectives), GPU pinning, multi-stack/multi-GPU/multi-node scaling, considerations for FLAT mode, environment variable precedence, GPU benchmarks (IMB-MPI1-GPU), and profiling with VTune.",
+      "header": "Using Intel MPI Library"
+    },
+    {
+      "title": "Intra-Device and Inter-Device Data Transfers for MPI+OpenMP Programs",
+      "filename": "intra-device-inter-device-data-transfers-mpi-openmp.md",
+      "source_start": 18011,
+      "source_end": 18114,
+      "summary": "Explains how to enable direct GPU-to-GPU and GPU-to-subdevice transfers using MPI+OpenMP, detailing the use of device pointers and the performance benefits of avoiding host transfers.",
+      "header": "Intra-Device and Inter-Device Data Transfers for MPI+OpenMP Programs"
+    },
+    {
+      "title": "Compute Command Streamers (CCSs)",
+      "filename": "compute-command-streamers.md",
+      "source_start": 18115,
+      "source_end": 18644,
+      "summary": "Covers the introduction of Compute Command Streamers, the three operational modes (1-CCS, 2-CCS, 4-CCS), and the configuration via ZEX_NUMBER_OF_CCS. Includes detailed SYCL examples for discovering and using CCSs as subsubdevices, OpenMP examples for exposing CCSs as root devices in FLAT mode, and debug logs showing device discovery on single and multi-GPU systems.",
+      "header": "Compute Command Streamers (CCSs)"
+    },
+    {
+      "title": "Using Multiple CCSs in MPI",
+      "filename": "using-multiple-ccs-in-mpi.md",
+      "source_start": 18645,
+      "source_end": 18906,
+      "summary": "Describes using multiple CCSs in MPI applications, particularly with Intel MPI and MPICH. Includes a full DGEMM example using MKL and OpenMP offload, explaining how to bind MPI ranks to specific CCSs using I_MPI_OFFLOAD_CELL_LIST and ZE_AFFINITY_MASK. Provides build and run instructions for various hardware configurations.",
+      "header": "Using Multiple CCSs in MPI"
+    },
+    {
+      "title": "Terminology",
+      "filename": "terminology.md",
+      "source_start": 18907,
+      "source_end": 18945,
+      "summary": "Continuation of the previous chunk's Terminology section, covering OpenMP/MPI offload examples, build/run instructions, and the start of the terminology glossary table.",
+      "header": "Using Multiple CCSs in MPI"
+    },
+    {
+      "title": "Level Zero: Immediate Command Lists",
+      "filename": "level-zero-immediate-command-lists.md",
+      "source_start": 18946,
+      "source_end": 19028,
+      "summary": "Introduction to Level Zero, focusing on Immediate Command Lists, their characteristics, programming model, and code examples for asynchronous, in-order, and synchronous usage.",
+      "header": "Level Zero: Immediate Command Lists"
+    },
+    {
+      "title": "Performance Profiling and Analysis",
+      "filename": "performance-profiling-analysis.md",
+      "source_start": 19029,
+      "source_end": 19252,
+      "summary": "Overview of performance profiling tools including C++ chrono timers, SYCL profiling, Intel VTune Profiler, Intel Advisor, Intercept Layer, and Profiling Tools Interfaces for GPU.",
+      "header": "Performance Profiling and Analysis"
+    },
+    {
+      "title": "Configuring GPU Device",
+      "filename": "configuring-gpu-device.md",
+      "source_start": 19253,
+      "source_end": 19368,
+      "summary": "Guidance on configuring GPU devices for optimal performance, including driver installation, pinning GPU frequency via sysfs, switching Intel Xe Link, and adjusting time slice considerations.",
+      "header": "Configuring GPU Device"
+    },
+    {
+      "title": "Media Graphics Computing on GPU",
+      "filename": "media-graphics-computing.md",
+      "source_start": 19369,
+      "source_end": 19448,
+      "summary": "Introduction to media graphics computing, optimization techniques, and hardware acceleration via media engines.",
+      "header": "Media Graphics Computing on GPU"
+    },
+    {
+      "title": "Optimizing Media Pipelines",
+      "filename": "optimizing-media-pipelines.md",
+      "source_start": 19449,
+      "source_end": 19506,
+      "summary": "Details on media engine hardware, supported codecs, API options (FFmpeg, oneVPL, VA-API), and media pipeline parallelism strategies.",
+      "header": "Optimizing Media Pipelines"
+    },
+    {
+      "title": "Optimizing Media Operations and Memory Sharing",
+      "filename": "optimizing-media-operations-memory-sharing.md",
+      "source_start": 19507,
+      "source_end": 19556,
+      "summary": "Guidelines for optimizing media operations (data locality, synchronization) and detailed explanation of inter-operation and memory sharing between media frameworks and SYCL.",
+      "header": "Optimizing Media Operations and Memory Sharing"
+    },
+    {
+      "title": "VA-API and SYCL Memory Sharing Example",
+      "filename": "va-api-sycl-memory-sharing-example.md",
+      "source_start": 19557,
+      "source_end": 19782,
+      "summary": "Code example demonstrating zero-copy buffer sharing between VA-API and SYCL, including setup, execution, and synchronization steps.",
+      "header": "Optimizing Media Operations and Memory Sharing"
+    },
+    {
+      "title": "SYCL-Blur Example",
+      "filename": "sycl-blur-example.md",
+      "source_start": 19783,
+      "source_end": 19820,
+      "summary": "Overview of the SYCL-Blur sample showing memory interoperation between Intel VPL and SYCL for frame-level processing.",
+      "header": "Optimizing Media Operations and Memory Sharing"
+    },
+    {
+      "title": "Performance Analysis with Intel® Graphics Performance Analyzers",
+      "filename": "performance-analysis-intel-gpa.md",
+      "source_start": 19821,
+      "source_end": 20053,
+      "summary": "Introduction to Intel Graphics Performance Analyzers (GPA), focusing on Graphics Frame Analyzer. Covers EU/XVE architecture, key metrics (Idle, Active, Stall, Occupancy), and detailed hotspot analysis for L2 Cache, Shader Execution, and Thread Dispatch bottlenecks, including SIMD optimization strategies.",
+      "header": "Performance Analysis with Intel® Graphics Performance Analyzers"
+    },
+    {
+      "title": "GPA Summary, References, and Legal",
+      "filename": "gpa-summary-references-legal.md",
+      "source_start": 20054,
+      "source_end": 20110,
+      "summary": "Summary table of bottleneck types and characterizations, concluding remarks on optimization approaches, references to related documentation, and standard Intel terms and conditions/disclaimers.",
+      "header": "GPA Summary, References, and Legal"
+    }
+  ]
+}

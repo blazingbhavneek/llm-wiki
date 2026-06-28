@@ -1,0 +1,558 @@
+{
+  "source_line_count": 32966,
+  "file_count": 69,
+  "files": [
+    {
+      "title": "OpenMP Application Programming Interface",
+      "filename": "openmp-application-programming-interface.md",
+      "source_start": 1,
+      "source_end": 349,
+      "summary": "",
+      "header": "OpenMP Application Programming Interface"
+    },
+    {
+      "title": "List of Figures",
+      "filename": "list-of-figures.md",
+      "source_start": 350,
+      "source_end": 876,
+      "summary": "",
+      "header": "List of Figures"
+    },
+    {
+      "title": "1 Overview of the OpenMP API",
+      "filename": "1-overview-of-the-openmp-api.md",
+      "source_start": 877,
+      "source_end": 1404,
+      "summary": "",
+      "header": "1 Overview of the OpenMP API"
+    },
+    {
+      "title": "array element",
+      "filename": "array-element.md",
+      "source_start": 1405,
+      "source_end": 1922,
+      "summary": "",
+      "header": "2.2.2 Array Element"
+    },
+    {
+      "title": "containing array",
+      "filename": "containing-array.md",
+      "source_start": 1923,
+      "source_end": 2290,
+      "summary": "",
+      "header": "2.2.2 Array Element"
+    },
+    {
+      "title": "directive",
+      "filename": "directive.md",
+      "source_start": 2291,
+      "source_end": 2594,
+      "summary": "",
+      "header": "2.2.3 Directive"
+    },
+    {
+      "title": "function dispatch",
+      "filename": "function-dispatch.md",
+      "source_start": 2595,
+      "source_end": 3046,
+      "summary": "",
+      "header": "Function Dispatch"
+    },
+    {
+      "title": "locator list",
+      "filename": "locator-list.md",
+      "source_start": 3047,
+      "source_end": 3410,
+      "summary": "",
+      "header": "Locator List"
+    },
+    {
+      "title": "modifier",
+      "filename": "modifier.md",
+      "source_start": 3411,
+      "source_end": 4020,
+      "summary": "",
+      "header": "Modifier"
+    },
+    {
+      "title": "pure property",
+      "filename": "pure-property.md",
+      "source_start": 4021,
+      "source_end": 4520,
+      "summary": "",
+      "header": "Pure Property"
+    },
+    {
+      "title": "T",
+      "filename": "t.md",
+      "source_start": 4521,
+      "source_end": 4882,
+      "summary": "",
+      "header": "T"
+    },
+    {
+      "title": "untied task",
+      "filename": "untied-task.md",
+      "source_start": 4883,
+      "source_end": 5306,
+      "summary": "",
+      "header": "## untied task"
+    },
+    {
+      "title": "4 Environment Variables",
+      "filename": "4-environment-variables.md",
+      "source_start": 5307,
+      "source_end": 5851,
+      "summary": "",
+      "header": "## 4 Environment Variables"
+    },
+    {
+      "title": "4.4 Memory Allocation Environment Variables",
+      "filename": "4.4-memory-allocation-environment-variables.md",
+      "source_start": 5852,
+      "source_end": 6352,
+      "summary": "",
+      "header": "## 4.4 Memory Allocation Environment Variables"
+    },
+    {
+      "title": "5.1.1 Free Source Form Directives",
+      "filename": "5.1.1-free-source-form-directives.md",
+      "source_start": 6353,
+      "source_end": 6928,
+      "summary": "",
+      "header": "## 5.1.1 Free Source Form Directives"
+    },
+    {
+      "title": "Restrictions",
+      "filename": "restrictions.md",
+      "source_start": 6929,
+      "source_end": 7495,
+      "summary": "",
+      "header": "## 5.2 Restrictions"
+    },
+    {
+      "title": "6.3 Structured Blocks",
+      "filename": "6.3-structured-blocks.md",
+      "source_start": 7496,
+      "source_end": 7940,
+      "summary": "",
+      "header": "## 6.3 Structured Blocks"
+    },
+    {
+      "title": "6.4 Loop Concepts",
+      "filename": "6.4-loop-concepts.md",
+      "source_start": 7941,
+      "source_end": 8288,
+      "summary": "",
+      "header": "## 6.4 Loop Concepts"
+    },
+    {
+      "title": "6.4.3 OpenMP Loop-Iteration Spaces and Vectors",
+      "filename": "6.4.3-openmp-loop-iteration-spaces-and-vectors.md",
+      "source_start": 8289,
+      "source_end": 8712,
+      "summary": "",
+      "header": "## 6.4.3 OpenMP Loop-Iteration Spaces and Vectors"
+    },
+    {
+      "title": "Restrictions",
+      "filename": "restrictions.md",
+      "source_start": 8713,
+      "source_end": 9128,
+      "summary": "",
+      "header": "## 6.4.3 OpenMP Loop-Iteration Spaces and Vectors"
+    },
+    {
+      "title": "Restrictions",
+      "filename": "restrictions.md",
+      "source_start": 9129,
+      "source_end": 9830,
+      "summary": "",
+      "header": "## 6.4.3 OpenMP Loop-Iteration Spaces and Vectors"
+    },
+    {
+      "title": "7.6.6 Properties Common to All Reduction Clauses",
+      "filename": "7.6.6-properties-common-to-all-reduction-clauses.md",
+      "source_start": 9831,
+      "source_end": 10195,
+      "summary": "",
+      "header": "## 7.6.6 Properties Common to All Reduction Clauses"
+    },
+    {
+      "title": "7.6.14 declare\\_reduction Directive",
+      "filename": "7.6.14-declare-reduction-directive.md",
+      "source_start": 10196,
+      "source_end": 10689,
+      "summary": "",
+      "header": "## 7.6.14 declare_reduction Directive"
+    },
+    {
+      "title": "7.8.2 copyprivate Clause",
+      "filename": "7.8.2-copyprivate-clause.md",
+      "source_start": 10690,
+      "source_end": 11083,
+      "summary": "",
+      "header": "## 7.8.2 copyprivate Clause"
+    },
+    {
+      "title": "Execution Model Events",
+      "filename": "execution-model-events.md",
+      "source_start": 11084,
+      "source_end": 11441,
+      "summary": "",
+      "header": "## 7.9 Execution Model Events"
+    },
+    {
+      "title": "7.10 Data-Motion Clauses",
+      "filename": "7.10-data-motion-clauses.md",
+      "source_start": 11442,
+      "source_end": 11773,
+      "summary": "",
+      "header": "## 7.10 Data-Motion Clauses"
+    },
+    {
+      "title": "8 Memory Management",
+      "filename": "8-memory-management.md",
+      "source_start": 11774,
+      "source_end": 12302,
+      "summary": "",
+      "header": "## 8 Memory Management"
+    },
+    {
+      "title": "9.3 Matching and Scoring Context Selectors",
+      "filename": "9.3-matching-and-scoring-context-selectors.md",
+      "source_start": 12303,
+      "source_end": 12872,
+      "summary": "",
+      "header": "## 9.3 Matching and Scoring Context Selectors"
+    },
+    {
+      "title": "9.7 dispatch Construct",
+      "filename": "9.7-dispatch-construct.md",
+      "source_start": 12873,
+      "source_end": 13360,
+      "summary": "",
+      "header": "## 9.7 dispatch Construct"
+    },
+    {
+      "title": "9.9.3 indirect Clause",
+      "filename": "9.9.3-indirect-clause.md",
+      "source_start": 13361,
+      "source_end": 13864,
+      "summary": "",
+      "header": "## 9.9.3 indirect Clause"
+    },
+    {
+      "title": "10.6.1.2 contains Clause",
+      "filename": "10.6.1.2-contains-clause.md",
+      "source_start": 13865,
+      "source_end": 14220,
+      "summary": "",
+      "header": "## 10.6.1.2 contains Clause"
+    },
+    {
+      "title": "11.2 sizes Clause",
+      "filename": "11.2-sizes-clause.md",
+      "source_start": 14221,
+      "source_end": 14765,
+      "summary": "",
+      "header": "## 11.2 sizes Clause"
+    },
+    {
+      "title": "12.1.3 Controlling OpenMP Thread Affinity",
+      "filename": "12.1.3-controlling-openmp-thread-affinity.md",
+      "source_start": 14766,
+      "source_end": 15455,
+      "summary": "",
+      "header": "## 12.1.3 Controlling OpenMP Thread Affinity"
+    },
+    {
+      "title": "13.4 workshare Construct",
+      "filename": "13.4-workshare-construct.md",
+      "source_start": 15456,
+      "source_end": 16066,
+      "summary": "",
+      "header": "## 13.4 workshare Construct"
+    },
+    {
+      "title": "14.1 task Construct",
+      "filename": "14.1-task-construct.md",
+      "source_start": 16067,
+      "source_end": 16331,
+      "summary": "",
+      "header": "## 14.1 task Construct"
+    },
+    {
+      "title": "14.2.2 num\\_tasks Clause",
+      "filename": "14.2.2-num-tasks-clause.md",
+      "source_start": 16332,
+      "source_end": 16925,
+      "summary": "",
+      "header": "## 14.2.2 num_tasks Clause"
+    },
+    {
+      "title": "15 Device Directives and Clauses",
+      "filename": "15-device-directives-and-clauses.md",
+      "source_start": 16926,
+      "source_end": 17341,
+      "summary": "",
+      "header": "## 15 Device Directives and Clauses"
+    },
+    {
+      "title": "Fortran",
+      "filename": "fortran.md",
+      "source_start": 17342,
+      "source_end": 17793,
+      "summary": "",
+      "header": "## Fortran"
+    },
+    {
+      "title": "17.3 Barriers",
+      "filename": "17.3-barriers.md",
+      "source_start": 17794,
+      "source_end": 18119,
+      "summary": "",
+      "header": "## 17.3 Barriers"
+    },
+    {
+      "title": "17.8 OpenMP Memory Ordering",
+      "filename": "17.8-openmp-memory-ordering.md",
+      "source_start": 18120,
+      "source_end": 18713,
+      "summary": "",
+      "header": "## 17.8 OpenMP Memory Ordering"
+    },
+    {
+      "title": "17.8.7 Implicit Flushes",
+      "filename": "17.8.7-implicit-flushes.md",
+      "source_start": 18714,
+      "source_end": 19045,
+      "summary": "",
+      "header": "## 17.8 OpenMP Memory Ordering"
+    },
+    {
+      "title": "17.9.6 transparent Clause",
+      "filename": "17.9.6-transparent-clause.md",
+      "source_start": 19046,
+      "source_end": 19650,
+      "summary": "",
+      "header": "## 17.9 OpenMP Data Sharing"
+    },
+    {
+      "title": "19.2 Clauses on Compound Constructs",
+      "filename": "19.2-clauses-on-compound-constructs.md",
+      "source_start": 19651,
+      "source_end": 20173,
+      "summary": "",
+      "header": "## 19.2 Clauses on Compound Constructs"
+    },
+    {
+      "title": "20.8.3 OpenMP alloctrait\\_key Type",
+      "filename": "20.8.3-openmp-alloctrait-key-type.md",
+      "source_start": 20174,
+      "source_end": 20541,
+      "summary": "",
+      "header": "## 20.8.3 OpenMP alloctrait_key Type"
+    },
+    {
+      "title": "20.9 OpenMP Synchronization Types",
+      "filename": "20.9-openmp-synchronization-types.md",
+      "source_start": 20542,
+      "source_end": 21101,
+      "summary": "",
+      "header": "## 20.9 OpenMP Synchronization Types"
+    },
+    {
+      "title": "21.10 omp\\_get\\_schedule Routine",
+      "filename": "21.10-omp-get-schedule-routine.md",
+      "source_start": 21102,
+      "source_end": 21555,
+      "summary": "",
+      "header": "## 21.10 omp_get_schedule Routine"
+    },
+    {
+      "title": "23.1.2 omp\\_in\\_explicit\\_task Routine",
+      "filename": "23.1.2-omp-in-explicit-task-routine.md",
+      "source_start": 21556,
+      "source_end": 22143,
+      "summary": "",
+      "header": "## 23.1.2 omp_in_explicit_task Routine"
+    },
+    {
+      "title": "24.13 omp\\_get\\_device\\_teams\\_thread\\_limit Routine",
+      "filename": "24.13-omp-get-device-teams-thread-limit-routine.md",
+      "source_start": 22144,
+      "source_end": 22750,
+      "summary": "",
+      "header": "## 24.13 omp_get_device_teams_thread_limit Routine"
+    },
+    {
+      "title": "25.8.1 omp\\_target\\_memset Routine",
+      "filename": "25.8.1-omp-target-memset-routine.md",
+      "source_start": 22751,
+      "source_end": 23118,
+      "summary": "",
+      "header": "## 25.8.1 omp_target_memset Routine"
+    },
+    {
+      "title": "27 Memory Management Routines",
+      "filename": "27-memory-management-routines.md",
+      "source_start": 23119,
+      "source_end": 23548,
+      "summary": "",
+      "header": "## 27 Memory Management Routines"
+    },
+    {
+      "title": "27.5.2 omp\\_destroy\\_mempartitioner Routine",
+      "filename": "27.5.2-omp-destroy-mempartitioner-routine.md",
+      "source_start": 23549,
+      "source_end": 24212,
+      "summary": "",
+      "header": "## 27 Memory Management Routines"
+    },
+    {
+      "title": "27.11.1 omp\\_alloc Routine",
+      "filename": "27.11.1-omp-alloc-routine.md",
+      "source_start": 24213,
+      "source_end": 24868,
+      "summary": "",
+      "header": "## 27 Memory Management Routines"
+    },
+    {
+      "title": "28.4 Lock Releasing Routines",
+      "filename": "28.4-lock-releasing-routines.md",
+      "source_start": 24869,
+      "source_end": 25356,
+      "summary": "",
+      "header": "## 28 Locking Routines"
+    },
+    {
+      "title": "29.10 omp\\_display\\_affinity Routine",
+      "filename": "29.10-omp-display-affinity-routine.md",
+      "source_start": 25357,
+      "source_end": 26061,
+      "summary": "",
+      "header": "## 29 Affinity Routines"
+    },
+    {
+      "title": "32.3 Finalizing a First-Party Tool",
+      "filename": "32.3-finalizing-a-first-party-tool.md",
+      "source_start": 26062,
+      "source_end": 26630,
+      "summary": "",
+      "header": "## 32 First-Party Tools"
+    },
+    {
+      "title": "33.29 OMPT severity Type",
+      "filename": "33.29-ompt-severity-type.md",
+      "source_start": 26631,
+      "source_end": 27332,
+      "summary": "",
+      "header": "## 33 OMPT API Reference"
+    },
+    {
+      "title": "34.5.2 task\\_schedule Callback",
+      "filename": "34.5.2-task-schedule-callback.md",
+      "source_start": 27333,
+      "source_end": 27706,
+      "summary": "",
+      "header": "## 34 Task Scheduling"
+    },
+    {
+      "title": "Type Signature",
+      "filename": "type-signature.md",
+      "source_start": 27707,
+      "source_end": 28022,
+      "summary": "",
+      "header": "## Type Signature"
+    },
+    {
+      "title": "35.7 target\\_data\\_op\\_emi Callback",
+      "filename": "35.7-target-data-op-emi-callback.md",
+      "source_start": 28023,
+      "source_end": 28412,
+      "summary": "",
+      "header": "## 35.7 target_data_op_emi Callback"
+    },
+    {
+      "title": "36.5 get\\_callback Entry Point",
+      "filename": "36.5-get-callback-entry-point.md",
+      "source_start": 28413,
+      "source_end": 29014,
+      "summary": "",
+      "header": "## 36.5 get_callback Entry Point"
+    },
+    {
+      "title": "37.8 pause\\_trace Entry Point",
+      "filename": "37.8-pause-trace-entry-point.md",
+      "source_start": 29015,
+      "source_end": 29449,
+      "summary": "",
+      "header": "## 37.8 pause_trace Entry Point"
+    },
+    {
+      "title": "39.7 OMPD frame\\_info Type",
+      "filename": "39.7-ompd-frame-info-type.md",
+      "source_start": 29450,
+      "source_end": 30103,
+      "summary": "",
+      "header": "## 39.7 OMPD frame_info Type"
+    },
+    {
+      "title": "41 OMPD Routines",
+      "filename": "41-ompd-routines.md",
+      "source_start": 30104,
+      "source_end": 30529,
+      "summary": "",
+      "header": "## 41 OMPD Routines"
+    },
+    {
+      "title": "41.5 Parallel Region Handle Routines",
+      "filename": "41.5-parallel-region-handle-routines.md",
+      "source_start": 30530,
+      "source_end": 31069,
+      "summary": "",
+      "header": "## 41 OMPD Routines"
+    },
+    {
+      "title": "41.10 Display Control Variables",
+      "filename": "41.10-display-control-variables.md",
+      "source_start": 31070,
+      "source_end": 31497,
+      "summary": "",
+      "header": "## 41 OMPD Routines"
+    },
+    {
+      "title": "A OpenMP Implementation-Defined Behaviors",
+      "filename": "a-openmp-implementation-defined-behaviors.md",
+      "source_start": 31498,
+      "source_end": 31829,
+      "summary": "",
+      "header": "## A OpenMP Implementation-Defined Behaviors"
+    },
+    {
+      "title": "B Features History",
+      "filename": "b-features-history.md",
+      "source_start": 31830,
+      "source_end": 32153,
+      "summary": "",
+      "header": "## B Features History"
+    },
+    {
+      "title": "B.4 Version 5.0 to 5.1 Differences",
+      "filename": "b.4-version-5.0-to-5.1-differences.md",
+      "source_start": 32154,
+      "source_end": 32511,
+      "summary": "",
+      "header": "## B.4 Version 5.0 to 5.1 Differences"
+    },
+    {
+      "title": "C Nesting of Regions",
+      "filename": "c-nesting-of-regions.md",
+      "source_start": 32512,
+      "source_end": 32966,
+      "summary": "",
+      "header": "## C Nesting of Regions"
+    }
+  ]
+}

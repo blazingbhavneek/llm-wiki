@@ -16,10 +16,30 @@ There is no fake/hashed embedding path anywhere.
 from __future__ import annotations
 
 import logging
+import re
 
 from graph.models import Settings
 
 log = logging.getLogger(__name__)
+
+# region EMBED-SAFE TEXT
+_IMAGE_UNIT_RE = re.compile(
+    r"<image-unit\b[^>]*>.*?</image-unit>",
+    re.IGNORECASE | re.DOTALL,
+)
+_IMAGE_DESCRIPTION_RE = re.compile(
+    r"<image-description\b[^>]*>(.*?)</image-description>",
+    re.IGNORECASE | re.DOTALL,
+)
+_IMAGE_MEDIA_RE = re.compile(
+    r"<image-media\b[^>]*>.*?</image-media>",
+    re.IGNORECASE | re.DOTALL,
+)
+_DATA_IMAGE_URI_RE = re.compile(
+    r"data:image/[a-zA-Z0-9.+-]+;base64,[A-Za-z0-9+/=\r\n]+",
+    re.IGNORECASE,
+)
+# endregion EMBED-SAFE TEXT
 
 
 class Embedder:
@@ -48,6 +68,8 @@ class Embedder:
         return HuggingFaceEmbeddings(
             model_name=self.settings.hf_embed_model,
             model_kwargs={"device": self.settings.hf_device},
+            # one text at a time — cap peak GPU memory per encode call
+            encode_kwargs={"batch_size": 1},
         )
 
     def _initialize_backend(self) -> None:
@@ -137,3 +159,100 @@ class Embedder:
         vector = client.embed_query(text)
         self._dim = len(vector)
         return vector
+
+    def embed_document(self, text: str) -> list[float]:
+        """Embed stored content: strip image markup, then embed with a
+        context-length fallback that chunks and averages over-long input."""
+        return self._embed_with_context_fallback(self._embed_safe_text(text))
+
+    # region EMBED-SAFE TEXT
+    def _embed_safe_text(self, text: str) -> str:
+        """Return embedding-safe text; image blocks become descriptions/markers."""
+        if not text:
+            return ""
+
+        def replace_image_unit(match: re.Match[str]) -> str:
+            image_unit = match.group(0)
+            desc_match = _IMAGE_DESCRIPTION_RE.search(image_unit)
+            if desc_match:
+                description = desc_match.group(1).strip()
+                if description:
+                    return (
+                        "\n\n[Embedded image description]\n"
+                        f"{description}\n[/Embedded image description]\n\n"
+                    )
+            return "\n\n[Embedded image omitted: no description available]\n\n"
+
+        cleaned = _IMAGE_UNIT_RE.sub(replace_image_unit, text)
+        cleaned = _IMAGE_MEDIA_RE.sub("\n\n[Embedded image media omitted]\n\n", cleaned)
+        cleaned = _DATA_IMAGE_URI_RE.sub("data:image;base64,[omitted]", cleaned)
+        return cleaned
+
+    def _embed_with_context_fallback(self, text: str) -> list[float]:
+        try:
+            return self.embed_query(text)
+        except Exception as exc:
+            if not self._is_splittable_error(exc):
+                raise
+            self._free_gpu_cache()
+
+        lines = text.splitlines()
+        if not lines:
+            raise RuntimeError("embedding failed and text could not be split")
+        chunk_count = 2
+        while chunk_count <= max(2, len(lines)):
+            chunks = self._split_lines_into_chunks(lines, chunk_count)
+            try:
+                vectors = [self.embed_query(chunk) for chunk in chunks if chunk.strip()]
+                return self._mean_vectors(vectors)
+            except Exception as exc:
+                if not self._is_splittable_error(exc):
+                    raise
+                self._free_gpu_cache()
+                chunk_count += 1
+
+        raise RuntimeError(
+            f"embedding failed even after splitting into {chunk_count - 1} line chunks"
+        )
+
+    def _is_splittable_error(self, exc: Exception) -> bool:
+        """Errors that a shorter input might fix: context length or GPU OOM."""
+        message = str(exc).lower()
+        return (
+            "maximum context length" in message
+            or "context length" in message
+            or "input_tokens" in message
+            or "too many tokens" in message
+            or "out of memory" in message
+            or "cuda error" in message
+        )
+
+    def _free_gpu_cache(self) -> None:
+        if self._backend != "hf":
+            return
+        try:
+            import torch
+
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except Exception:
+            pass
+
+    def _split_lines_into_chunks(self, lines: list[str], chunk_count: int) -> list[str]:
+        chunk_count = max(1, min(chunk_count, len(lines)))
+        size = max(1, (len(lines) + chunk_count - 1) // chunk_count)
+        return [
+            "\n".join(lines[index:index + size])
+            for index in range(0, len(lines), size)
+        ]
+
+    def _mean_vectors(self, vectors: list[list[float]]) -> list[float]:
+        if not vectors:
+            raise ValueError("cannot average empty embedding vector list")
+        dim = len(vectors[0])
+        return [
+            sum(vector[index] for vector in vectors) / len(vectors)
+            for index in range(dim)
+        ]
+
+    # endregion EMBED-SAFE TEXT

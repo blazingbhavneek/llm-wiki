@@ -1,0 +1,342 @@
+{
+  "original_file_name": "oneapi_optimizations.md",
+  "inferred_file_name": "oneapi-gpu-optimization-guide.md",
+  "files": [
+    {
+      "name": "oneapi-gpu-optimization-guide-intro.md",
+      "header": "Introduction and Overview"
+    },
+    {
+      "name": "getting-started-and-parallelization.md",
+      "header": "Getting Started and Parallelization Basics"
+    },
+    {
+      "name": "xe-gpu-architecture-variants.md",
+      "header": "Intel Xe GPU Architecture Variants and Summary"
+    },
+    {
+      "name": "gpgpu-execution-model.md",
+      "header": "General-Purpose Computing on GPU and Execution Model"
+    },
+    {
+      "name": "thread-mapping-and-occupancy.md",
+      "header": "Thread Mapping and GPU Occupancy Optimization"
+    },
+    {
+      "name": "kernels-and-sub-groups.md",
+      "header": "Thread Mapping and GPU Occupancy Optimization"
+    },
+    {
+      "name": "sub-group-details-and-vectorization.md",
+      "header": "Sub-Group Details and Vectorization"
+    },
+    {
+      "name": "sub-group-size-nuances-and-removing-conditional-checks.md",
+      "header": "Sub-Group Size Nuances and Removing Conditional Checks"
+    },
+    {
+      "name": "registers-and-performance.md",
+      "header": "Registers and Performance"
+    },
+    {
+      "name": "grf-mode-selection.md",
+      "header": "GRF Mode Selection"
+    },
+    {
+      "name": "grf-mode-performance-tuning.md",
+      "header": "Performance Tuning Using GRF Mode Selection"
+    },
+    {
+      "name": "optimizing-register-spills.md",
+      "header": "Optimizing Register Spills"
+    },
+    {
+      "name": "choosing-smaller-data-types.md",
+      "header": "Choosing Smaller Data Types"
+    },
+    {
+      "name": "volatile-and-pointer-issues-continued.md",
+      "header": "Volatile and Pointer Issues (Continued) and Register Sharing Strategies"
+    },
+    {
+      "name": "sub-group-block-load-store-and-slm.md",
+      "header": "Sub-group Block Load/Store and Shared Local Memory"
+    },
+    {
+      "name": "porting-high-register-pressure.md",
+      "header": "Porting Code with High Register Pressure to Intel Max GPUs"
+    },
+    {
+      "name": "special-considerations-simd-16.md",
+      "header": "Special Considerations When Porting to SIMD 16"
+    },
+    {
+      "name": "shared-local-memory.md",
+      "header": "Shared Local Memory"
+    },
+    {
+      "name": "data-sharing-and-work-group-barriers.md",
+      "header": "Shared Local Memory"
+    },
+    {
+      "name": "using-slm-as-cache.md",
+      "header": "Shared Local Memory"
+    },
+    {
+      "name": "troubleshooting-slm-errors-and-pointer-aliasing.md",
+      "header": "Troubleshooting SLM Errors and Pointer Aliasing"
+    },
+    {
+      "name": "synchronization-and-atomic-operations.md",
+      "header": "Synchronization and Atomic Operations"
+    },
+    {
+      "name": "work-group-size-and-tuning.md",
+      "header": "Work-Group Size and Tuning"
+    },
+    {
+      "name": "memory-prefetching.md",
+      "header": "Memory Prefetching"
+    },
+    {
+      "name": "reduction-techniques.md",
+      "header": "Reduction Techniques"
+    },
+    {
+      "name": "kernel-launch-profiling.md",
+      "header": "Kernel Launch and Profiling"
+    },
+    {
+      "name": "multiple-kernel-execution.md",
+      "header": "Executing Multiple Kernels on the Device at the Same Time"
+    },
+    {
+      "name": "submitting-kernels-to-multiple-queues.md",
+      "header": "Submitting Kernels to Multiple Queues"
+    },
+    {
+      "name": "avoiding-redundant-queue-constructions.md",
+      "header": "Avoiding Redundant Queue Constructions"
+    },
+    {
+      "name": "programming-intel-xmx-sycl-joint-matrix.md",
+      "header": "Programming Intel® XMX Using SYCL Joint Matrix Extension"
+    },
+    {
+      "name": "sycl-stream-io-debugging.md",
+      "header": "Doing I/O in the Kernel"
+    },
+    {
+      "name": "optimizing-esimd-kernels.md",
+      "header": "Optimizing Explicit SIMD Kernels"
+    },
+    {
+      "name": "esimd-math-memory-functions.md",
+      "header": "Optimizing Explicit SIMD Kernels"
+    },
+    {
+      "name": "using-libraries-for-gpu-offload.md",
+      "header": "Using Libraries for GPU Offload"
+    },
+    {
+      "name": "boost-matrix-multiplication-performance-with-intel-xe-matrix-extensions.md",
+      "header": "Leveraging Intel Xe Matrix Extensions for Performance"
+    },
+    {
+      "name": "host-device-memory-buffer-and-usm.md",
+      "header": "Managing Host and Device Memory with USM and Buffers"
+    },
+    {
+      "name": "performance-considerations-and-optimization-strategies.md",
+      "header": "Performance Considerations and Optimization Strategies"
+    },
+    {
+      "name": "optimizing-data-transfers-sycl.md",
+      "header": "Optimizing Data Transfers in SYCL"
+    },
+    {
+      "name": "optimizing-data-transfers-openmp.md",
+      "header": "Optimizing Data Transfers in OpenMP"
+    },
+    {
+      "name": "avoiding-declaring-buffers-in-loop-continued.md",
+      "header": "Avoiding Declaring Buffers in a Loop (Continued)"
+    },
+    {
+      "name": "buffer-accessor-modes.md",
+      "header": "Buffer Accessor Modes"
+    },
+    {
+      "name": "host-device-coordination.md",
+      "header": "Host/Device Coordination"
+    },
+    {
+      "name": "compilation-strategies.md",
+      "header": "Compilation Strategies"
+    },
+    {
+      "name": "accuracy-performance-tradeoffs.md",
+      "header": "Accuracy Versus Performance Tradeoffs in Floating-Point Computations"
+    },
+    {
+      "name": "openmp-offloading-tuning-guide.md",
+      "header": "OpenMP Offloading Tuning Guide"
+    },
+    {
+      "name": "offloading-onemkl-computations-gpu.md",
+      "header": "Offloading oneMKL Computations onto the GPU"
+    },
+    {
+      "name": "tools-for-analyzing-performance-of-openmp-applications.md",
+      "header": "Tools for Analyzing Performance of OpenMP Applications"
+    },
+    {
+      "name": "openmp-offload-best-practices-using-more-gpu-resources.md",
+      "header": "OpenMP Offload Best Practices: Using More GPU Resources"
+    },
+    {
+      "name": "openmp-offload-best-practices-minimizing-data-transfers.md",
+      "header": "OpenMP Offload Best Practices: Minimizing Data Transfers"
+    },
+    {
+      "name": "openmp-offload-target-enter-exit-data.md",
+      "header": "OpenMP Offload: Using Target Enter/Exit Data Directives"
+    },
+    {
+      "name": "openmp-offload-choosing-map-types.md",
+      "header": "OpenMP Offload: Choosing Map Types Appropriately"
+    },
+    {
+      "name": "openmp-offload-read-only-scalars.md",
+      "header": "OpenMP Offload: Handling Read-Only Scalar Variables"
+    },
+    {
+      "name": "openmp-offload-loop-bounds-partitioning.md",
+      "header": "OpenMP Offload: Loop Bounds and ND-Range Partitioning"
+    },
+    {
+      "name": "openmp-offload-device-memory-allocation.md",
+      "header": "OpenMP Offload: Device Memory Allocation Strategies"
+    },
+    {
+      "name": "openmp-offload-better-use-constructs.md",
+      "header": "OpenMP Offload: Optimizing Synchronization with Nowait"
+    },
+    {
+      "name": "openmp-offload-memory-allocation-types-routines.md",
+      "header": "OpenMP Offload: Memory Allocation Types and Routines"
+    },
+    {
+      "name": "openmp-offload-performance-fortran-examples.md",
+      "header": "OpenMP Offload: Performance Considerations and Fortran Examples"
+    },
+    {
+      "name": "openmp-offload-fortran-optimization-examples.md",
+      "header": "OpenMP Offload: Fortran Optimization Examples"
+    },
+    {
+      "name": "openmp-offload-device-pointer-clauses.md",
+      "header": "OpenMP Offload: Device Pointer Clauses"
+    },
+    {
+      "name": "openmp-offload-prefetching.md",
+      "header": "OpenMP Offload: Prefetching"
+    },
+    {
+      "name": "openmp-offload-atomics-slm.md",
+      "header": "OpenMP Offload: Atomics with SLM"
+    },
+    {
+      "name": "openmp-interop-sycl.md",
+      "header": "OpenMP Interop with SYCL"
+    },
+    {
+      "name": "offloading-do-concurrent.md",
+      "header": "Offloading DO CONCURRENT"
+    },
+    {
+      "name": "multi-gpu-multi-stack-architecture.md",
+      "header": "Multi-GPU and Multi-Stack Architecture"
+    },
+    {
+      "name": "flat-mode-programming-examples-continued.md",
+      "header": "Multi-GPU and Multi-Stack Architecture"
+    },
+    {
+      "name": "composite-mode-explicit-scaling.md",
+      "header": "COMPOSITE Mode Programming: Explicit Scaling"
+    },
+    {
+      "name": "composite-mode-implicit-scaling.md",
+      "header": "COMPOSITE Mode Programming: Implicit Scaling"
+    },
+    {
+      "name": "using-onemkl-scaling-sycl.md",
+      "header": "Using oneMKL: Scaling Performance in SYCL"
+    },
+    {
+      "name": "using-onemkl-scaling-openmp.md",
+      "header": "Using oneMKL: Scaling Performance in OpenMP"
+    },
+    {
+      "name": "using-intel-mpi-library.md",
+      "header": "Using Intel MPI Library"
+    },
+    {
+      "name": "intra-device-inter-device-data-transfers-mpi-openmp.md",
+      "header": "Intra-Device and Inter-Device Data Transfers for MPI+OpenMP Programs"
+    },
+    {
+      "name": "compute-command-streamers.md",
+      "header": "Compute Command Streamers (CCSs)"
+    },
+    {
+      "name": "using-multiple-ccs-in-mpi.md",
+      "header": "Using Multiple CCSs in MPI"
+    },
+    {
+      "name": "terminology.md",
+      "header": "Using Multiple CCSs in MPI"
+    },
+    {
+      "name": "level-zero-immediate-command-lists.md",
+      "header": "Level Zero: Immediate Command Lists"
+    },
+    {
+      "name": "performance-profiling-analysis.md",
+      "header": "Performance Profiling and Analysis"
+    },
+    {
+      "name": "configuring-gpu-device.md",
+      "header": "Configuring GPU Device"
+    },
+    {
+      "name": "media-graphics-computing.md",
+      "header": "Media Graphics Computing on GPU"
+    },
+    {
+      "name": "optimizing-media-pipelines.md",
+      "header": "Optimizing Media Pipelines"
+    },
+    {
+      "name": "optimizing-media-operations-memory-sharing.md",
+      "header": "Optimizing Media Operations and Memory Sharing"
+    },
+    {
+      "name": "va-api-sycl-memory-sharing-example.md",
+      "header": "Optimizing Media Operations and Memory Sharing"
+    },
+    {
+      "name": "sycl-blur-example.md",
+      "header": "Optimizing Media Operations and Memory Sharing"
+    },
+    {
+      "name": "performance-analysis-intel-gpa.md",
+      "header": "Performance Analysis with Intel® Graphics Performance Analyzers"
+    },
+    {
+      "name": "gpa-summary-references-legal.md",
+      "header": "GPA Summary, References, and Legal"
+    }
+  ]
+}

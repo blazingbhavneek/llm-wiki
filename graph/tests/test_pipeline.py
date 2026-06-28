@@ -11,8 +11,8 @@ import json
 from pathlib import Path
 
 from ..engine import DomainEngine
-from ..models import Node, NodeType, Settings
-from ..utils import make_node_id
+from ..models import Edge, Node, NodeType, Settings, now_iso
+from ..utils import make_edge_id, make_node_id
 from .fakes import FakeEmbedder, FakeLlm
 
 
@@ -124,6 +124,74 @@ def test_tool_compatibility_api() -> None:
 
         neighbors = eng.follow_link(a.id, direction="both")
         assert any(node.id == b.id for _edge, node in neighbors)
+    finally:
+        eng.close()
+
+
+def test_agent_ask_persists_exogenous() -> None:
+    eng = _engine()
+    try:
+        a = _node("cuda graph capture reduces kernel launch overhead")
+        eng.ingest(a)
+
+        ans = eng.ask("how to reduce launch overhead")
+        assert ans.cited_node_ids == [a.id]
+        assert ans.answer
+        assert ans.exogenous_node_id
+
+        exo = eng.read(ans.exogenous_node_id)
+        assert exo is not None and exo.type == NodeType.exogenous
+        supports = eng.database.get_outgoing_edges(a.id, "supports")
+        assert any(e.target_node_id == ans.exogenous_node_id for e in supports)
+    finally:
+        eng.close()
+
+
+def test_contradiction_invalidates_prior_edge() -> None:
+    eng = _engine()
+    try:
+        a = _node("widget alpha returns five value")
+        eng.ingest(a)
+        b = _node("widget alpha contradicts the five value claim")
+
+        prior = Edge(
+            id=make_edge_id(a.id, b.id, "related"),
+            source_node_id=a.id,
+            target_node_id=b.id,
+            label="related",
+            valid_at=now_iso(),
+        )
+        eng.database.upsert_edge(prior)
+
+        eng.ingest(b)  # fake emits "contradicts" -> invalidates prior edge
+
+        refreshed = next(
+            e for e in eng.database.get_edges_for_node(a.id) if e.id == prior.id
+        )
+        assert refreshed.invalid_at and refreshed.expired_at
+
+        contradicts = [
+            e for e in eng.database.get_edges_for_node(b.id) if e.label == "contradicts"
+        ]
+        assert contradicts
+        assert set(contradicts[0].source_episode_ids) == {a.id, b.id}
+        assert contradicts[0].valid_at
+    finally:
+        eng.close()
+
+
+def test_entity_dedup_links_same_as() -> None:
+    eng = _engine()
+    try:
+        a = _node("zeta runtime configures the device queue")
+        eng.ingest(a)
+        b = _node("zeta runtime configures device queue with options")
+        eng.ingest(b)
+
+        same_as = [
+            e for e in eng.database.get_edges_for_node(a.id) if e.label == "same-as"
+        ]
+        assert any(e.target_node_id == b.id or e.source_node_id == b.id for e in same_as)
     finally:
         eng.close()
 

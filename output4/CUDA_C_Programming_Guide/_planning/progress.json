@@ -1,0 +1,256 @@
+{
+  "files": [
+    {
+      "title": "CUDA C++ Programming Guide: C++ Language Extensions (continued)",
+      "filename": "cuda-guide-cpp-extensions.md",
+      "source_start": 1,
+      "source_end": 362,
+      "summary": "Continuation of the C++ Language Extensions chapter, covering atomic functions (arithmetic, bitwise, and other), address space predicates and conversion, alloca, compiler optimization hints, warp vote/match/reduce/shuffle functions, nanosleep, warp matrix, DPX, asynchronous barriers, asynchronous data copies (memcpy_async, cuda::pipeline, TMA), profiler counters, assertions, traps, breakpoints, formatted output, dynamic global memory, execution configuration, launch bounds, register limits, pragmas (unroll, SIMD, diagnostic, custom ABI), and the CUDA C++ memory and execution models."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Cooperative Groups",
+      "filename": "cuda-guide-cooperative-groups.md",
+      "source_start": 363,
+      "source_end": 399,
+      "summary": "Table of contents for Chapter 11: Cooperative Groups, covering introduction, group types (implicit and explicit), partitioning, collectives (synchronization, data transfer, manipulation, execution control), and grid synchronization."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Cluster Launch Control",
+      "filename": "cuda-guide-cluster-launch-control.md",
+      "source_start": 400,
+      "source_end": 406,
+      "summary": "Table of contents for Chapter 12: Cluster Launch Control, including introduction, API details, thread block cancellation, kernel examples, and cluster launch control for thread block clusters."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: CUDA Dynamic Parallelism",
+      "filename": "cuda-guide-dynamic-parallelism.md",
+      "source_start": 407,
+      "source_end": 460,
+      "summary": "Table of contents for Chapter 13: CUDA Dynamic Parallelism, covering introduction, execution environment, memory model, programming interface, toolkit support, guidelines, CDP2 vs CDP1 differences, and legacy CDP1 details."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Virtual Memory Management",
+      "filename": "cuda-guide-virtual-memory.md",
+      "source_start": 461,
+      "source_end": 480,
+      "summary": "Table of contents for Chapter 14: Virtual Memory Management, including introduction, support queries, physical memory allocation, virtual address reservation, aliasing, mapping, access rights, fabric memory, and multicast support."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Stream Ordered Memory Allocator (Continued)",
+      "filename": "cuda-guide-stream-ordered-memory.md",
+      "source_start": 481,
+      "source_end": 510,
+      "summary": "Continuation of Chapter 15 covering the Stream Ordered Memory Allocator. Includes sections on memory pools, default/implicit/explicit pools, physical page caching, resource usage, memory reuse policies, device accessibility for multi-GPU, IPC memory pools, synchronization API actions, and addendums regarding context sensitivity and pointer attributes."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Graph Memory Nodes",
+      "filename": "cuda-guide-graph-memory-nodes.md",
+      "source_start": 511,
+      "source_end": 529,
+      "summary": "Chapter 16 on Graph Memory Nodes, covering introduction, support and compatibility, API fundamentals (graph node APIs, stream capture, accessing/freeing memory, auto-free flags), optimized memory reuse, performance considerations, physical memory footprint, peer access, and memory nodes in child graphs."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Mathematical Functions",
+      "filename": "cuda-guide-mathematical-functions.md",
+      "source_start": 530,
+      "source_end": 533,
+      "summary": "Chapter 17 covering Mathematical Functions, including standard functions and intrinsic functions."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: C++ Language Support (Part 2)",
+      "filename": "cuda-guide-cpp-support-part2.md",
+      "source_start": 534,
+      "source_end": 620,
+      "summary": "Continuation of C++ language support documentation, covering restrictions (operators, RTTI, exceptions, libraries, functions, classes, templates), specific C++11/14/17/20 feature support (lambdas, constexpr, modules, coroutines), and code samples."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Texture Fetching",
+      "filename": "cuda-guide-texture-fetching.md",
+      "source_start": 621,
+      "source_end": 625,
+      "summary": "Overview of texture fetching features including nearest-point sampling, linear filtering, and table lookup."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Compute Capabilities",
+      "filename": "cuda-guide-compute-capabilities.md",
+      "source_start": 626,
+      "source_end": 666,
+      "summary": "Detailed breakdown of Compute Capabilities from 5.x to 12.0, including architecture, global/shared memory, and specialized computation features for each generation."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Driver API and Interoperability",
+      "filename": "cuda-guide-driver-api.md",
+      "source_start": 667,
+      "source_end": 683,
+      "summary": "Documentation on the CUDA Driver API including context, module, kernel execution, and interoperability with the Runtime API, specifically focusing on entry point access and cuGetProcAddress."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Environment, Error Log, and Unified Memory",
+      "filename": "cuda-guide-env-error-unified-memory.md",
+      "source_start": 684,
+      "source_end": 752,
+      "summary": "Covers CUDA environment variables, error log management (background, activation, output, API, limitations), and a comprehensive introduction to Unified Memory programming including system requirements, programming model, allocation APIs, managed variables, pointer attributes, support levels, oversubscription, performance hints, and specific behaviors on devices with and without full support (including IPC, performance tuning, and legacy device handling)."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Overview, Benefits, and Scalability",
+      "filename": "cuda-guide-overview-benefits-scalability.md",
+      "source_start": 753,
+      "source_end": 814,
+      "summary": "Covers the overview of the legacy CUDA C++ Programming Guide, the benefits of using GPUs compared to CPUs, CUDA as a general-purpose parallel computing platform, and the scalable programming model involving thread groups and multiprocessors."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Cluster Groups, Memory Hierarchy, and Programming Model",
+      "filename": "cuda-guide-cluster-memory-model.md",
+      "source_start": 815,
+      "source_end": 1104,
+      "summary": "Covers cluster group synchronization, blocks as clusters, memory hierarchy (global, shared, constant, texture), heterogeneous programming (host/device memory, Unified Memory), asynchronous SIMT programming model, and compute capability definitions."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Compilation with NVCC",
+      "filename": "cuda-guide-compilation-nvcc.md",
+      "source_start": 1105,
+      "source_end": 1211,
+      "summary": "This section covers the compilation workflow using nvcc, including offline and just-in-time compilation, binary and PTX compatibility rules, application compatibility via compiler options, and C++ and 64-bit compatibility considerations."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: CUDA Runtime Overview",
+      "filename": "cuda-guide-runtime-overview.md",
+      "source_start": 1212,
+      "source_end": 1235,
+      "summary": "An overview of the CUDA Runtime (cudart library), its linking requirements, naming conventions, and a table of contents for the subsequent runtime sections including initialization, memory management, and interoperability."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Runtime Initialization",
+      "filename": "cuda-guide-runtime-initialization.md",
+      "source_start": 1236,
+      "source_end": 1249,
+      "summary": "Details on CUDA Runtime initialization behavior introduced in CUDA 12.0, including the role of cudaSetDevice and cudaInitDevice, context creation, and the impact on error handling and timing."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: L2 Cache Access Management",
+      "filename": "cuda-guide-l2-cache-access-management.md",
+      "source_start": 1250,
+      "source_end": 1625,
+      "summary": "Covers L2 cache access properties (streaming, persisting, normal), examples of setting L2 persistence, resetting L2 access, managing set-aside cache utilization, querying L2 properties, and controlling set-aside size limits."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Shared Memory and Matrix Multiplication Example (Part 1)",
+      "filename": "cuda-guide-shared-memory-matrix-mul-part1.md",
+      "source_start": 1626,
+      "source_end": 1708,
+      "summary": "Introduction to shared memory and the basic matrix multiplication implementation without shared memory optimization."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Shared Memory and Matrix Multiplication Example (Part 2)",
+      "filename": "cuda-guide-shared-memory-matrix-mul-part2.md",
+      "source_start": 1709,
+      "source_end": 1850,
+      "summary": "Continuation of the Matrix Multiplication example, including helper functions, host code for memory management and kernel launch, and the device kernel implementation using shared memory for tiled matrix multiplication."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Distributed Shared Memory",
+      "filename": "cuda-guide-distributed-shared-memory.md",
+      "source_start": 1851,
+      "source_end": 1971,
+      "summary": "Covers the introduction of Distributed Shared Memory (DSM) in compute capability 9.0, explaining how thread block clusters can access shared memory across participating blocks. It details the API mechanisms like cluster.sync() and cluster.map_shared_rank(), and provides a complete example of a histogram kernel utilizing DSM, including the runtime launch configuration using cudaLaunchKernelEx."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Page-Locked Host Memory",
+      "filename": "cuda-guide-page-locked-host-memory.md",
+      "source_start": 1972,
+      "source_end": 2023,
+      "summary": "Covers page-locked host memory allocation, benefits, portable memory, write-combining memory, and mapped memory features and constraints."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Memory Synchronization Domains",
+      "filename": "cuda-guide-memory-synchronization-domains.md",
+      "source_start": 2024,
+      "source_end": 2116,
+      "summary": "Explains memory fence interference, the concept of memory synchronization domains introduced in Hopper, and how to use domain attributes for launch configuration and stream mapping."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Asynchronous Concurrent Execution (Continued)",
+      "filename": "cuda-guide-asynchronous-concurrent-execution-continued.md",
+      "source_start": 2117,
+      "source_end": 2229,
+      "summary": "Continuation of the asynchronous execution section covering concurrent host-device operations, concurrent kernel execution, data transfer overlaps, and the introduction of streams including creation, destruction, default stream behavior, and synchronization methods."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Stream Synchronization and Priorities",
+      "filename": "cuda-guide-stream-synchronization-priorities.md",
+      "source_start": 2230,
+      "source_end": 2319,
+      "summary": "Covers explicit synchronization primitives (cudaDeviceSynchronize, cudaStreamSynchronize, cudaStreamWaitEvent, cudaStreamQuery), implicit synchronization rules regarding the NULL stream, overlapping behavior between streams, host function callbacks, and stream priorities including creation and priority ranges."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Programmatic Dependent Launch",
+      "filename": "cuda-guide-programmatic-dependent-launch.md",
+      "source_start": 2320,
+      "source_end": 2405,
+      "summary": "Describes the Programmatic Dependent Launch mechanism for compute capability 9.0+, allowing secondary kernels to launch before primary kernels complete. Includes background on concurrent execution opportunities, API usage (cudaTriggerProgrammaticLaunchCompletion, cudaGridDependencySynchronize, cudaLaunchKernelEx), and integration with CUDA Graphs via edge dependencies."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: CUDA Graphs Overview",
+      "filename": "cuda-guide-cuda-graphs-overview.md",
+      "source_start": 2406,
+      "source_end": 2455,
+      "summary": "Introduction to CUDA Graphs, covering the model of work submission, the separation of definition from execution, and the three stages of graph usage: definition, instantiation, and execution."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Edge Data in CUDA Graphs",
+      "filename": "cuda-guide-edge-data-in-cuda-graphs.md",
+      "source_start": 2456,
+      "source_end": 2467,
+      "summary": "Explanation of edge data introduced in CUDA 12.3, including outgoing/incoming ports, edge types, and their behavior in graph APIs and stream capture APIs. Mentions programmatic dependent launch."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Creating Graphs with Explicit APIs",
+      "filename": "cuda-guide-creating-graphs-with-explicit-apis.md",
+      "source_start": 2468,
+      "source_end": 2495,
+      "summary": "Guide on creating graphs using explicit graph APIs (cudaGraphCreate, cudaGraphAddKernelNode, cudaGraphAddDependencies). Includes a code example and a figure illustrating the created graph structure."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Creating Graphs with Stream Capture (Continued)",
+      "filename": "cuda-guide-creating-graphs-with-stream-capture.md",
+      "source_start": 2496,
+      "source_end": 2578,
+      "summary": "Continuation of the previous section covering the creation of graphs via stream capture, including code examples, behavior of capture mode, and restrictions on stream types."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: CUDA User Objects",
+      "filename": "cuda-guide-cuda-user-objects.md",
+      "source_start": 2579,
+      "source_end": 2669,
+      "summary": "This section covers the introduction, purpose, and usage of CUDA User Objects. It explains how they manage resource lifetimes for asynchronous work, particularly in CUDA Graphs and stream capture, contrasting them with incompatible schemes like pools or async deletion. It details the reference counting mechanism similar to shared_ptr, graph retention rules, and provides code examples for creating, retaining, and destroying user objects associated with graphs."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Updating Instantiated Graphs",
+      "filename": "cuda-guide-updating-instantiated-graphs.md",
+      "source_start": 2670,
+      "source_end": 2724,
+      "summary": "Continuation of the previous chunk covering the introduction to graph updates, including Graph Update Limitations for kernel, memcpy, external semaphore, conditional, and memory nodes, and a note on host/event nodes."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Whole Graph Update",
+      "filename": "cuda-guide-whole-graph-update.md",
+      "source_start": 2725,
+      "source_end": 2805,
+      "summary": "Covers the Whole Graph Update mechanism using cudaGraphExecUpdate(), including rules for deterministic node pairing, an example code snippet demonstrating update vs re-instantiation logic, and notes on updating nodes directly and conditional handles."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Individual Node Update and Enable",
+      "filename": "cuda-guide-individual-node-update.md",
+      "source_start": 2806,
+      "source_end": 2843,
+      "summary": "Covers individual node parameter updates for instantiated graphs and the enable/disable mechanism for kernel, memset, and memcpy nodes."
+    },
+    {
+      "title": "CUDA C++ Programming Guide: Using Graph APIs and Device Graph Launch",
+      "filename": "cuda-guide-device-graph-launch.md",
+      "source_start": 2844,
+      "source_end": 2924,
+      "summary": "Covers the concurrency constraints of graph APIs, introduces device graph launch capabilities, creation flags, general requirements for device graphs (kernel, memcpy, memset nodes), and methods for uploading device graphs (explicit via upload/instantiate, or implicit via host launch)."
+    }
+  ]
+}

@@ -1,0 +1,445 @@
+{
+  "files": [
+    {
+      "title": "Title Page, Copyright, and Front Matter",
+      "filename": "title-copyright-front-matter.md",
+      "source_start": 1,
+      "source_end": 84,
+      "summary": "Covers the title page, author list, copyright information, license details, publisher information, and source code availability for the book 'Data Parallel C++: Programming Accelerated Systems Using C++ and SYCL, Second Edition'."
+    },
+    {
+      "title": "Table of Contents",
+      "filename": "table-of-contents.md",
+      "source_start": 85,
+      "source_end": 470,
+      "summary": "The complete table of contents listing all chapters (1-21), epilogue, and index, along with their respective starting page numbers."
+    },
+    {
+      "title": "About the Authors",
+      "filename": "about-the-authors.md",
+      "source_start": 471,
+      "source_end": 486,
+      "summary": "Biographical sketches of the authors: James Reinders, Ben Ashbaugh, James Brodman, Michael Kinsner, John Pennycook, and Xinmin Tian, detailing their roles at Intel and expertise in parallel computing."
+    },
+    {
+      "title": "Preface and Introduction to Second Edition",
+      "filename": "preface-intro.md",
+      "source_start": 487,
+      "source_end": 596,
+      "summary": "Covers the preface for the second edition, including the rationale for using SYCL with C++, the structure of the book, the foreword by Erik Lindahl, and acknowledgments."
+    },
+    {
+      "title": "Introduction to SYCL and Parallel Computing Concepts",
+      "filename": "introduction-sycl-parallel.md",
+      "source_start": 597,
+      "source_end": 900,
+      "summary": "Introduces the core concepts of accelerated and heterogeneous computing, the role of SYCL, queues, kernels, asynchronous execution, race conditions, deadlocks, and the importance of thinking in parallel. It also covers the distinction between functional and performance portability and sets the stage for understanding concurrency."
+    },
+    {
+      "title": "C++ Lambda Expressions and Function Objects",
+      "filename": "cpp-lambda-expressions.md",
+      "source_start": 901,
+      "source_end": 986,
+      "summary": "Continuation of the previous chunk, covering C++ lambda expression syntax, capture lists, parameters, return types, and the analogy between lambdas and function objects (functors), including code examples and output."
+    },
+    {
+      "title": "Portability and Concurrency Concepts",
+      "filename": "portability-concurrency.md",
+      "source_start": 987,
+      "source_end": 1032,
+      "summary": "Discusses functional and performance portability in C++ with SYCL, distinguishing between the two concepts. It then defines concurrency versus parallelism, explaining the differences, hardware limitations, and potential pitfalls like deadlock. Ends with the chapter summary and license information."
+    },
+    {
+      "title": "Where Code Executes: Single-Source and Host/Device Code",
+      "filename": "where-code-executes-intro.md",
+      "source_start": 1033,
+      "source_end": 1108,
+      "summary": "Introduction to Chapter 2, explaining that code can execute on various compute resources in a heterogeneous system. It defines single-source programs, host code (standard C++ with SYCL constructs), and device code (asynchronous, restricted, accelerator-focused). It introduces the queue as the mechanism for submitting work."
+    },
+    {
+      "title": "Device Selection Methods: Default, CPU, and GPU",
+      "filename": "device-selection-methods.md",
+      "source_start": 1109,
+      "source_end": 1412,
+      "summary": "Details five methods for choosing devices in SYCL. Method 1 covers automatic device selection via default constructors. Method 2 focuses on using CPU devices for debugging and development. Method 3 explains targeting GPUs and other accelerators using built-in selectors like gpu_selector_v. It includes code examples, queue constructor definitions, and error handling when selection fails."
+    },
+    {
+      "title": "Advanced Device Selection: Multiple Devices and Custom Selectors",
+      "filename": "advanced-device-selection.md",
+      "source_start": 1413,
+      "source_end": 1508,
+      "summary": "Covers methods for selecting specific devices in SYCL, including using multiple queues bound to different devices (GPU/FPGA) and creating custom device selectors based on device aspects or custom scoring logic."
+    },
+    {
+      "title": "Creating Work on a Device: Task Graphs and Actions",
+      "filename": "creating-work-on-device.md",
+      "source_start": 1509,
+      "source_end": 1804,
+      "summary": "Explains the SYCL execution model, including the task graph concept, distinguishing between host code and device code, the handler and queue classes for submitting work, specific actions like parallel_for and host_task, and the asynchronous nature of kernel execution."
+    },
+    {
+      "title": "Data Management: USM and Buffers",
+      "filename": "data-management.md",
+      "source_start": 1805,
+      "source_end": 2286,
+      "summary": "Covers the Data Management chapter content, including the problem of multiple memories, explicit vs implicit data movement, Unified Shared Memory (USM) allocation types and examples, Buffer creation and access modes, and task ordering using in-order/out-of-order queues, events, and implicit dependencies via accessors."
+    },
+    {
+      "title": "Choosing a Data Management Strategy and Handler Reference",
+      "filename": "data-management-strategy-handler.md",
+      "source_start": 2287,
+      "source_end": 2427,
+      "summary": "Provides guidelines for selecting data management strategies (explicit/implicit, buffers/USM), details the key members of the SYCL handler class with code examples, and includes the chapter summary and licensing information."
+    },
+    {
+      "title": "Expressing Parallelism: Kernels vs Loops",
+      "filename": "expressing-parallelism-kernels-vs-loops.md",
+      "source_start": 2428,
+      "source_end": 2508,
+      "summary": "Introduction to expressing parallelism in SYCL, contrasting parallel loops with parallel kernels, and explaining multidimensional indexing conventions."
+    },
+    {
+      "title": "Expressing Parallelism: Basic Data-Parallel Kernels",
+      "filename": "expressing-parallelism-basic-kernels.md",
+      "source_start": 2509,
+      "source_end": 2706,
+      "summary": "Overview of language features, lambda expressions, and the three kernel forms. Detailed explanation of basic data-parallel kernels, including the range, id, and item classes."
+    },
+    {
+      "title": "Expressing Parallelism: Explicit ND-Range Kernels",
+      "filename": "expressing-parallelism-nd-range-kernels.md",
+      "source_start": 2707,
+      "source_end": 2953,
+      "summary": "Explanation of explicit ND-range kernels, covering work-items, work-groups, sub-groups, and the nd_range, nd_item, group, and sub_group classes."
+    },
+    {
+      "title": "Expressing Parallelism: Mapping and Kernel Selection",
+      "filename": "expressing-parallelism-mapping-selection.md",
+      "source_start": 2954,
+      "source_end": 3028,
+      "summary": "Covers one-to-one and many-to-one mapping strategies for SYCL kernels, including code examples for work distribution, and provides guidance on choosing the appropriate kernel form based on experience and requirements. Includes the chapter summary and license information."
+    },
+    {
+      "title": "Error Handling",
+      "filename": "error-handling.md",
+      "source_start": 3029,
+      "source_end": 3353,
+      "summary": "Introduces synchronous and asynchronous error handling in SYCL. Explains the separation between host execution and task graphs, details how to handle exceptions for both error types, and discusses device-side error signaling limitations. Includes the chapter summary and license information."
+    },
+    {
+      "title": "Unified Shared Memory",
+      "filename": "unified-shared-memory.md",
+      "source_start": 3354,
+      "source_end": 3880,
+      "summary": "Covers the Unified Shared Memory (USM) model, including allocation types (device, host, shared), allocation interfaces (C-style, C++-style, allocators), deallocation, data initialization, explicit and implicit data movement, migration behaviors, fine-grained control via prefetch/mem_advise, and device/pointer queries."
+    },
+    {
+      "title": "Buffers",
+      "filename": "buffers.md",
+      "source_start": 3881,
+      "source_end": 4030,
+      "summary": "Introduction to the buffer abstraction in SYCL, including its definition, creation methods (default, host pointer, containers, sub-buffers), and special properties (use_host_ptr, use_mutex, context_bound)."
+    },
+    {
+      "title": "Accessors",
+      "filename": "accessors.md",
+      "source_start": 4031,
+      "source_end": 4202,
+      "summary": "Detailed explanation of accessor objects used to access buffer data, including template parameters, access modes, targets, placeholder vs. regular accessors, creation examples, deduction tags, and accessor capabilities."
+    },
+    {
+      "title": "Scheduling Kernels and Data Movement",
+      "filename": "scheduling-kernels-and-data-movement.md",
+      "source_start": 4203,
+      "source_end": 4538,
+      "summary": "This file completes the previous chunk's section on scheduling kernels and data movement, covering the summary of the chapter and the transition to the next topic."
+    },
+    {
+      "title": "Communication and Synchronization",
+      "filename": "communication-and-synchronization.md",
+      "source_start": 4539,
+      "source_end": 4971,
+      "summary": "This file covers Chapter 9, which discusses work-groups, work-items, barriers, local memory, sub-groups, collective functions, and group algorithms for efficient communication and synchronization in SYCL."
+    },
+    {
+      "title": "Defining Kernels",
+      "filename": "defining-kernels.md",
+      "source_start": 4972,
+      "source_end": 5307,
+      "summary": "Covers the three ways to define SYCL kernels: lambda expressions, named function objects (functors), and interoperability with other APIs. Includes details on lambda syntax, capture rules, kernel identification, functor structure, device copyability, attributes, and kernel bundle management for compilation and introspection."
+    },
+    {
+      "title": "Vectors and Math Arrays",
+      "filename": "vectors-and-math-arrays.md",
+      "source_start": 5308,
+      "source_end": 5625,
+      "summary": "Covers the concepts of vector types in SYCL, distinguishing between convenience types (marray) and hardware-mapped types (vec/SIMD). Includes details on marray usage, vec load/store operations, swizzle operations, and how these types execute on hardware (SPMD vs. SIMD interpretations)."
+    },
+    {
+      "title": "Device Information and Kernel Specialization",
+      "filename": "device-information-and-kernel-specialization.md",
+      "source_start": 5626,
+      "source_end": 6023,
+      "summary": "This section covers the introduction to device information and kernel specialization in SYCL. It discusses how to query device capabilities (such as checking for GPU presence, enumerating devices, and using aspects like fp16/fp64 support) to make programs portable and performant. It introduces custom device selectors, the get_info<> interface for detailed device and kernel queries, and distinguishes between correctness-based device constraints (like max work group size) and tuning parameters (like preferred work group size). The section concludes by explaining how to use SYCL attributes (like device_has and reqd_work_group_size) to specialize kernels for specific device features."
+    },
+    {
+      "title": "Practical Tips: Compilation, Debugging, and Profiling",
+      "filename": "practical-tips-compilation-debugging-profiling.md",
+      "source_start": 6024,
+      "source_end": 6542,
+      "summary": "Continuation of the previous chunk covering Chapter 13 Practical Tips, including device information attributes, compilation models, context management, and debugging techniques."
+    },
+    {
+      "title": "Practical Tips: Data Access, Translation Units, and Lambda Naming",
+      "filename": "practical-tips-data-access-translation-units.md",
+      "source_start": 6543,
+      "source_end": 6790,
+      "summary": "Covers common bugs related to buffer/host allocation lifetime, host accessor usage, multiple translation units with SYCL_EXTERNAL, performance implications, and named lambdas for debugging and tools."
+    },
+    {
+      "title": "Common Parallel Patterns: Overview, Map, Stencil, Reduction, Scan, Pack/Unpack",
+      "filename": "common-parallel-patterns-overview.md",
+      "source_start": 6791,
+      "source_end": 6899,
+      "summary": "Introduces Chapter 14 on common parallel patterns, detailing Map, Stencil, Reduction, Scan, Pack, and Unpack patterns, their use cases, device affinities, and implementation considerations."
+    },
+    {
+      "title": "Common Parallel Patterns: SYCL Reduction Library and Implementation",
+      "filename": "common-parallel-patterns-reduction-lib.md",
+      "source_start": 6900,
+      "source_end": 7048,
+      "summary": "Continuation of the previous chunk covering the SYCL Reduction Library, the reduction and reducer classes, and user-defined reductions."
+    },
+    {
+      "title": "Common Parallel Patterns: Group Algorithms and Direct Programming",
+      "filename": "common-parallel-patterns-group-algorithms.md",
+      "source_start": 7049,
+      "source_end": 7137,
+      "summary": "Covers Group Algorithms (joint and group variants), mapping C++ algorithms to SYCL, and the transition to Direct Programming patterns like Map, Stencil, Reduction, and Scan."
+    },
+    {
+      "title": "Common Parallel Patterns: Pack/Unpack and Summary",
+      "filename": "common-parallel-patterns-pack-unpack.md",
+      "source_start": 7138,
+      "source_end": 7474,
+      "summary": "Covers Pack and Unpack patterns (gather/scatter) with examples, followed by the chapter summary and for more information section."
+    },
+    {
+      "title": "Programming for GPUs: Overview and Building Blocks",
+      "filename": "programming-for-gpus-overview.md",
+      "source_start": 7475,
+      "source_end": 7515,
+      "summary": "Introduces the GPU programming chapter, covering performance caveats, how GPUs work, and GPU building blocks (execution resources, fixed functions, caches/memory)."
+    },
+    {
+      "title": "Programming for GPUs: Simpler Processors and Matrix Multiplication Intro",
+      "filename": "programming-for-gpus-processors-matmul.md",
+      "source_start": 7516,
+      "source_end": 7548,
+      "summary": "Continuation of the previous chunk. Covers the reminder about matrix multiplication, the importance of using vendor libraries, and the initial single-task kernel example that performs poorly on GPUs."
+    },
+    {
+      "title": "Expressing Parallelism in GPU Kernels",
+      "filename": "gpu-parallelism-expressions.md",
+      "source_start": 7549,
+      "source_end": 7631,
+      "summary": "Covers converting loops to parallel_for to utilize GPU processors, choosing parallelization dimensions, and the concept of SIMD (Single Instruction, Multiple Data) execution where multiple data elements share control logic."
+    },
+    {
+      "title": "SIMD Efficiency and Latency Hiding",
+      "filename": "gpu-simd-efficiency-latency.md",
+      "source_start": 7632,
+      "source_end": 7706,
+      "summary": "Explains predication and masking for divergent control flow, SIMD efficiency metrics, the importance of work-group sizes relative to SIMD width, and using multiple instruction streams to hide memory latency."
+    },
+    {
+      "title": "Offloading Kernels to GPUs",
+      "filename": "gpu-offloading-stack.md",
+      "source_start": 7707,
+      "source_end": 7740,
+      "summary": "Details the software stack involved in offloading (SYCL Runtime, GPU Drivers, Hardware), the costs and overheads associated with offloading, and the trade-off between latency and throughput."
+    },
+    {
+      "title": "GPU Memory Access Best Practices",
+      "filename": "gpu-memory-access.md",
+      "source_start": 7741,
+      "source_end": 7822,
+      "summary": "Covers global vs. device memory transfers, coalesced memory access patterns for global memory, and optimizing local memory usage by avoiding bank conflicts. Includes comparison of access patterns."
+    },
+    {
+      "title": "Optimizing GPU Computation",
+      "filename": "gpu-computation-optimization.md",
+      "source_start": 7823,
+      "source_end": 7848,
+      "summary": "Discusses using sub-groups to avoid local memory, optimizing with smaller data types (16-bit vs 32-bit), using fast math functions, and leveraging specialized GPU instructions like FMA."
+    },
+    {
+      "title": "GPU Chapter Summary and References",
+      "filename": "gpu-summary-references.md",
+      "source_start": 7849,
+      "source_end": 7879,
+      "summary": "Summarizes the GPU chapter content including architecture, parallelism, offloading, and optimization. Provides references for further information and licensing details."
+    },
+    {
+      "title": "Programming for CPUs: Introduction and Architecture",
+      "filename": "cpu-intro-architecture.md",
+      "source_start": 7880,
+      "source_end": 7957,
+      "summary": "Introduces CPU programming for SYCL, covering multicore evolution, cc-NUMA architecture, cache coherency, and the five levels of parallelism (instruction, thread, core, socket, cluster)."
+    },
+    {
+      "title": "CPU SIMD and STREAM Triad Example",
+      "filename": "cpu-simd-stream-triad.md",
+      "source_start": 7958,
+      "source_end": 8048,
+      "summary": "Introduction to the STREAM Triad workload, demonstrating the transition from serial C++ to SYCL parallel_for kernels and mapping to CPU cores."
+    },
+    {
+      "title": "Thread-Level Parallelism and Affinity on CPUs",
+      "filename": "cpu-thread-affinity.md",
+      "source_start": 8049,
+      "source_end": 8121,
+      "summary": "Discussion on exploiting thread-level parallelism, thread affinity environment variables (DPCPP_CPU_CU_AFFINITY, etc.), and scheduling strategies to optimize CPU performance."
+    },
+    {
+      "title": "Memory First Touch and SIMD Vectorization",
+      "filename": "cpu-memory-first-touch-simd.md",
+      "source_start": 8122,
+      "source_end": 8352,
+      "summary": "Guidelines for controlling first-touch effects, SIMD vectorization mechanics, masking costs, avoiding Array-of-Structs (AOS), and data type impacts on SIMD efficiency."
+    },
+    {
+      "title": "CPU Summary and FPGA Introduction",
+      "filename": "cpu-summary-fpga-intro.md",
+      "source_start": 8353,
+      "source_end": 8397,
+      "summary": "Summary of CPU optimization strategies and introduction to Chapter 17 on Programming for FPGAs, including performance caveats."
+    },
+    {
+      "title": "How to Think About FPGAs and Pipeline Parallelism",
+      "filename": "fpga-spatial-architecture.md",
+      "source_start": 8398,
+      "source_end": 8452,
+      "summary": "Explanation of spatial architecture vs. ISA-based processors, pipeline parallelism, and automatic pipelining in FPGA compilers."
+    },
+    {
+      "title": "FPGA Use Cases and Execution",
+      "filename": "fpga-use-cases-execution.md",
+      "source_start": 8453,
+      "source_end": 8612,
+      "summary": "Continuation of the previous chunk covering control flow optimization, kernel area consumption, when to use FPGAs (lots of work, custom operations, scalar data flow, loops, low latency I/O, custom memory), and running kernels on FPGAs including compilation commands, runtime device selection, and the FPGA emulator for rapid development."
+    },
+    {
+      "title": "Writing Kernels for FPGAs",
+      "filename": "writing-kernels-fpgas.md",
+      "source_start": 8613,
+      "source_end": 8927,
+      "summary": "Covers writing kernels for FPGAs, including exposing parallelism via ND-ranges and loops, handling data dependences with loop pipelining and initiation intervals, and using pipes (FIFOs) for modular design and inter-kernel communication."
+    },
+    {
+      "title": "FPGA Architecture and Closing Topics",
+      "filename": "fpga-architecture-closing.md",
+      "source_start": 8928,
+      "source_end": 8969,
+      "summary": "Covers FPGA building blocks (LUTs, DSPs, memory, interfaces, routing), clock frequency considerations, resource utilization recommendations, and the chapter summary with licensing information."
+    },
+    {
+      "title": "Libraries: Introduction and Built-In Functions",
+      "filename": "libraries-intro-built-in.md",
+      "source_start": 8970,
+      "source_end": 9058,
+      "summary": "Introduction to the Libraries chapter, covering built-in SYCL functions, their classification, usage with the sycl:: prefix, and comparison with C++ standard library functions."
+    },
+    {
+      "title": "Libraries: C++ Standard Library and oneDPL",
+      "filename": "libraries-std-onedpl.md",
+      "source_start": 9059,
+      "source_end": 9431,
+      "summary": "Coverage of the C++ standard library support in SYCL devices, oneAPI DPC++ Library (oneDPL) execution policies, usage with buffers and USM, and error handling."
+    },
+    {
+      "title": "Memory Model and Atomics: Introduction",
+      "filename": "memory-model-intro.md",
+      "source_start": 9432,
+      "source_end": 9569,
+      "summary": "Introduction to the memory model, threads of execution, data races, barriers, and atomics."
+    },
+    {
+      "title": "Memory Model and Atomics: Memory Ordering and Scopes",
+      "filename": "memory-ordering-scopes.md",
+      "source_start": 9570,
+      "source_end": 9777,
+      "summary": "Details on memory ordering (relaxed, acquire-release, sequential consistency), memory scopes, and querying device capabilities."
+    },
+    {
+      "title": "Memory Model and Atomics: Atomic Operations in SYCL",
+      "filename": "atomic-operations-sycl.md",
+      "source_start": 9778,
+      "source_end": 9999,
+      "summary": "Comparison of std::atomic and atomic_ref, atomic operations for buffers and USM, and practical examples like histograms."
+    },
+    {
+      "title": "Memory Model and Atomics: Device-Wide Synchronization",
+      "filename": "device-wide-sync.md",
+      "source_start": 10000,
+      "source_end": 10069,
+      "summary": "Continuation of the Memory Model and Atomics chapter, covering the histogram example implementation, device-wide synchronization concepts, and the device latch implementation code."
+    },
+    {
+      "title": "Memory Model and Atomics: Summary and References",
+      "filename": "memory-model-summary.md",
+      "source_start": 10070,
+      "source_end": 10166,
+      "summary": "Completion of the device latch example, including conditions for correctness, code blocks for the latch and its usage, the chapter summary, and references for further reading on memory models."
+    },
+    {
+      "title": "Backend Interoperability: Introduction and Concepts",
+      "filename": "backend-interop-intro.md",
+      "source_start": 10167,
+      "source_end": 10261,
+      "summary": "Start of Chapter 20, introducing backend interoperability, its purpose, mental models, and how to create SYCL objects from native backend objects (OpenCL and Level Zero) with ownership considerations."
+    },
+    {
+      "title": "Backend Interoperability: Extracting Backend Objects",
+      "filename": "backend-interop-extract.md",
+      "source_start": 10262,
+      "source_end": 10416,
+      "summary": "Methods for extracting native backend objects from SYCL objects, including using free functions (get_native) and interop handles within host tasks, with examples for OpenCL and Level Zero."
+    },
+    {
+      "title": "Backend Interoperability: Kernel Integration",
+      "filename": "backend-interop-kernels.md",
+      "source_start": 10417,
+      "source_end": 10542,
+      "summary": "Interoperability for kernels, including creating kernels from API-defined objects and non-SYCL source languages (via online compilers and SPIR-V), with code examples and notes on argument passing."
+    },
+    {
+      "title": "Backend Interoperability Hints and Tips",
+      "filename": "backend-interop-hints.md",
+      "source_start": 10543,
+      "source_end": 10631,
+      "summary": "This section covers practical hints for backend interoperability, including choosing devices by backend, managing contexts safely, accessing low-level API features, and supporting other backends. It concludes the previous chapter (Chapter 20) with a summary and licensing information."
+    },
+    {
+      "title": "Migrating CUDA Code (continued)",
+      "filename": "migrating-cuda-code.md",
+      "source_start": 10632,
+      "source_end": 11092,
+      "summary": "Covers design, terminology, and execution/memory model differences between CUDA and SYCL, including barriers, atomics, item classes, and contexts. Continues with porting tools, demonstrating the dpct migration of a sample CUDA application."
+    },
+    {
+      "title": "Future Direction of SYCL",
+      "filename": "future-direction-of-sycl.md",
+      "source_start": 11093,
+      "source_end": 11246,
+      "summary": "An epilogue speculating on the future of SYCL, including alignment with C++ standards (C++11-23), mixed SPMD/SIMD programming, address spaces, specialization mechanisms, and compile-time properties, along with references and resources."
+    },
+    {
+      "title": "Index",
+      "filename": "index.md",
+      "source_start": 11247,
+      "source_end": 11421,
+      "summary": "The alphabetical index for the book, listing topics, concepts, and function/class names with their corresponding page numbers."
+    }
+  ]
+}

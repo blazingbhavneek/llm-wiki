@@ -1,15 +1,15 @@
 """Runtime collaborators for the graph package."""
 from __future__ import annotations
 from collections import Counter
+from typing import Callable
 import json
-import re
-from typing import Any
 from db import Database
 from .models import (
     ClaimExtraction,
     Edge,
     EdgeSuggestion,
     EdgeSuggestions,
+    EntityMatch,
     GraphStats,
     Keywords,
     Node,
@@ -17,6 +17,7 @@ from .models import (
     NodeType,
     QueryResult,
     Settings,
+    now_iso,
 )
 from .utils import make_edge_id, make_exogenous_node_id, source_hash
 
@@ -62,27 +63,34 @@ EDGE_PROMPT = (
     "- Only propose an edge when the relationship is clearly useful; skip weak ones.\n"
     "- summary: one short clause explaining the link."
 )
+
+AGENT_SYSTEM_PROMPT = (
+    "You answer questions by navigating a knowledge-graph wiki. You cannot see the "
+    "graph directly; you must use tools to gather evidence.\n"
+    "Tools:\n"
+    "- search(text): find candidate nodes by keyword.\n"
+    "- read(node_id): read a node's full body.\n"
+    "- follow_link(node_id, direction): jump to a node's neighbors.\n"
+    "- finish(answer, cited_node_ids): end with your answer and the node ids you used.\n"
+    "Work iteratively: search, read promising nodes, follow links to related nodes, "
+    "and stop as soon as you have enough evidence. Base the answer ONLY on node "
+    "content you actually read. Always end by calling finish."
+)
+
+ENTITY_DEDUP_PROMPT = (
+    "You maintain a wiki graph. Given a NEW node and a list of CANDIDATE existing "
+    "nodes, decide whether the new node describes the SAME real-world entity/topic "
+    "as exactly one candidate.\n"
+    "Rules:\n"
+    "- Same entity means the same concrete thing (same API, same tool, same concept), "
+    "not merely a related or similar topic.\n"
+    "- Be conservative: if unsure, answer is_same=false. Never merge homonyms that "
+    "refer to different things.\n"
+    "- If there is a match, return is_same=true and target_node_id of that candidate; "
+    "otherwise is_same=false and target_node_id=null."
+)
 # endregion PROMPTS
 
-# region INTERNAL CONSTANTS
-_TOKEN_RE = re.compile(r"[a-z0-9_./:-]+")
-_IMAGE_UNIT_RE = re.compile(
-    r"<image-unit\b[^>]*>.*?</image-unit>",
-    re.IGNORECASE | re.DOTALL,
-)
-_IMAGE_DESCRIPTION_RE = re.compile(
-    r"<image-description\b[^>]*>(.*?)</image-description>",
-    re.IGNORECASE | re.DOTALL,
-)
-_IMAGE_MEDIA_RE = re.compile(
-    r"<image-media\b[^>]*>.*?</image-media>",
-    re.IGNORECASE | re.DOTALL,
-)
-_DATA_IMAGE_URI_RE = re.compile(
-    r"data:image/[a-zA-Z0-9.+-]+;base64,[A-Za-z0-9+/=\r\n]+",
-    re.IGNORECASE,
-)
-# endregion INTERNAL CONSTANTS
 class GraphRuntime:
     # region LIFECYCLE
     def __init__(
@@ -125,7 +133,7 @@ class GraphRuntime:
         override = getattr(self.llm, "summarize", None)
         if callable(override):
             return str(override(text) or "").strip()
-        return self._run_text_query(SUMMARY_PROMPT, text)
+        return self.llm.complete(SUMMARY_PROMPT, text).strip()
 
     def extract_keywords(self, text: str) -> list[str]:
         if not text.strip():
@@ -133,7 +141,7 @@ class GraphRuntime:
         override = getattr(self.llm, "extract_keywords", None)
         if callable(override):
             return list(override(text))
-        result = self._run_structured_query(KEYWORD_PROMPT, text[:8000], Keywords)
+        result = self.llm.complete_structured(KEYWORD_PROMPT, text[:8000], Keywords)
         parsed = result if isinstance(result, Keywords) else Keywords.model_validate(result)
         seen: list[str] = []
         seen_lower: set[str] = set()
@@ -157,7 +165,7 @@ class GraphRuntime:
                 else ClaimExtraction.model_validate(result)
             )
 
-        result = self._run_structured_query(CLAIM_PROMPT, text[:12000], ClaimExtraction)
+        result = self.llm.complete_structured(CLAIM_PROMPT, text[:12000], ClaimExtraction)
         parsed = (
             result
             if isinstance(result, ClaimExtraction)
@@ -179,6 +187,53 @@ class GraphRuntime:
 
     # endregion ENRICHMENT
 
+    # region DEDUP
+    def node_is_complete(self, node_id: str) -> bool:
+        """True if the node exists, is active, and its body vector is stored.
+
+        Used to skip re-processing an already-ingested node (idempotent re-add,
+        crash resume). Body-vector presence proves enrich+embed finished.
+        """
+        node = self.database.get_node(node_id)
+        if not node or node.status != NodeStatus.active:
+            return False
+        has_vector = getattr(self.database, "has_vector", None)
+        if callable(has_vector):
+            return bool(has_vector(node_id))
+        return True
+
+    def same_as_group(self, node_id: str) -> set[str]:
+        """Ids in this node's same-as equivalence class (including itself)."""
+        group = {node_id}
+        for edge in self.database.get_edges_for_node(node_id):
+            if edge.label != "same-as":
+                continue
+            other = (
+                edge.target_node_id
+                if edge.source_node_id == node_id
+                else edge.source_node_id
+            )
+            group.add(other)
+        return group
+
+    def collapse_same_as(self, nodes: list[Node]) -> list[Node]:
+        """Keep one representative per same-as cluster, preserving input order.
+
+        Use-time collapse: storage keeps every contextually-distinct node, but
+        callers (edge candidates, regen supports, agent results) treat a same-as
+        cluster as one unit so processing cost stays bounded as the graph grows.
+        """
+        kept: list[Node] = []
+        seen: set[str] = set()
+        for node in nodes:
+            if node.id in seen:
+                continue
+            kept.append(node)
+            seen |= self.same_as_group(node.id)
+        return kept
+
+    # endregion DEDUP
+
     # region EMBEDDINGS
     def ensure_vec(self) -> None:
         if not self._vec_ready:
@@ -187,85 +242,13 @@ class GraphRuntime:
 
     def store_vectors(self, node: Node) -> tuple[list[float], list[float] | None]:
         self.ensure_vec()
-        body_embedding_text = self._text_for_embedding(node.body)
-        body_vec = self._embed_with_context_fallback(body_embedding_text)
+        body_vec = self.embedder.embed_document(node.body)
         self.database.set_vector(node.id, "vec_body", body_vec)
         summary_vec = None
         if node.summary.strip():
-            summary_embedding_text = self._text_for_embedding(node.summary)
-            summary_vec = self._embed_with_context_fallback(summary_embedding_text)
+            summary_vec = self.embedder.embed_document(node.summary)
             self.database.set_vector(node.id, "vec_summary", summary_vec)
         return body_vec, summary_vec
-
-    def _text_for_embedding(self, text: str) -> str:
-        """Return embedding-safe text without changing the stored node body."""
-        if not text:
-            return ""
-
-        def replace_image_unit(match: re.Match[str]) -> str:
-            image_unit = match.group(0)
-            desc_match = _IMAGE_DESCRIPTION_RE.search(image_unit)
-
-            if desc_match:
-                description = desc_match.group(1).strip()
-                if description:
-                    return "\n\n[Embedded image description]\n" f"{description}\n[/Embedded image description]\n\n"
-            return "\n\n[Embedded image omitted: no description available]\n\n"
-        cleaned = _IMAGE_UNIT_RE.sub(replace_image_unit, text)
-        cleaned = _IMAGE_MEDIA_RE.sub("\n\n[Embedded image media omitted]\n\n", cleaned)
-        cleaned = _DATA_IMAGE_URI_RE.sub("data:image;base64,[omitted]", cleaned)
-        return cleaned
-
-    def _embed_with_context_fallback(self, text: str) -> list[float]:
-        try:
-            return self.embedder.embed_query(text)
-        except Exception as exc:
-            if not self._is_context_length_error(exc):
-                raise
-
-        lines = text.splitlines()
-        if not lines:
-            raise
-        chunk_count = 2
-        while chunk_count <= max(2, len(lines)):
-            chunks = self._split_lines_into_chunks(lines, chunk_count)
-            try:
-                vectors = [self.embedder.embed_query(chunk) for chunk in chunks if chunk.strip()]
-                return self._mean_vectors(vectors)
-            except Exception as exc:
-                if not self._is_context_length_error(exc):
-                    raise
-                chunk_count += 1
-
-        raise RuntimeError(
-            f"embedding failed even after splitting into {chunk_count - 1} line chunks"
-        )
-
-    def _is_context_length_error(self, exc: Exception) -> bool:
-        message = str(exc).lower()
-        return (
-            "maximum context length" in message
-            or "context length" in message
-            or "input_tokens" in message
-            or "too many tokens" in message
-        )
-
-    def _split_lines_into_chunks(self, lines: list[str], chunk_count: int) -> list[str]:
-        chunk_count = max(1, min(chunk_count, len(lines)))
-        size = max(1, (len(lines) + chunk_count - 1) // chunk_count)
-        return [
-            "\n".join(lines[index:index + size])
-            for index in range(0, len(lines), size)
-        ]
-
-    def _mean_vectors(self, vectors: list[list[float]]) -> list[float]:
-        if not vectors:
-            raise ValueError("cannot average empty embedding vector list")
-        dim = len(vectors[0])
-        return [
-            sum(vector[index] for vector in vectors) / len(vectors)
-            for index in range(dim)
-        ]
 
     # endregion EMBEDDINGS
 
@@ -290,7 +273,7 @@ class GraphRuntime:
             other = self.database.get_node(candidate_id)
             if other and other.status == NodeStatus.active:
                 candidates.append(other)
-        return candidates[:k]
+        return self.collapse_same_as(candidates)[:k]
 
     def build_semantic_edges(
         self,
@@ -303,28 +286,105 @@ class GraphRuntime:
         suggestions = self._suggest_edges(node, candidates)
         edges: list[Edge] = []
         for suggestion in suggestions:
-            if suggestion.target_node_id == node.id:
+            target_id = suggestion.target_node_id
+            if target_id == node.id:
                 continue
             label = suggestion.label.strip() or "related"
+            stamp = now_iso()
+            if label == "contradicts":
+                self._invalidate_prior_edges(node.id, target_id, stamp)
+            episodes = [node.id, target_id]
             forward = Edge(
-                id=make_edge_id(node.id, suggestion.target_node_id, label),
+                id=make_edge_id(node.id, target_id, label),
                 source_node_id=node.id,
-                target_node_id=suggestion.target_node_id,
+                target_node_id=target_id,
                 label=label,
                 summary=suggestion.summary.strip(),
+                valid_at=stamp,
+                source_episode_ids=episodes,
             )
             backward = Edge(
-                id=make_edge_id(suggestion.target_node_id, node.id, label),
-                source_node_id=suggestion.target_node_id,
+                id=make_edge_id(target_id, node.id, label),
+                source_node_id=target_id,
                 target_node_id=node.id,
                 label=label,
                 summary=suggestion.summary.strip(),
+                valid_at=stamp,
+                source_episode_ids=episodes,
             )
             self.database.upsert_edge(forward)
             self.database.upsert_edge(backward)
             edges.extend([forward, backward])
 
         return edges
+
+    def _invalidate_prior_edges(self, source_id: str, target_id: str, stamp: str) -> None:
+        """Mark existing non-contradiction edges between a pair as invalid."""
+        for edge in self.database.get_edges_for_node(target_id):
+            endpoints = {edge.source_node_id, edge.target_node_id}
+            if endpoints != {source_id, target_id}:
+                continue
+            if edge.label == "contradicts" or edge.invalid_at:
+                continue
+            edge.invalid_at = stamp
+            edge.expired_at = stamp
+            self.database.upsert_edge(edge)
+
+    def link_entity_duplicates(self, node: Node, candidates: list[Node]) -> list[Edge]:
+        """Detect a same-real-world-entity neighbor and link with a same-as edge."""
+        if not candidates:
+            return []
+        match = self._check_entity_duplicate(node, candidates)
+        if not match.is_same or not match.target_node_id:
+            return []
+        allowed = {candidate.id for candidate in candidates}
+        if match.target_node_id not in allowed or match.target_node_id == node.id:
+            return []
+        stamp = now_iso()
+        episodes = [node.id, match.target_node_id]
+        edges = []
+        for src, dst in ((node.id, match.target_node_id), (match.target_node_id, node.id)):
+            edge = Edge(
+                id=make_edge_id(src, dst, "same-as"),
+                source_node_id=src,
+                target_node_id=dst,
+                label="same-as",
+                summary="Same real-world entity.",
+                valid_at=stamp,
+                source_episode_ids=episodes,
+            )
+            self.database.upsert_edge(edge)
+            edges.append(edge)
+        return edges
+
+    def _check_entity_duplicate(self, node: Node, candidates: list[Node]) -> EntityMatch:
+        override = getattr(self.llm, "check_entity_duplicate", None)
+        if callable(override):
+            result = override(node, candidates)
+            return result if isinstance(result, EntityMatch) else EntityMatch.model_validate(result)
+        payload = {
+            "new_node": {
+                "id": node.id,
+                "title": node.title,
+                "entity": node.entity,
+                "summary": node.summary,
+            },
+            "candidates": [
+                {
+                    "id": candidate.id,
+                    "title": candidate.title,
+                    "entity": candidate.entity,
+                    "summary": candidate.summary,
+                }
+                for candidate in candidates
+            ],
+        }
+        result = self.llm.complete_structured(
+            ENTITY_DEDUP_PROMPT,
+            json.dumps(payload, ensure_ascii=False),
+            EntityMatch,
+        )
+        return result if isinstance(result, EntityMatch) else EntityMatch.model_validate(result)
 
     def _suggest_edges(self, node: Node, candidates: list[Node]) -> list[EdgeSuggestion]:
         if not candidates:
@@ -351,7 +411,7 @@ class GraphRuntime:
                 for candidate in candidates
             ],
         }
-        result = self._run_structured_query(
+        result = self.llm.complete_structured(
             EDGE_PROMPT,
             json.dumps(payload, ensure_ascii=False),
             EdgeSuggestions,
@@ -363,41 +423,6 @@ class GraphRuntime:
         )
         allowed = {candidate.id for candidate in candidates}
         return [edge for edge in parsed.edges if edge.target_node_id in allowed]
-
-    def _run_text_query(self, system_prompt: str, user_content: str) -> str:
-        from langchain_core.messages import HumanMessage, SystemMessage
-        run_messages = getattr(self.llm, "run_messages", None)
-        if not callable(run_messages):
-            raise TypeError("client must provide run_messages() or graph-specific overrides")
-        return str(
-            run_messages(
-                [
-                    SystemMessage(content=system_prompt),
-                    HumanMessage(content=user_content),
-                ]
-            )
-            or ""
-        ).strip()
-
-    def _run_structured_query(
-        self,
-        system_prompt: str,
-        user_content: str,
-        output_model: type[Any],
-    ) -> Any:
-        from langchain_core.messages import HumanMessage, SystemMessage
-        run_messages_structured = getattr(self.llm, "run_messages_structured", None)
-        if not callable(run_messages_structured):
-            raise TypeError(
-                "client must provide run_messages_structured() or graph-specific overrides"
-            )
-        return run_messages_structured(
-            [
-                SystemMessage(content=system_prompt),
-                HumanMessage(content=user_content),
-            ],
-            output_model,
-        )
 
     # endregion SEMANTIC EDGES
 
@@ -425,10 +450,10 @@ class GraphRuntime:
                 for node in support_nodes[:8]
             ],
         }
-        return self._run_text_query(
+        return self.llm.complete(
             REGENERATE_EXOGENOUS_PROMPT,
             json.dumps(payload, ensure_ascii=False),
-        )
+        ).strip()
 
     # endregion EXOGENOUS REGENERATION
 
@@ -463,7 +488,45 @@ class GraphQuery:
         raise ValueError("query_type must be 'keyword', 'vector', or 'id'")
 
     def search(self, text: str, limit: int | None = None) -> list[Node]:
-        return self.database.keyword_search(text, limit or self.settings.vector_query_k)
+        """Hybrid BM25 + semantic search, fused with Reciprocal Rank Fusion.
+
+        Three ranked lists (FTS5/BM25 over bodies, KNN over vec_body, KNN over
+        vec_summary) are combined by RRF so a node strong in any one signal
+        surfaces. Falls back to BM25-only if embedding the query fails.
+        """
+        limit = limit or self.settings.vector_query_k
+        pool = max(limit, 10)
+
+        ranked_lists: list[list[str]] = [
+            [node.id for node in self.database.keyword_search(text, pool)]
+        ]
+        try:
+            self.runtime.ensure_vec()
+            query_vec = self.embedder.embed_query(text)
+            for table in ("vec_body", "vec_summary"):
+                ranked_lists.append(
+                    [node_id for node_id, _score in self.database.vector_search(query_vec, table, pool)]
+                )
+        except Exception:  # noqa: BLE001 - embedding/vec unavailable: degrade to BM25
+            pass
+
+        nodes: list[Node] = []
+        for node_id in self._rrf(ranked_lists):
+            node = self.database.get_node(node_id)
+            if node and node.status == NodeStatus.active:
+                nodes.append(node)
+            if len(nodes) >= limit:
+                break
+        return nodes
+
+    def _rrf(self, ranked_lists: list[list[str]]) -> list[str]:
+        """Reciprocal Rank Fusion: sum 1/(k + rank) of each id across lists."""
+        k = self.settings.search_rrf_k
+        scores: dict[str, float] = {}
+        for ids in ranked_lists:
+            for rank, node_id in enumerate(ids):
+                scores[node_id] = scores.get(node_id, 0.0) + 1.0 / (k + rank + 1)
+        return sorted(scores, key=lambda node_id: scores[node_id], reverse=True)
 
     def read(self, node_id: str) -> Node | None:
         return self.database.get_node(node_id)
@@ -501,7 +564,7 @@ class GraphQuery:
         return QueryResult(query_type="id", value=value, nodes=nodes, edges=edges)
 
     def _query_keyword(self, value: str) -> QueryResult:
-        nodes = self.search(value, limit=self.settings.vector_query_k)
+        nodes = self.database.keyword_search(value, self.settings.vector_query_k)
         return QueryResult(
             query_type="keyword",
             value=value,
@@ -688,7 +751,15 @@ class GraphAnalytics:
         resolution: float = 1.0,
         seed: int = 42,
         persist: bool = True,
+        namer: Callable[[list[str], list[str]], str | None] | None = None,
     ) -> dict[str, str]:
+        """Detect communities (Louvain) and label each.
+
+        ``namer(top_keywords, sample_titles) -> name`` is an optional caller-supplied
+        labeller (e.g. an LLM in the engine layer). It keeps this module LLM-free:
+        the callback receives plain strings and returns a name, or ``None``/empty to
+        fall back to the deterministic TF-IDF keyword label.
+        """
         import networkx as nx
         nodes = [node for node in self.database.get_all_nodes() if node.status == NodeStatus.active]
         node_by_id = {node.id: node for node in nodes}
@@ -709,10 +780,44 @@ class GraphAnalytics:
             resolution=resolution,
             seed=seed,
         )
+        ordered = sorted(communities, key=len, reverse=True)
+
+        # Per-community keyword counts + global document-frequency (how many
+        # communities each keyword appears in), so labels are built from the
+        # keywords that DISTINGUISH a community rather than the one shared by all
+        # (which produced useless "Cuda / Cuda 2 / Cuda 3" names).
+        per_comm: list[Counter[str]] = []
+        titles: list[list[str]] = []
+        doc_freq: Counter[str] = Counter()
+        for members in ordered:
+            counts: Counter[str] = Counter()
+            comm_titles: list[str] = []
+            for node_id in members:
+                node = node_by_id.get(node_id)
+                if node:
+                    counts.update(kw.lower().strip() for kw in node.keywords if kw.strip())
+                    if node.title:
+                        comm_titles.append(node.title)
+            per_comm.append(counts)
+            titles.append(comm_titles)
+            doc_freq.update(counts.keys())
+
+        n_comms = max(len(ordered), 1)
         mapping: dict[str, str] = {}
         used: Counter[str] = Counter()
-        for index, members in enumerate(sorted(communities, key=len, reverse=True)):
-            label = self._community_label(members, node_by_id, index, used)
+        for index, members in enumerate(ordered):
+            keywords = self._tfidf_keywords(per_comm[index], doc_freq, n_comms, k=5)
+            label = ""
+            if namer:
+                try:
+                    label = (namer(keywords, titles[index][:6]) or "").strip()
+                except Exception:  # noqa: BLE001 - LLM naming is best-effort
+                    label = ""
+            if not label:
+                label = self._community_label(keywords, index)
+            used[label] += 1
+            if used[label] > 1:
+                label = f"{label} {used[label]}"
             for node_id in members:
                 mapping[node_id] = label
         if persist:
@@ -723,21 +828,34 @@ class GraphAnalytics:
                     self.database.upsert_node(node)
         return mapping
 
-    def _community_label(
+    def _tfidf_keywords(
         self,
-        members: set[str],
-        node_by_id: dict[str, Node],
-        index: int,
-        used: Counter[str],
-    ) -> str:
-        counts: Counter[str] = Counter()
-        for node_id in members:
-            node = node_by_id.get(node_id)
-            if node:
-                counts.update(keyword.lower() for keyword in node.keywords)
-        label = counts.most_common(1)[0][0].title() if counts else f"Cluster {index + 1}"
-        used[label] += 1
-        return f"{label} {used[label]}" if used[label] > 1 else label
+        counts: Counter[str],
+        doc_freq: Counter[str],
+        n_comms: int,
+        k: int = 5,
+    ) -> list[str]:
+        """Top-k keywords that DISTINGUISH this community.
+
+        Weight = count * log(1 + n_comms / docfreq); keywords present in every
+        community (docfreq == n_comms) contribute ~0, so shared terms drop out.
+        """
+        import math
+
+        if not counts:
+            return []
+        scored = sorted(
+            counts.items(),
+            key=lambda kv: kv[1] * math.log(1 + n_comms / max(doc_freq[kv[0]], 1)),
+            reverse=True,
+        )
+        return [kw for kw, _ in scored[:k]]
+
+    def _community_label(self, keywords: list[str], index: int) -> str:
+        """Deterministic fallback label from the distinctive keywords."""
+        if not keywords:
+            return f"Cluster {index + 1}"
+        return " · ".join(kw.title() for kw in keywords[:3])
 
     # endregion CLUSTERING
 

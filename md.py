@@ -13,7 +13,7 @@ Example:
 python wiki_maker.py 
 """
 
-from wiki.phases import main
+from wiki_new.phases import main
 
 if __name__ == "__main__":
     main()

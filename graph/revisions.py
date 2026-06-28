@@ -106,12 +106,16 @@ class GraphRevisions:
         version = self._source_version_for_nodes(nodes)
         incoming: list[Node] = []
 
+        # Cheap pass: stamp version + body hash only. NO LLM enrichment yet —
+        # unchanged chunks must not pay for summarize/keywords/claims.
         for node in nodes:
             node.source_version = version
-            incoming.append(self.runtime.fill_derived_fields(node))
+            if not node.source_material_hash:
+                node.source_material_hash = source_hash(node.body)
+            incoming.append(node)
 
         active_old = [
-            self._ensure_revision_metadata(node)
+            node
             for node in self.database.get_nodes_by_document(document_name, active_only=True)
             if node.type == NodeType.endogenous
         ]
@@ -126,24 +130,33 @@ class GraphRevisions:
         replacements: dict[str, str] = {}
         stale_sources: set[str] = set()
         matched_old: set[str] = set()
-        exact_by_hash = {
-            node.source_material_hash or source_hash(node.body): node
-            for node in active_old
-        }
+        exact_by_hash: dict[str, Node] = {}
+        for old in active_old:
+            exact_by_hash.setdefault(old.source_material_hash or source_hash(old.body), old)
         pending: list[Node] = []
 
+        # PASS 1 — exact body-hash match (no enrichment on either side).
         for node in incoming:
-            exact = exact_by_hash.get(node.source_material_hash or source_hash(node.body))
+            exact = exact_by_hash.get(node.source_material_hash)
             if exact and exact.id not in matched_old:
                 matched_old.add(exact.id)
                 actions.append(f"unchanged:{exact.id}")
             else:
                 pending.append(node)
 
+        # Only changed/new chunks get enriched + matched fuzzily.
+        for node in pending:
+            self.runtime.fill_derived_fields(node)
+        unmatched_old = [
+            self._ensure_revision_metadata(old)
+            for old in active_old
+            if old.id not in matched_old
+        ]
+
         for node in pending:
             best = self._best_revision_match(
                 node,
-                [old for old in active_old if old.id not in matched_old],
+                [old for old in unmatched_old if old.id not in matched_old],
             )
             if best is None:
                 self._persist_node(node)
@@ -409,7 +422,7 @@ class GraphRevisions:
             if source and source.status == NodeStatus.active:
                 support_nodes[source.id] = source
 
-        return list(support_nodes.values())
+        return self.runtime.collapse_same_as(list(support_nodes.values()))
 
     def _active_replacement_id(self, node_id: str) -> str | None:
         for edge in self.database.get_outgoing_edges(node_id, "superseded_by"):

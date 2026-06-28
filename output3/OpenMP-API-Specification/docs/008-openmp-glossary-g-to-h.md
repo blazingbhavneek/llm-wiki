@@ -1,0 +1,299 @@
+An indivisible hardware execution unit on which only one OpenMP thread can execute at a time. 6, 6, 37, 88, 128, 131, 534, 596, 726
+
+## has-device-addr attribute
+
+For a given device construct, a data-sharing attribute of a data entity that refers to an object in a device data environment that is the same object to which the data entity of the same name in the enclosing data environment of the construct refers. 237
+
+## host address
+
+An address of an object that may be referenced on the host device. 56, 360, 907
+
+## host device
+
+The device on which the OpenMP program begins execution. 3–5, 7, 9, 19, 26, 56, 59, 76, 100, 120, 127, 136, 138, 140, 141, 296, 307, 319, 359, 450, 454–457, 462, 463, 466, 564, 582, 585, 594, 598–602, 605, 606, 610, 630, 633, 634, 647, 650, 651, 690, 692, 697, 701, 703–706, 722, 791, 792, 803–805, 814, 828, 849–851, 857, 896, 910
+
+## host pointer
+
+A pointer that refers to a host address. 359, 360, 605, 606, 610–612, 907
+
+## ICV
+
+An internal control variable. 115, 57, 61, 80, 84, 115, 118–122, 124–130, 132–137, 139–146, 216, 310, 321, 338, 358, 388–391, 394, 397, 404, 415, 419, 426, 429, 436, 437, 443, 451, 453, 454, 456, 461, 466, 501, 504, 520, 521, 537, 563, 568, 570–577, 580–588, 592–595, 599–602, 652–654, 678–680, 682–688, 692, 693, 699, 700, 792, 794, 817, 824, 829, 854, 863, 874–876, 890–892, 894, 896, 897, 902, 903, 906, 908, 914–916
+
+## ICV-defaulted clause
+
+A clause that has the ICV-defaulted property. 437
+
+## ICV-defaulted property
+
+The property of a clause that if it is not explicitly specified on a directive then the behavior is as if it were specified with an argument that is the value of an ICV. 57, 310, 451
+
+## ICV modifying property
+
+The property of a routine or clause that its efect includes modifying the value of an ICV. 452, 568, 572, 573, 575, 582, 584, 592, 599, 601, 683
+
+## ICV retrieving property
+
+The property of a routine that its efect includes returning the value of an ICV. 570, 572, 574, 576, 577, 579, 581–584, 586–588, 593, 594, 599, 601, 678–682, 684, 688
+
+## ICV scope
+
+A context that contains one copy of a given ICV and defines the extent in which the ICV controls program behavior; the ICV scope may be the OpenMP program (i.e., global), the current device, the binding implicit task, or the data environment of the current task. 115, 57, 115, 119, 121, 124, 127, 436, 454, 456, 461, 466
+
+## idle thread
+
+An unassigned thread that is not currently executing any task. 447, 734
+
+## immediately nested construct
+
+A construct is an immediately nested construct of another construct if it is immediately nested within the other construct with no intervening statements or directives. 57, 101, 395, 902
+
+## imperfectly nested loop
+
+A nested loop that is not a perfectly nested loop. 910
+
+## implementation code
+
+Implicit code that is introduced by the OpenMP implementation. 41, 50, 91, 719
+
+## implementation defined
+
+Behavior that must be documented by the implementation and is allowed to vary among diferent compliant implementations. An implementation is allowed to define it as unspecified behavior. 6, 8, 15, 34, 42, 45, 50, 51, 75, 88, 91, 100, 110, 118, 119, 125, 128–131, 133–137, 139, 141, 142, 145, 146, 148, 149, 157, 204, 214, 217, 235, 237, 300, 304–308, 319, 322, 324, 325, 329, 330, 335, 341, 345, 352, 354, 355, 380–383, 385, 387, 389–392, 394, 397, 399, 405, 408, 415, 419, 420, 430, 437, 453, 463, 469, 471, 496, 533–535, 539, 541, 545, 558, 562, 574–576, 597, 610, 612, 613, 623, 627, 663, 680, 683,
+
+685–687, 693, 695, 697, 701, 703, 704, 719, 726, 730, 733, 764, 779, 788, 793–795, 817,844, 865, 870, 874, 885–895, 904, 908, 914
+
+## implementation selector set
+
+A selector set that may match the implementation trait set. 321, 321, 323
+
+## implementation trait set
+
+The trait set that consists of traits that describe the functionality supported by the OpenMP implementation at a given point in the OpenMP program. 319, 58, 318, 319
+
+## implicit array
+
+For C/C++, the set of array elements of non-array type T that may be accessed by applying a sequence of [] operators to a given pointer that is either a pointer to type T or a pointer to a multidimensional array of elements of type T. For Fortran, the set of array elements for a given array pointer.
+
+COMMENT: For C/C++, the implicit array for pointer p with type T (\*)[10] consists of all accessible elements p[i][j], for all i and j=0,1,...,9.
+
+26, 27, 286
+
+## implicit barrier
+
+A barrier that is specified as part of the semantics of a construct other than the barrier construct. 4–6, 385, 406, 407, 409, 412, 420, 447, 476, 477, 482, 521, 733
+
+## implicit flush
+
+A flush that is specified as part of the semantics of a construct or routine other than the flush construct. 12, 101, 502, 911
+
+## implicitly determined data-mapping attribute
+
+A data-mapping attribute that applies to a data entity for which no data-mapping attribute is otherwise determined. 276, 274, 276, 285, 292, 739
+
+## implicitly determined data-sharing attribute
+
+A data-sharing attribute that applies to a data entity for which no data-sharing attribute is otherwise determined. 213, 96, 210, 213, 214, 222–224, 276, 277, 292, 912
+
+## implicit parallel region
+
+An inactive parallel region that is not generated from a parallel construct. Implicit parallel regions surround the whole OpenMP program, all target regions, and all teams regions. 3–5, 37, 58, 59, 61, 95, 132, 301, 389, 395, 425, 446, 447, 582, 585, 600, 602, 689, 828, 917
+
+## implicit task
+
+A task generated by an implicit parallel region or generated when a parallel construct is encountered during execution. 3, 4, 8, 19, 23, 28, 30, 37, 38, 51, 59, 61, 81, 83, 87, 100, 104, 105, 115–117, 124, 125, 214, 227, 252, 253, 270, 273, 384–386, 389–391, 404–415, 420, 421, 501, 503, 524, 682, 719, 744, 758, 794, 798, 828, 862–864
+
+## implicit task region
+
+A region that corresponds to an implicit task. 3, 125, 758
+
+## importing task
+
+A task that permits a preceding dependence-compatible task to be an antecedent task of one of its child tasks. 511, 108, 427, 437, 507, 511, 559
+
+## inactive parallel region
+
+A parallel region comprised of one implicit task and, thus, is being executed by a team comprised of only its primary thread. 58, 577, 579
+
+## inactive target region
+
+A target region that is executed on the same device that encountered the target construct. 124
+
+## included task
+
+A task for which execution is sequentially included in the generating task region. That is, an included task is an undeferred task and executed by the encountering thread. 7, 30, 52, 59, 91, 426, 439, 441, 454, 456, 459, 461, 466, 468, 479, 482, 603
+
+## inclusive scan computation
+
+A scan computation for which the value read includes the updates performed in the same logical iteration. 269, 269, 909
+
+## index-set splitting
+
+The splitting of the logical iteration space into partitions that each are executed by a generated loop. 377, 901
+
+## indirect device invocation
+
+An indirect call to the device version of a procedure on a device other than the host device, through a function pointer (C/C++), a pointer to a member function (C++), a dummy procedure (Fortran), or a procedure pointer (Fortran) that refers to the host version of the procedure. 350, 351
+
+## induction
+
+A use of an induction operation. 60, 239
+
+## induction attribute
+
+For a given loop-nest-associated construct, a data-sharing attribute of a data entity that implies the private attribute and for which the value is updated according to an induction operation. 258, 64
+
+## induction expression
+
+A collector expression or an inductor expression. 240, 240
+
+## induction identifier
+
+An OpenMP identifier that specifies an inductor OpenMP operation to use in an induction. 239, 239, 240, 246–249, 259, 263, 264
+
+## induction operation
+
+A recurrence operation that expresses the value of a variable as a function, the inductor, applied to its previous value and a step expression. For an induction operation performed in a loop on the induction variable x and a loop-invariant step expression s, $x _ { i } = x _ { i - 1 } \oplus s , i > 0$ where $x _ { i }$ is the value of x at the start of collapsed iteration $i , x _ { 0 }$ is the value of x before any tasks enter the loop, and the binary operator ⊕ is the inductor. For some inductors, the induction operation can be expressed in a non-recursive closed form as $x _ { i } = x _ { 0 } \oplus s _ { i } = x _ { 0 } \oplus ( s \otimes i )$ where $s _ { i } = s \otimes i .$ . The expression $s _ { i }$ is the collective step expression of iteration i and the binary operator ⊗ is the collector. 32, 59, 60, 64, 98, 111, 239, 243, 258, 266, 898
+
+## induction variable
+
+A variable for which an induction operation determines its values. 60, 243, 264
+
+## inductor
+
+A binary operator used by an induction operation. 60, 243
+
+## inductor expression
+
+An OpenMP stylized expression that specifies how an induction operation determines a new value of an induction variable from its previous value and a step expression. 243, 60, 243, 244, 246, 248, 258, 264, 265
+
+## informational directive
+
+A directive that is neither declarative nor executable, but otherwise conveys user code properties to the compiler. 352, 112, 152, 355, 363, 368, 369
+
+## initialization phase
+
+The portion of an afected iteration that includes all statements that initialize private variables prior to the input phase and scan phase of a scan computation. 267, 267, 268, 270, 899
+
+## initializer
+
+An OpenMP operation that uses an initializer expression. 249, 61, 90, 244, 245, 249, 252
+
+## initializer expression
+
+An OpenMP stylized expression that determines the initializer for the private copies of list items in a reduction clause. 241, 61, 90, 242–244, 248, 251, 261, 263, 267, 345
+
+## initial task
+
+An implicit task associated with an implicit parallel region. 4, 5, 28, 61, 95, 124, 125, 253, 389, 394, 395, 413, 421, 446, 447, 453, 462, 503, 679, 705, 706, 719, 758, 785, 792, 798, 883
+
+## initial task region
+
+A region that corresponds to an initial task. 3, 115, 116, 501, 503, 571, 577, 580
+
+## initial team
+
+The team that comprises an initial thread executing an implicit parallel region. 4, 7, 105, 116, 394, 420, 422, 581, 829
+
+## initial thread
+
+The thread that executes an implicit parallel region. 3, 4, 61, 84, 87, 106, 132, 133, 135, 216, 394, 395, 412, 420, 425, 446, 501, 503, 742, 886, 888
+
+## innermost-leaf property
+
+The property that a clause applies to the innermost leaf construct that permits it when it appears on a compound construct. 159, 180, 225, 232, 235, 269, 270, 272, 445, 488–492, 506, 517, 518, 528
+
+## input map type
+
+The map type specified in a map clause specified on a construct to which map-type decay is applied to determine an output map type. 275, 70, 82, 109, 275, 276
+
+## input phase
+
+The portion of a logical iteration that contains all computations that update a list item for which a scan computation is performed. 267, 60, 111, 267, 269, 270
+
+## input place partition
+
+The place partition that is used to determine the place-partition-var and place-assignment-var ICVs and the place assignments of the implicit tasks of a parallel region. 389, 389–391, 393
+
+## intent(in) property
+
+The property that a routine argument is an intent(in) dummy argument in Fortran. In C/C++, the memory pointed to by the argument is not written by the runtime but must be readable. 535, 596, 597, 604–606, 609, 611, 613, 614, 616, 617, 623–628, 631–636, 638–642, 644, 646, 648–652, 683, 685, 686, 692, 698, 726, 734, 748–752, 755, 759, 760, 762, 765, 766, 769, 770, 772, 774, 777, 780, 782, 786, 835, 837, 839, 840, 842, 844, 845, 854
+
+## intent(out) property
+
+The property that a routine argument is an intent(out) dummy argument in Fortran. In C/C++, the memory pointed to by the argument is not read by the runtime but must be writeable. 535, 623–625, 638, 640, 642, 684, 686, 787, 788, 847, 853, 870, 872, 873, 876
+
+## internal control variable
+
+A conceptual variable that specifies runtime behavior of a set of threads or tasks in an OpenMP program. 115, 56, 885
+
+## interoperability object
+
+An OpenMP object of interop OpenMP type, which is an opaque type. These objects represent information that supports interaction with foreign runtime environments. 539, 62, 181, 328, 334, 339, 468–471, 539, 543, 622, 629, 892, 902, 907
+
+## interoperability property
+
+A property associated with an interoperability object. 468, 62, 541, 622–625, 627, 628
+
+## interoperability-property-retrieving property
+
+The property that a routine retrieves an interoperability property from an interoperability object. 622, 62, 623–625
+
+## interoperability-property-retrieving routine
+
+A routine that has the interoperability-property-retrieving property. 622, 622, 624–626
+
+## interoperability routine
+
+A routine that has the interoperability-routine property. 622, 468, 541, 543, 622, 629
+
+## interoperability-routine property
+
+The property that a routine provides a mechanism to inspect the properties associated with an interoperability object. 622, 62, 623–628
+
+## intervening code
+
+For two consecutive afected loops of a loop-nest-associated construct, user code that appears inside the loop body of the outer afected loop but outside the loop body of the inner afected loop. 198, 84, 198, 204, 205, 434
+
+## is-device-ptr attribute
+
+For a given device construct, a data-sharing attribute of a variable that implies the private attribute, and additionally the variable is initialized with a device address that corresponds to the device pointer variable of the same name in the enclosing data environment of the construct. 235
+
+## ISO C binding property
+
+The property of a routine that its Fortran version has the BIND(C) attribute. 63, 554, 556, 603–606, 608, 609, 611, 613–615, 617, 619, 620, 635, 640, 642, 643, 656–661
+
+## ISO C property
+
+The property that a routine argument has the BIND(C) attribute in Fortran. If any argument of a routine has the ISO C property then the routine has the ISO C binding property. 535, 63, 554, 604–609, 611, 613, 614, 616, 617, 619, 620, 640, 642, 656–661, 770, 774, 777
+
+## iteration count
+
+The number of times that the loop body of a given loop is executed. 203, 203–205, 264, 379, 383, 888
+
+## iterator
+
+A programming mechanism to specify a set of values. 169, 170, 196, 204, 286, 400, 906, 916
+
+## iterator specifier
+
+A tuple that specifies an iterator-identifier and its associated iterator value set. 169, 63, 162, 169
+
+## iterator-specifier list
+
+An argument list that consists of iterator-specifier list items. 162
+
+## iterator-specifier list item
+
+A list item that is an iterator specifier. 162, 63
+
+## iterator value set
+
+The set of values that correspond to a given instance of an iterator modifier. 170, 63, 169–171
+
+## L
+
+## last-level cache
+
+The last cache in a memory hierarchy that is used by a set of cores. 128
+
+## lastprivate attribute

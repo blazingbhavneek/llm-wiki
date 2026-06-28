@@ -1,0 +1,586 @@
+{
+  "original_file_name": "OpenMP-API-Specification.md",
+  "inferred_file_name": "openmp-6.0-api-specification.md",
+  "files": [
+    {
+      "name": "openmp-front-matter.md",
+      "header": "Front Matter and Introduction"
+    },
+    {
+      "name": "openmp-runtime-tasking-devices-memory.md",
+      "header": "OpenMP Runtime Library: Tasking, Devices, and Memory"
+    },
+    {
+      "name": "openmp-runtime-allocation-locks.md",
+      "header": "OpenMP Runtime Library: Memory Allocation, Locks, Affinity, and Execution Control"
+    },
+    {
+      "name": "ompd-overview-execution-memory.md",
+      "header": "OpenMP API Overview: Scope, Execution Model, and Memory Model"
+    },
+    {
+      "name": "openmp-memory-model-and-tools.md",
+      "header": "OpenMP API Overview: Memory Model, Tool Interfaces, Compliance, and References"
+    },
+    {
+      "name": "openmp-document-organization-and-glossary.md",
+      "header": "OpenMP API Specification: Glossary of Terms"
+    },
+    {
+      "name": "openmp-glossary-e-to-f.md",
+      "header": "OpenMP API Specification: Glossary of Terms"
+    },
+    {
+      "name": "openmp-glossary-g-to-h.md",
+      "header": "OpenMP API Specification: Glossary of Terms"
+    },
+    {
+      "name": "openmp-glossary-l-to-m.md",
+      "header": "OpenMP API Specification: Glossary of Terms"
+    },
+    {
+      "name": "openmp-glossary-m-to-n.md",
+      "header": "OpenMP API Specification: Glossary of Terms"
+    },
+    {
+      "name": "openmp-glossary-n-to-o.md",
+      "header": "OpenMP API Specification: Glossary of Terms"
+    },
+    {
+      "name": "openmp-glossary-o-p.md",
+      "header": "OpenMP API Specification: Glossary of Terms"
+    },
+    {
+      "name": "openmp-glossary-r.md",
+      "header": "OpenMP API Specification: Glossary of Terms"
+    },
+    {
+      "name": "openmp-glossary-s.md",
+      "header": "OpenMP API Specification: Glossary of Terms"
+    },
+    {
+      "name": "openmp-glossary-s-t.md",
+      "header": "OpenMP API Specification: Glossary of Terms"
+    },
+    {
+      "name": "openmp-glossary-t-u.md",
+      "header": "OpenMP API Specification: Glossary of Terms"
+    },
+    {
+      "name": "openmp-glossary-w-z-icv-intro.md",
+      "header": "OpenMP API Specification: Glossary of Terms"
+    },
+    {
+      "name": "icv-descriptions-initial-values.md",
+      "header": "OpenMP API Specification: Internal Control Variables (ICVs) - Descriptions and Initial Values"
+    },
+    {
+      "name": "icv-modification-retrieval-behavior.md",
+      "header": "OpenMP API Specification: Internal Control Variables (ICVs) - Modification, Retrieval, and Per-Data Environment Behavior"
+    },
+    {
+      "name": "icv-overrides-env-vars-overview.md",
+      "header": "OpenMP API Specification: ICV Override Relationships and Environment Variables"
+    },
+    {
+      "name": "parallel-region-env-vars.md",
+      "header": "OpenMP API Specification: Parallel Region Environment Variables"
+    },
+    {
+      "name": "teams-and-program-exec-env-vars.md",
+      "header": "OpenMP API Specification: Teams and Program Execution Environment Variables"
+    },
+    {
+      "name": "device-memory-tool-env-vars.md",
+      "header": "OpenMP API Specification: Device, Memory, and Tool Environment Variables"
+    },
+    {
+      "name": "ompd-display-env-vars.md",
+      "header": "OpenMP API Specification: Device, Memory, and Tool Environment Variables"
+    },
+    {
+      "name": "directive-syntax-overview.md",
+      "header": "OpenMP API Specification: Directive and Construct Syntax Overview"
+    },
+    {
+      "name": "directive-format.md",
+      "header": "OpenMP API Specification: Directive Format"
+    },
+    {
+      "name": "source-form-and-clause-format.md",
+      "header": "OpenMP API Specification: Source Form Directives and Clause Format"
+    },
+    {
+      "name": "argument-lists-and-locators.md",
+      "header": "OpenMP API Specification: Argument Lists and Locators"
+    },
+    {
+      "name": "array-sections-and-iterator.md",
+      "header": "OpenMP API Specification: Array Sections and Iterator Modifier"
+    },
+    {
+      "name": "conditional-compilation.md",
+      "header": "OpenMP API Specification: Conditional Compilation"
+    },
+    {
+      "name": "directive-name-modifier.md",
+      "header": "OpenMP API Specification: Directive Name Modifier and Clauses"
+    },
+    {
+      "name": "init-destroy-clauses.md",
+      "header": "OpenMP API Specification: Init and Destroy Clauses"
+    },
+    {
+      "name": "base-language-formats-continued.md",
+      "header": "OpenMP API Specification: Base Language Formats and Restrictions Continued"
+    },
+    {
+      "name": "openmp-stylized-expressions-structured-blocks.md",
+      "header": "OpenMP Stylized Expressions and Structured Blocks"
+    },
+    {
+      "name": "context-specific-structured-blocks.md",
+      "header": "OpenMP Stylized Expressions and Structured Blocks"
+    },
+    {
+      "name": "openmp-atomic-structured-blocks.md",
+      "header": "OpenMP Atomic Structured Blocks: Definitions and Forms"
+    },
+    {
+      "name": "atomic-restrictions-loop-concepts.md",
+      "header": "Atomic Structured Block Restrictions and Loop Concepts"
+    },
+    {
+      "name": "canonical-loop-sequence-spaces.md",
+      "header": "Canonical Loop Sequence, Loop-Iteration Spaces, and Schedules"
+    },
+    {
+      "name": "ordered-looprange-data-env.md",
+      "header": "Ordered and Looprange Clauses, and Data Environment Introduction"
+    },
+    {
+      "name": "data-sharing-attribute-rules.md",
+      "header": "Data-Sharing Attribute Rules"
+    },
+    {
+      "name": "saved-modifier-threadprivate.md",
+      "header": "saved Modifier and threadprivate Directive"
+    },
+    {
+      "name": "list-item-privatization.md",
+      "header": "List Item Privatization"
+    },
+    {
+      "name": "data-sharing-clauses-default-shared-private-firstprivate.md",
+      "header": "Data-Sharing Attribute Clauses: default, shared, private, and firstprivate"
+    },
+    {
+      "name": "data-sharing-clauses-lastprivate-linear-device.md",
+      "header": "Data-Sharing Attribute Clauses: lastprivate, linear, and device pointer clauses"
+    },
+    {
+      "name": "reduction-induction-identifiers-expressions.md",
+      "header": "Reduction and Induction Clauses: Identifiers, Expressions, and Common Properties"
+    },
+    {
+      "name": "reduction-clauses-common-scoping-specific.md",
+      "header": "Reduction Clauses: Common Properties, Scoping, and Specifics"
+    },
+    {
+      "name": "task-reduction-in-reduction-induction-declare.md",
+      "header": "Task Reduction, In Reduction, Induction, and Declare Directives"
+    },
+    {
+      "name": "declare-induction-directive-clauses.md",
+      "header": "Declare Induction Directive and Clauses"
+    },
+    {
+      "name": "scan-directive.md",
+      "header": "Scan Directive"
+    },
+    {
+      "name": "scan-clauses.md",
+      "header": "Scan Clauses"
+    },
+    {
+      "name": "data-copying-clauses.md",
+      "header": "Data Copying Clauses"
+    },
+    {
+      "name": "data-mapping-control.md",
+      "header": "Data-Mapping Control"
+    },
+    {
+      "name": "mapper-identifiers-and-modifier.md",
+      "header": "Mapper Identifiers and Modifier"
+    },
+    {
+      "name": "map-clause-semantics-and-execution.md",
+      "header": "Map Clause Semantics and Execution"
+    },
+    {
+      "name": "enter-clause.md",
+      "header": "Enter Clause"
+    },
+    {
+      "name": "link-clause.md",
+      "header": "Link Clause"
+    },
+    {
+      "name": "defaultmap-clause.md",
+      "header": "Defaultmap Clause"
+    },
+    {
+      "name": "declare-mapper-directive.md",
+      "header": "Declare Mapper Directive"
+    },
+    {
+      "name": "data-motion-and-environment-clauses.md",
+      "header": "Data-Motion Clauses and Environment Clauses"
+    },
+    {
+      "name": "memory-management.md",
+      "header": "Memory Management"
+    },
+    {
+      "name": "variant-directives-contexts-metadirectives.md",
+      "header": "Variant Directives Chapter (Continued): Contexts, Selectors, and Metadirectives"
+    },
+    {
+      "name": "semantic-requirement-declare-variant.md",
+      "header": "Variant Directives Chapter (Continued): Contexts, Selectors, and Metadirectives"
+    },
+    {
+      "name": "dispatch-construct.md",
+      "header": "Dispatch Construct and Related Clauses"
+    },
+    {
+      "name": "declare-simd.md",
+      "header": "Declare SIMD Directive and Branch Clauses"
+    },
+    {
+      "name": "declare-target-overview.md",
+      "header": "Declare Target Directives Overview"
+    },
+    {
+      "name": "declare-target-directives.md",
+      "header": "Declare Target and Begin Declare Target Directives"
+    },
+    {
+      "name": "indirect-clause.md",
+      "header": "Declare Target and Begin Declare Target Directives"
+    },
+    {
+      "name": "informational-utility-directives.md",
+      "header": "Error, At, Message, and Severity Clauses"
+    },
+    {
+      "name": "requires-directive.md",
+      "header": "Requires Directive and Requirement Clauses"
+    },
+    {
+      "name": "assumption-directives-continued.md",
+      "header": "Assumption Directives and Clauses"
+    },
+    {
+      "name": "nothing-directive.md",
+      "header": "Utility Directives"
+    },
+    {
+      "name": "loop-transforming-constructs.md",
+      "header": "Loop-Transforming Constructs"
+    },
+    {
+      "name": "apply-sizes-clauses.md",
+      "header": "Loop-Transforming Constructs"
+    },
+    {
+      "name": "loop-transform-constructs-part1.md",
+      "header": "Loop-Transforming Constructs"
+    },
+    {
+      "name": "split-stripe.md",
+      "header": "Loop-Transforming Constructs"
+    },
+    {
+      "name": "tile-construct.md",
+      "header": "Loop-Transforming Constructs"
+    },
+    {
+      "name": "unroll-construct.md",
+      "header": "Loop-Transforming Constructs"
+    },
+    {
+      "name": "parallel-construct.md",
+      "header": "Parallelism Generation and Control"
+    },
+    {
+      "name": "teams-construct.md",
+      "header": "Parallelism Generation and Control"
+    },
+    {
+      "name": "order-simd-masked.md",
+      "header": "Parallelism Generation and Control"
+    },
+    {
+      "name": "work-distribution-single-scope-sections.md",
+      "header": "Work-Distribution Constructs"
+    },
+    {
+      "name": "workshare-construct.md",
+      "header": "Work-Distribution Constructs"
+    },
+    {
+      "name": "workdistribute-construct.md",
+      "header": "Work-Distribution Constructs"
+    },
+    {
+      "name": "worksharing-loop-constructs.md",
+      "header": "Work-Distribution Constructs"
+    },
+    {
+      "name": "schedule-clause.md",
+      "header": "Work-Distribution Constructs"
+    },
+    {
+      "name": "distribute-construct.md",
+      "header": "Work-Distribution Constructs"
+    },
+    {
+      "name": "dist-schedule-clause.md",
+      "header": "Work-Distribution Constructs"
+    },
+    {
+      "name": "loop-construct.md",
+      "header": "Work-Distribution Constructs"
+    },
+    {
+      "name": "task-construct.md",
+      "header": "Tasking Constructs"
+    },
+    {
+      "name": "taskloop-construct.md",
+      "header": "Tasking Constructs"
+    },
+    {
+      "name": "taskgraph-construct.md",
+      "header": "Tasking Constructs"
+    },
+    {
+      "name": "task-clauses.md",
+      "header": "Tasking Constructs"
+    },
+    {
+      "name": "task-scheduling.md",
+      "header": "Tasking Constructs"
+    },
+    {
+      "name": "device-directives-clauses.md",
+      "header": "Device Directives"
+    },
+    {
+      "name": "data-mapping-constructs.md",
+      "header": "Data Mapping Constructs"
+    },
+    {
+      "name": "target-data-construct.md",
+      "header": "Target Data Construct"
+    },
+    {
+      "name": "target-construct.md",
+      "header": "Target Construct"
+    },
+    {
+      "name": "target-update-construct.md",
+      "header": "Target Update Construct"
+    },
+    {
+      "name": "interop.md",
+      "header": "Chapter 16: Interoperability"
+    },
+    {
+      "name": "synchronization-ch17-part1.md",
+      "header": "Chapter 17: Synchronization Constructs and Clauses - Hint, Critical, and Barriers"
+    },
+    {
+      "name": "synchronization-ch17-part2.md",
+      "header": "Chapter 17: Synchronization Constructs and Clauses - Taskgroup, Taskwait"
+    },
+    {
+      "name": "synchronization-ch17-part4.md",
+      "header": "Chapter 17: Synchronization Constructs and Clauses - nowait, nogroup, and Memory Ordering"
+    },
+    {
+      "name": "synchronization-ch17-part5.md",
+      "header": "Chapter 17: Synchronization Constructs and Clauses - atomic and flush"
+    },
+    {
+      "name": "synchronization-ch17-part7.md",
+      "header": "Chapter 17: Synchronization Constructs and Clauses - Dependences (Continued)"
+    },
+    {
+      "name": "cancellation-ch18.md",
+      "header": "Chapter 18: Cancellation Constructs"
+    },
+    {
+      "name": "composition-ch19.md",
+      "header": "Chapter 19: Composition of Constructs"
+    },
+    {
+      "name": "runtime-library-ch20.md",
+      "header": "Chapter 20: Runtime Library Definitions (Continued)"
+    },
+    {
+      "name": "memory-management-types.md",
+      "header": "Chapter 20: OpenMP Memory Management Types"
+    },
+    {
+      "name": "sync-and-affinity-types.md",
+      "header": "Chapter 20: OpenMP Synchronization and Affinity Types"
+    },
+    {
+      "name": "resource-and-tool-types.md",
+      "header": "Chapter 20: Resource Relinquishing and Tool Types"
+    },
+    {
+      "name": "parallel-region-routines.md",
+      "header": "Chapter 21: Parallel Region Support Routines"
+    },
+    {
+      "name": "teams-region-routines.md",
+      "header": "Chapter 22: Teams Region Routines"
+    },
+    {
+      "name": "tasking-support-routines.md",
+      "header": "Chapter 23: Tasking Support Routines"
+    },
+    {
+      "name": "device-information-routines.md",
+      "header": "Chapter 24: Device Information Routines"
+    },
+    {
+      "name": "device-memory-routines.md",
+      "header": "Chapter 25: Device Memory Routines"
+    },
+    {
+      "name": "interop-routines.md",
+      "header": "Chapter 26: Interoperability Routines"
+    },
+    {
+      "name": "memory-management-routines.md",
+      "header": "Chapter 27: Memory Management Routines"
+    },
+    {
+      "name": "lock-routines-continued.md",
+      "header": "Chapter 28: Lock Routines"
+    },
+    {
+      "name": "thread-affinity-routines.md",
+      "header": "Chapter 29: Thread Affinity Routines"
+    },
+    {
+      "name": "chapter-30-execution-control-routines.md",
+      "header": "Chapter 30: Execution Control Routines"
+    },
+    {
+      "name": "chapter-31-tool-support-routines.md",
+      "header": "Chapter 31: Tool Support Routines"
+    },
+    {
+      "name": "chapter-32-ompt-overview-continued.md",
+      "header": "Chapter 32: OMPT Overview (Continued)"
+    },
+    {
+      "name": "chapter-33-ompt-data-types.md",
+      "header": "Chapter 33: OMPT Data Types"
+    },
+    {
+      "name": "chapter-33-ompt-data-types-continued.md",
+      "header": "Chapter 33: OMPT Data Types"
+    },
+    {
+      "name": "chapter-34-general-callbacks-and-trace-records.md",
+      "header": "Chapter 34: General Callbacks and Trace Records"
+    },
+    {
+      "name": "chapter-34-parallelism-and-work-distribution-callbacks.md",
+      "header": "Chapter 34: General Callbacks and Trace Records"
+    },
+    {
+      "name": "chapter-34-tasking-and-synchronization-callbacks.md",
+      "header": "Chapter 34: General Callbacks and Trace Records"
+    },
+    {
+      "name": "chapter-35-device-callbacks-and-tracing.md",
+      "header": "Chapter 35: Device Callbacks and Tracing"
+    },
+    {
+      "name": "chapter-36-general-entry-points.md",
+      "header": "Chapter 36: General Entry Points"
+    },
+    {
+      "name": "chapter-37-device-tracing-entry-points.md",
+      "header": "Chapter 37: Device Tracing Entry Points"
+    },
+    {
+      "name": "chapter-38-ompd-overview.md",
+      "header": "Chapter 38: OMPD Overview"
+    },
+    {
+      "name": "chapter-39-ompd-data-types-part-1.md",
+      "header": "Chapter 39: OMPD Data Types (Part 1)"
+    },
+    {
+      "name": "chapter-39-ompd-data-types-part-3.md",
+      "header": "Chapter 39: OMPD Data Types (Part 3)"
+    },
+    {
+      "name": "chapter-40-ompd-callback-interface.md",
+      "header": "Chapter 40: OMPD Callback Interface"
+    },
+    {
+      "name": "chapter-41-initialization-and-process.md",
+      "header": "Chapter 41: OMPD Routines (Initialization and Process Setup)"
+    },
+    {
+      "name": "chapter-41-address-thread-parallel.md",
+      "header": "Chapter 41: OMPD Routines (Address Space, Thread, and Parallel Handles)"
+    },
+    {
+      "name": "chapter-41-task-handles.md",
+      "header": "Chapter 41: OMPD Routines (Task Handles)"
+    },
+    {
+      "name": "chapter-41-handle-compare-release-state.md",
+      "header": "Chapter 41: OMPD Routines (Task Handles)"
+    },
+    {
+      "name": "chapter-41-display-control-scope-info.md",
+      "header": "Chapter 41: OMPD Routines (Display Control and Scope-Specific Information)"
+    },
+    {
+      "name": "chapter-42-breakpoint-symbols.md",
+      "header": "Chapter 42: OMPD Breakpoint Symbol Names"
+    },
+    {
+      "name": "part-vi-appendices-impl-defined-behaviors.md",
+      "header": "Part VI: Appendices"
+    },
+    {
+      "name": "part-vi-appendices-features-history.md",
+      "header": "Part VI: Appendices"
+    },
+    {
+      "name": "part-vi-appendices-nesting-of-regions.md",
+      "header": "Part VI: Appendices"
+    },
+    {
+      "name": "part-vii-appendices-conforming-compound-directive-names.md",
+      "header": "Part VII: Appendices (Conforming Compound Directive Names)"
+    },
+    {
+      "name": "part-viii-index.md",
+      "header": "Part VIII: Index"
+    }
+  ]
+}

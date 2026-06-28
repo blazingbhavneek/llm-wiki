@@ -16,7 +16,7 @@ LLM, and markdown ingestion consumes the hierarchical `md.py` pipeline output.
 | `revisions.py` | recon / update / supersede / stale / cascade logic |
 | `md_ingest.py` | `MarkdownIngest`: `md.py` output dir → nodes + structural edges |
 | `cli.py` | `python -m graph.cli ...` |
-| `agent.py`, `master_agent.py` | pass-2: query agent + specialist cache (ported from `new/`) |
+| `agent.py` | `QueryAgent`: graph retrieval tools + dispatch + answer persistence; the tool-call loop itself lives in `llm.AgentClient` |
 
 ## Pipeline
 
@@ -41,6 +41,7 @@ python -m graph.cli add output/test          # ingest an md.py output dir
 python -m graph.cli query keyword "gpu setup"
 python -m graph.cli query vector "select a device"   # +1-2 hop neighbourhood
 python -m graph.cli query id node:test-md:4564559ce3d6
+python -m graph.cli ask "how do I select a GPU device?"  # agent reasoning loop
 python -m graph.cli recon input/test.md       # new / unchanged / changed
 python -m graph.cli cascade output/test-v2    # append/supersede revised md.py output
 python -m graph.cli health
@@ -90,8 +91,24 @@ is marked `stale`. This propagation is bounded by hop and node-count caps.
 Source node bodies are append-only: cascade does not rewrite old source material
 in place.
 
+## Paper Ports (see `../todo/minimal_port_plan.md`)
+
+- **Retrieval as reasoning** (LLM-Wiki): `engine.ask()` runs `QueryAgent`, which
+  hands graph tools (`search/read/follow_link/finish`) + a dispatch callback to
+  `llm.AgentClient.run_tool_loop` (native tool-calling lives in the `llm/` module,
+  not graph). The final answer is saved as an exogenous node with `supports`
+  edges (query-time graph growth + provenance). Bounded by `WIKI_AGENT_MAX_STEPS`
+  (default 6).
+- **Temporal edges** (Graphiti): edges carry `valid_at` / `invalid_at` /
+  `expired_at` / `source_episode_ids`. A new `contradicts` edge invalidates the
+  prior edge between the same pair (no extra LLM call).
+- **Entity dedup, lite** (Graphiti): at ingest, an LLM same-entity check over KNN
+  neighbors links near-duplicates with a `same-as` edge (detection only, no
+  destructive merge). Toggle with `WIKI_ENTITY_DEDUP`.
+
 ## Still Missing
 
 - Stronger claim matching for heavy rewrites where the local extractor is noisy
-- query-time exogenous-node growth (agent cache feeding back into the graph)
-- `agent.py` / `master_agent.py` query agent wired into `query`
+- Full Graphiti conflict pipeline (fast/slow dedup + batch arbitration) and
+  destructive node merge
+- Error Book / self-healing wiki structure (LLM-Wiki)

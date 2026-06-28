@@ -76,6 +76,8 @@ def make_llm(
         api_key=api_key,
         temperature=temperature,
         timeout=timeout,
+        # Temporary: disable thinking for faster summaries. Comment out to re-enable.
+        # model_kwargs={"extra_body": {"chat_template_kwargs": {"enable_thinking": False}}},
     )
 
 async def structured_ainvoke(

@@ -6,10 +6,11 @@ from pathlib import Path
 
 from db import Database
 from embeddings import Embedder
-from llm.llm import LlmClient
+from llm.agent import AgentClient
 
+from .agent import QueryAgent
 from .md_ingest import MarkdownIngest
-from .models import Edge, GraphStats, Node, QueryResult, Settings
+from .models import AgentAnswer, Edge, GraphStats, Node, QueryResult, Settings
 from .revisions import GraphRevisions
 from .runtime import (
     GRAPH_SYSTEM_PROMPT,
@@ -31,7 +32,7 @@ class DomainEngine:
         self.settings = settings or Settings.from_env()
         self.database = Database(self.settings.database_path)
         self.embedder = embedder or Embedder(self.settings)
-        self.llm = llm_client or LlmClient(
+        self.llm = llm_client or AgentClient(
             model=self.settings.chat_model,
             base_url=self.settings.chat_base_url,
             api_key=self.settings.chat_api_key,
@@ -66,6 +67,12 @@ class DomainEngine:
             self.exogenous,
             self.ingest_parser,
         )
+        self.agent = QueryAgent(
+            self.query_api,
+            self.exogenous,
+            self.llm,
+            self.settings,
+        )
 
     def close(self) -> None:
         self.database.close()
@@ -77,23 +84,44 @@ class DomainEngine:
         return self.ingest_parser.load_md_output(md_output_dir)
 
     def ingest(self, node: Node) -> list[Edge]:
+        # node.id = hash(body, document) → an existing complete node is the exact
+        # same chunk in the same doc (same context): skip enrich+embed+edges.
+        if self.runtime.node_is_complete(node.id):
+            return []
         self.runtime.fill_derived_fields(node)
         self.database.upsert_node(node)
         body_vec, summary_vec = self.runtime.store_vectors(node)
-        return self.runtime.build_semantic_edges(
+        edges = self.runtime.build_semantic_edges(
             node,
             body_vec,
             summary_vec,
             self.settings.edge_candidate_k,
         )
+        if self.settings.entity_dedup:
+            candidates = self.runtime.knn_candidates(
+                node.id,
+                body_vec,
+                summary_vec,
+                self.settings.edge_candidate_k,
+            )
+            edges += self.runtime.link_entity_duplicates(node, candidates)
+        return edges
 
     def ingest_md_output(self, md_output_dir: str | Path) -> list[Node]:
         nodes, structural_edges = self.md_to_nodes(md_output_dir)
         version = self.revisions._source_version_for_nodes(nodes)
 
-        for node in nodes:
+        total = len(nodes)
+        edge_count = 0
+        for index, node in enumerate(nodes, start=1):
             node.source_version = version
-            self.ingest(node)
+            edges = self.ingest(node)
+            edge_count += len(edges)
+            print(
+                f"[ingest] {index}/{total} nodes | semantic+dedup edges so far: "
+                f"{edge_count} | {node.id}",
+                flush=True,
+            )
 
         if nodes:
             self.revisions._replace_structural_edges(
@@ -103,7 +131,23 @@ class DomainEngine:
         if nodes and nodes[0].original_document_name:
             self.database.record_source(nodes[0].original_document_name, version)
 
+        print(
+            f"[ingest] done: {total} node(s), {edge_count} semantic/dedup edge(s), "
+            f"{len(structural_edges)} structural edge(s)",
+            flush=True,
+        )
+        # Assign topic clusters at ingest time (Louvain over the current graph), so
+        # node.cluster holds real communities, not raw heading titles. Best-effort:
+        # never let clustering failure abort an ingest.
+        self._safe_recluster()
         return nodes
+
+    def _safe_recluster(self) -> None:
+        try:
+            labels = self.recluster()
+            print(f"[ingest] reclustered into {len(set(labels.values()))} topic(s)", flush=True)
+        except Exception as exc:  # noqa: BLE001 - clustering is non-critical
+            print(f"[ingest] recluster skipped: {exc}", flush=True)
 
     # endregion INGEST API
 
@@ -112,6 +156,12 @@ class DomainEngine:
         return self.query_api.query(query_type, value)
 
     # endregion QUERY API
+
+    # region AGENT API
+    def ask(self, question: str, persist: bool = True) -> AgentAnswer:
+        return self.agent.ask(question, persist)
+
+    # endregion AGENT API
 
     # region TOOL COMPATIBILITY API
     def search(self, text: str, limit: int | None = None) -> list[Node]:
@@ -139,7 +189,34 @@ class DomainEngine:
         return self.analytics.health(node_id)
 
     def recluster(self, resolution: float = 1.0) -> dict[str, str]:
-        return self.analytics.recluster(resolution=resolution)
+        return self.analytics.recluster(resolution=resolution, namer=self._llm_cluster_namer)
+
+    def _llm_cluster_namer(self, keywords: list[str], titles: list[str]) -> str | None:
+        """Name one community from its distinctive keywords + sample titles.
+
+        Best-effort: returns ``None`` on any failure / unusable output so the
+        caller falls back to the deterministic keyword label.
+        """
+        if not keywords and not titles:
+            return None
+        system = (
+            "You name topic clusters for a knowledge graph. Given keywords and "
+            "sample section titles, reply with ONE concise topic name of at most 4 "
+            "words. No quotes, no punctuation, no explanation — just the name."
+        )
+        user = (
+            f"Keywords: {', '.join(keywords) or '(none)'}\n"
+            f"Sample titles: {'; '.join(titles) or '(none)'}\n\n"
+            "Topic name:"
+        )
+        try:
+            raw = self.llm.complete(system, user)
+        except Exception:  # noqa: BLE001 - naming is non-critical
+            return None
+        name = " ".join(raw.strip().strip('"\'').split())
+        if not name or len(name) > 60 or len(name.split()) > 6:
+            return None
+        return name.title()
 
     # endregion GRAPH API
 
@@ -154,7 +231,10 @@ class DomainEngine:
         self.database.delete_node(node_id)
 
     def cascading_update(self, source_file: str | Path) -> list[str]:
-        return self.revisions.cascading_update(source_file)
+        actions = self.revisions.cascading_update(source_file)
+        # refresh clusters after the graph changed shape
+        self._safe_recluster()
+        return actions
 
     # endregion SOURCE UPDATE API
 

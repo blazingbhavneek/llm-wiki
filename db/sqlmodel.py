@@ -76,6 +76,10 @@ if SQLModel is not None:
         label: str
         summary: str = ""
         created_at: str
+        valid_at: str | None = None
+        invalid_at: str | None = None
+        expired_at: str | None = None
+        source_episode_ids_json: str = "[]"
 
 
     class SourceRow(SQLModel, table=True):
@@ -117,6 +121,7 @@ class SQLModelDatabase(BaseDatabase):
     def _create_core_tables(self) -> None:
         SQLModel.metadata.create_all(self.engine)
         self._ensure_node_columns()
+        self._ensure_edge_columns()
         self.connection.commit()
 
     def _ensure_node_columns(self) -> None:
@@ -140,6 +145,21 @@ class SQLModelDatabase(BaseDatabase):
             CREATE INDEX IF NOT EXISTS idx_nodes_entity ON nodes(entity);
             """
         )
+
+    def _ensure_edge_columns(self) -> None:
+        existing = {
+            row["name"]
+            for row in self.connection.execute("PRAGMA table_info(edges)").fetchall()
+        }
+        additions = {
+            "valid_at": "TEXT",
+            "invalid_at": "TEXT",
+            "expired_at": "TEXT",
+            "source_episode_ids_json": "TEXT NOT NULL DEFAULT '[]'",
+        }
+        for column, ddl in additions.items():
+            if column not in existing:
+                self.connection.execute(f"ALTER TABLE edges ADD COLUMN {column} {ddl}")
 
     def _setup_search_storage(self) -> None:
         self._create_fts_table()
@@ -276,6 +296,7 @@ class SQLModelDatabase(BaseDatabase):
             return [_node_from_record(row) for row in session.exec(stmt).all()]
 
     def upsert_edge(self, edge: Edge) -> None:
+        episodes_json = json.dumps(edge.source_episode_ids)
         with Session(self.engine) as session:
             row = session.get(EdgeRow, edge.id)
             if row is None:
@@ -286,10 +307,18 @@ class SQLModelDatabase(BaseDatabase):
                     label=edge.label,
                     summary=edge.summary,
                     created_at=edge.created_at,
+                    valid_at=edge.valid_at,
+                    invalid_at=edge.invalid_at,
+                    expired_at=edge.expired_at,
+                    source_episode_ids_json=episodes_json,
                 )
             else:
                 row.label = edge.label
                 row.summary = edge.summary
+                row.valid_at = edge.valid_at
+                row.invalid_at = edge.invalid_at
+                row.expired_at = edge.expired_at
+                row.source_episode_ids_json = episodes_json
 
             session.add(row)
             session.commit()
@@ -532,6 +561,10 @@ def _edge_from_record(row: Any) -> Edge:
         label=row.label,
         summary=row.summary or "",
         created_at=row.created_at,
+        valid_at=row.valid_at,
+        invalid_at=row.invalid_at,
+        expired_at=row.expired_at,
+        source_episode_ids=json.loads(row.source_episode_ids_json or "[]"),
     )
 
 

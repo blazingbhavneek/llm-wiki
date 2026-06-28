@@ -96,6 +96,7 @@ class RawSqliteDatabase(BaseDatabase):
             """
         )
         self._ensure_node_columns()
+        self._ensure_edge_columns()
         self.connection.commit()
 
     def _ensure_node_columns(self) -> None:
@@ -119,6 +120,21 @@ class RawSqliteDatabase(BaseDatabase):
             CREATE INDEX IF NOT EXISTS idx_nodes_entity ON nodes(entity);
             """
         )
+
+    def _ensure_edge_columns(self) -> None:
+        existing = {
+            row["name"]
+            for row in self.connection.execute("PRAGMA table_info(edges)").fetchall()
+        }
+        additions = {
+            "valid_at": "TEXT",
+            "invalid_at": "TEXT",
+            "expired_at": "TEXT",
+            "source_episode_ids_json": "TEXT NOT NULL DEFAULT '[]'",
+        }
+        for column, ddl in additions.items():
+            if column not in existing:
+                self.connection.execute(f"ALTER TABLE edges ADD COLUMN {column} {ddl}")
 
     def _restore_dim(self) -> None:
         row = self.connection.execute(
@@ -254,11 +270,18 @@ class RawSqliteDatabase(BaseDatabase):
         return [_row_to_node(r) for r in self.connection.execute(sql, params).fetchall()]
 
     def upsert_edge(self, edge: Edge) -> None:
+        import json
+
         self.connection.execute(
             """
-            INSERT INTO edges (id, source_node_id, target_node_id, label, summary, created_at)
-            VALUES (?,?,?,?,?,?)
-            ON CONFLICT(id) DO UPDATE SET label=excluded.label, summary=excluded.summary
+            INSERT INTO edges (id, source_node_id, target_node_id, label, summary,
+                created_at, valid_at, invalid_at, expired_at, source_episode_ids_json)
+            VALUES (?,?,?,?,?,?,?,?,?,?)
+            ON CONFLICT(id) DO UPDATE SET
+                label=excluded.label, summary=excluded.summary,
+                valid_at=excluded.valid_at, invalid_at=excluded.invalid_at,
+                expired_at=excluded.expired_at,
+                source_episode_ids_json=excluded.source_episode_ids_json
             """,
             (
                 edge.id,
@@ -267,6 +290,10 @@ class RawSqliteDatabase(BaseDatabase):
                 edge.label,
                 edge.summary,
                 edge.created_at,
+                edge.valid_at,
+                edge.invalid_at,
+                edge.expired_at,
+                json.dumps(edge.source_episode_ids),
             ),
         )
         self.connection.commit()
@@ -377,6 +404,14 @@ class RawSqliteDatabase(BaseDatabase):
         )
         self.connection.commit()
 
+    def has_vector(self, node_id: str, table: str = "vec_body") -> bool:
+        if self._dim is None:
+            return False
+        row = self.connection.execute(
+            f"SELECT 1 FROM {table} WHERE node_id=? LIMIT 1", (node_id,)
+        ).fetchone()
+        return row is not None
+
     def vector_search(
         self, vector: list[float], table: str = "vec_body", limit: int = 20
     ) -> list[tuple[str, float]]:
@@ -426,6 +461,10 @@ def _row_to_node(row: sqlite3.Row) -> Node:
 
 
 def _row_to_edge(row: sqlite3.Row) -> Edge:
+    import json
+
+    keys = row.keys()
+    episodes_raw = row["source_episode_ids_json"] if "source_episode_ids_json" in keys else "[]"
     return Edge(
         id=row["id"],
         source_node_id=row["source_node_id"],
@@ -433,6 +472,10 @@ def _row_to_edge(row: sqlite3.Row) -> Edge:
         label=row["label"],
         summary=row["summary"] or "",
         created_at=row["created_at"],
+        valid_at=row["valid_at"] if "valid_at" in keys else None,
+        invalid_at=row["invalid_at"] if "invalid_at" in keys else None,
+        expired_at=row["expired_at"] if "expired_at" in keys else None,
+        source_episode_ids=json.loads(episodes_raw or "[]"),
     )
 
 

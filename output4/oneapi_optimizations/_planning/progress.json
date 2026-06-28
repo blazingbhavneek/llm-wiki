@@ -1,0 +1,242 @@
+{
+  "files": [
+    {
+      "title": "oneAPI GPU Optimization Guide - Table of Contents and Introduction",
+      "filename": "toc-and-introduction.md",
+      "source_start": 1,
+      "source_end": 200,
+      "summary": "Contains the Table of Contents and the Introduction section, including overview of oneAPI, productive performance, performance considerations, profiling, source code examples, and getting started concepts like Amdahl's Law, Locality, Work Size, Parallelization, Programming Language, Compilers, and Libraries."
+    },
+    {
+      "title": "Intel® Iris® Xe Family Architecture",
+      "filename": "intel-xe-family-architecture.md",
+      "source_start": 201,
+      "source_end": 307,
+      "summary": "Detailed breakdown of the Intel Iris Xe GPU family architecture, including Xe-LP Execution Units, Dual Subslices, Slices, and the Xe-core structure for HPC and HPG variants. Includes configuration tables and terminology mappings between legacy and new Intel Xe terms."
+    },
+    {
+      "title": "Work-Group Size and Occupancy Analysis",
+      "filename": "work-group-occupancy-analysis.md",
+      "source_start": 308,
+      "source_end": 735,
+      "summary": "Continuation of the GPGPU execution model analysis, demonstrating the impact of explicit work-group size specification on GPU hardware occupancy. Includes code examples (VectorAdd1 vs VectorAdd2), a detailed occupancy calculation table for Intel Iris Xe architecture, VTune Analyzer performance data, and a timeline view showing occupancy variance during kernel execution."
+    },
+    {
+      "title": "Advanced Kernel Configuration with Template Parameters",
+      "filename": "advanced-kernel-template-params.md",
+      "source_start": 736,
+      "source_end": 782,
+      "summary": "Introduction to the VectorAdd3 kernel, which uses template parameters for work-groups, work-group size, and sub-group size to allow experimentation with thread occupancy. Includes the full C++ source code for the VectorAdd3 kernel."
+    },
+    {
+      "title": "Sub-group ID Querying and Vectorization Principles",
+      "filename": "subgroup-id-querying-and-vectorization.md",
+      "source_start": 783,
+      "source_end": 1155,
+      "summary": "Covers sub-group ID calculation, vectorized memory access patterns (scatter/gather), and initial examples of optimizing memory operations using sub-group vectorization."
+    },
+    {
+      "title": "Maximizing Memory Bandwidth Utilization",
+      "filename": "maximizing-memory-bandwidth-utilization.md",
+      "source_start": 1156,
+      "source_end": 1228,
+      "summary": "Discusses techniques for increasing memory payload to saturate bandwidth, including using sycl::vec for larger contiguous loads/stores and using sub-group block load/store instructions. Also covers the importance of explicitly requesting sub-group sizes."
+    },
+    {
+      "title": "Data Sharing and Shuffle Functions",
+      "filename": "data-sharing-and-shuffle-functions.md",
+      "source_start": 1229,
+      "source_end": 1281,
+      "summary": "Explains efficient data sharing within a sub-group using shuffle functions, illustrated by a matrix transpose example. Highlights the use of optimized SYCL sub-group shuffle variants."
+    },
+    {
+      "title": "Sub-Group Size vs. Maximum Sub-Group Size",
+      "filename": "sub-group-size-vs-maximum-sub-group-size.md",
+      "source_start": 1282,
+      "source_end": 1319,
+      "summary": "Explains the difference between sub-group size and maximum sub-group size (SIMD width), highlighting how non-divisible work-group sizes result in smaller sub-groups that may require special handling."
+    },
+    {
+      "title": "Removing Conditional Checks",
+      "filename": "removing-conditional-checks.md",
+      "source_start": 1320,
+      "source_end": 1433,
+      "summary": "This section demonstrates how to remove boundary-checking conditional logic in SYCL kernels by padding input data with zeros, thereby simplifying the kernel code and improving performance."
+    },
+    {
+      "title": "Replacing Conditional Checks with Relational Functions",
+      "filename": "replacing-conditional-checks.md",
+      "source_start": 1434,
+      "source_end": 1467,
+      "summary": "This section explains an alternative approach to removing conditionals by using SYCL built-in relational functions like `max()` and `min()` to calculate loop bounds, avoiding explicit if-then-else blocks."
+    },
+    {
+      "title": "Registers and Performance",
+      "filename": "registers-and-performance.md",
+      "source_start": 1468,
+      "source_end": 1541,
+      "summary": "Continuation of the previous chunk. This section covers the importance of registers for performance, introduces the concept of register pressure and spilling, and demonstrates how to identify kernels with register spills using compiler warnings and the unitrace tool."
+    },
+    {
+      "title": "Small Register Mode vs Large Register Mode",
+      "filename": "small-vs-large-register-mode.md",
+      "source_start": 1542,
+      "source_end": 1583,
+      "summary": "Explains the difference between Small GRF mode (128 registers, 8 threads) and Large GRF mode (256 registers, 4 threads) on Intel Data Center GPU Max Series. It provides command-line examples for OpenMP and SYCL to control GRF mode selection via the -ftarget-register-alloc-mode option."
+    },
+    {
+      "title": "GRF Mode Specification and Compilation Modes",
+      "filename": "grf-mode-specification.md",
+      "source_start": 1584,
+      "source_end": 1656,
+      "summary": "Covers the command-line specification for GRF mode selection (-ftarget-register-alloc-mode), including the supported modes (small, large, auto) and default behaviors. It then details the compilation commands for OpenMP and SYCL backends, split into AOT and JIT sections, showing how to pass the GRF mode options to the IGC compiler."
+    },
+    {
+      "title": "Performance Tuning Using GRF Mode Selection",
+      "filename": "grf-performance-tuning.md",
+      "source_start": 1657,
+      "source_end": 1753,
+      "summary": "Discusses the impact of GRF mode selection on device code performance, analyzing the interplay between register pressure and parallel execution threads. It covers how unroll factors and OpenMP team counts affect performance with small vs. large GRF modes, providing code examples and observational metrics."
+    },
+    {
+      "title": "Optimizing Register Spills and Data Types",
+      "filename": "register-spill-optimization.md",
+      "source_start": 1754,
+      "source_end": 1854,
+      "summary": "Covers techniques to reduce register pressure, including keeping live ranges short, avoiding excessive loop unrolling, preferring USM pointers, recomputing values, breaking up large arrays/structures, and using shared local memory. Concludes with an introduction to applying these techniques in real examples."
+    },
+    {
+      "title": "Choosing Smaller Data Types",
+      "filename": "choosing-smaller-data-types.md",
+      "source_start": 1855,
+      "source_end": 1904,
+      "summary": "Demonstrates how using smaller data types (unsigned int instead of unsigned long) for private histogram bins reduces register pressure and improves performance by allowing bins to fit in registers."
+    },
+    {
+      "title": "Do Not Declare Private Variables as Volatile",
+      "filename": "do-not-declare-private-variables-as-volatile.md",
+      "source_start": 1905,
+      "source_end": 1959,
+      "summary": "Explains why private variables should not be declared volatile, as it prevents register allocation and is unnecessary for variables accessible only by a single thread."
+    },
+    {
+      "title": "Do Not Take Address of a Private Variable and Later Dereference the Pointer",
+      "filename": "do-not-take-address-of-private-variable.md",
+      "source_start": 1960,
+      "source_end": 2015,
+      "summary": "Explains that taking the address of a private variable forces it to reside in memory, preventing register promotion even if there is sufficient register space."
+    },
+    {
+      "title": "Sharing Registers in a Sub-group",
+      "filename": "sharing-registers-in-sub-group.md",
+      "source_start": 2016,
+      "source_end": 2139,
+      "summary": "Explains optimizing histogram bin storage by sharing private bins within a sub-group. It details the problem of register pressure with 256 bins per work item and presents a solution using sub-group broadcast and local ID checks to reduce storage to 16 bins per work item (256 total per sub-group)."
+    },
+    {
+      "title": "Using Sub-group Block Load/Store",
+      "filename": "using-sub-group-block-load-store.md",
+      "source_start": 2140,
+      "source_end": 2203,
+      "summary": "Explains how sub-group block load/store built-ins reduce register pressure by loading contiguous memory blocks using a single base address, compared to standard vectorized load/store where each lane has its own address."
+    },
+    {
+      "title": "Using Shared Local Memory",
+      "filename": "using-shared-local-memory.md",
+      "source_start": 2204,
+      "source_end": 2207,
+      "summary": "Describes using Shared Local Memory (SLM) to store histogram bins when register space is insufficient, reducing memory traffic by sharing bins among work items in the same workgroup."
+    },
+    {
+      "title": "Porting Code with High Register Pressure to Intel Max GPUs (Continued)",
+      "filename": "porting-code-high-register-pressure-continued.md",
+      "source_start": 2208,
+      "source_end": 2429,
+      "summary": "This section continues the analysis of register pressure issues when porting code to Intel Max GPUs. It presents a SYCL kernel example that induces high register pressure, compares register allocation and execution times between NVIDIA A100 and Intel Max 1550, and explains the differences in General-Purpose Register File (GRF) sizes. It introduces the concepts of Large GRF mode and reduced SIMD width as mechanisms to mitigate register spills."
+    },
+    {
+      "title": "Special Considerations When Porting to SIMD 16 (Code Example) Continued",
+      "filename": "special-considerations-simd16.md",
+      "source_start": 2430,
+      "source_end": 2615,
+      "summary": "Continues the previous section with the second code example using Shared Local Memory (SLM) to transpose values. Explains the SLM usage for SIMD32 vs SIMD16, the need for barriers in SIMD16, and performance comparison tables. Concludes with a summary on handling high-register-pressure code and GRF size adjustments."
+    },
+    {
+      "title": "Shared Local Memory",
+      "filename": "shared-local-memory.md",
+      "source_start": 2616,
+      "source_end": 2701,
+      "summary": "Introduction to Shared Local Memory (SLM) in Intel GPUs, explaining its role in high-bandwidth, low-latency data sharing within work-groups. Covers SLM size queries, relationship with work-group size, and bank conflict mechanics with code examples demonstrating conflict avoidance."
+    },
+    {
+      "title": "Data Sharing and Work-group Barriers",
+      "filename": "data-sharing-and-work-group-barriers.md",
+      "source_start": 2702,
+      "source_end": 2867,
+      "summary": "This section covers optimizing histogram computation using Shared Local Memory (SLM) and atomic operations. It includes code examples for register-based histograms, SLM-based histograms with atomic updates, and discusses the use of work-group barriers for synchronization when sharing data among work-items."
+    },
+    {
+      "title": "Using SLM as Cache",
+      "filename": "using-slm-as-cache.md",
+      "source_start": 2868,
+      "source_end": 2994,
+      "summary": "Explains how to use Shared Local Memory (SLM) as a cache for hot data to improve performance, illustrated with a 1-D convolution example that preloads input elements into SLM for efficient access by work-items."
+    },
+    {
+      "title": "Troubleshooting SLM Errors",
+      "filename": "troubleshooting-slm-errors.md",
+      "source_start": 2995,
+      "source_end": 3027,
+      "summary": "Covers PI_ERROR_OUT_OF_RESOURCES errors related to Shared Local Memory (SLM) usage. Explains how to enable debug keys to view requested vs. available SLM sizes in the output logs."
+    },
+    {
+      "title": "Pointer Aliasing and Restrict Directive",
+      "filename": "pointer-aliasing-restrict-directive.md",
+      "source_start": 3028,
+      "source_end": 3243,
+      "summary": "Covers optimization techniques for SYCL kernels including compiler hints for vectorization, explicit work-group sizing, loop unrolling (both via pragmas and manual expansion), and the use of the restrict directive to allow the compiler to hoist loads and stores by ensuring no aliasing."
+    },
+    {
+      "title": "Synchronization among Threads in a Kernel",
+      "filename": "synchronization-among-threads.md",
+      "source_start": 3244,
+      "source_end": 3279,
+      "summary": "Overview of synchronization mechanisms in SYCL kernels, including accessors, atomics, fences, barriers, hierarchical parallel dispatch, and events. Lists the topics to be covered in subsequent sections."
+    },
+    {
+      "title": "Atomic Operations",
+      "filename": "atomic-operations.md",
+      "source_start": 3280,
+      "source_end": 3418,
+      "summary": "Covers data types in atomic operations, performance differences between integer and floating-point atomics, VTune Profiler analysis of instruction counts, and Intel Advisor recommendations for inefficient atomics."
+    },
+    {
+      "title": "Atomic Operations in Global and Local Address Spaces",
+      "filename": "atomic-address-spaces.md",
+      "source_start": 3419,
+      "source_end": 3599,
+      "summary": "Discusses atomic operations in SYCL, highlighting the performance difference between global and local address spaces. Provides code examples demonstrating a reduction using global atomics versus a more efficient approach using local memory atomics with barriers to minimize global contention."
+    },
+    {
+      "title": "Considerations for Selecting Work-Group Size",
+      "filename": "work-group-size.md",
+      "source_start": 3600,
+      "source_end": 3757,
+      "summary": "Covers the impact of work-group size on kernel performance, demonstrating cases where it matters (reduction with atomics/barriers) and where it doesn't (simple copy). Includes code examples for SYCL kernels and execution configurations."
+    },
+    {
+      "title": "Tuning Kernels with Local and Global Work-group Sizes in OpenMP Offload Mode",
+      "filename": "openmp-tuning.md",
+      "source_start": 3758,
+      "source_end": 3803,
+      "summary": "Explains how to tune kernel performance in OpenMP offload mode using environment variables OMP_THREAD_LIMIT and OMP_NUM_TEAMS to set Local Work-Group Size (LWS) and Global Work-Group Size (GWS). Includes a reduction kernel example and performance analysis."
+    },
+    {
+      "title": "Prefetch",
+      "filename": "prefetch.md",
+      "source_start": 3804,
+      "source_end": 4020,
+      "summary": "Details on sycl::global_ptr::prefetch, its limitations, low-level L1/L3 cache control builtins, and examples of manual prefetching with bounds checking."
+    }
+  ]
+}

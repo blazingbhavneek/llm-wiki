@@ -45,6 +45,8 @@ class LlmClient(BaseLlmClient):
             base_url=self.base_url,
             temperature=self.temperature,
             timeout=self.timeout,
+            # TEMPORARY: disable model thinking for faster ingest. Remove to re-enable.
+            # model_kwargs={"extra_body": {"chat_template_kwargs": {"enable_thinking": False}}},
         )
         self.message_history = []
         if system_prompt.strip():
@@ -90,6 +92,32 @@ class LlmClient(BaseLlmClient):
     ) -> Any:
         return self._run_with_retries(
             lambda: self._llm.with_structured_output(output_model).invoke(messages)
+        )
+
+    def complete(self, system_prompt: str, user_content: str) -> str:
+        from langchain_core.messages import HumanMessage, SystemMessage
+
+        return self.run_messages(
+            [
+                SystemMessage(content=system_prompt),
+                HumanMessage(content=user_content),
+            ]
+        )
+
+    def complete_structured(
+        self,
+        system_prompt: str,
+        user_content: str,
+        output_model: type[Any],
+    ) -> Any:
+        from langchain_core.messages import HumanMessage, SystemMessage
+
+        return self.run_messages_structured(
+            [
+                SystemMessage(content=system_prompt),
+                HumanMessage(content=user_content),
+            ],
+            output_model,
         )
 
     def reset_history(self) -> None:

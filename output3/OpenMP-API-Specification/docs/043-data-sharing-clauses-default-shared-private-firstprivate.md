@@ -1,0 +1,287 @@
+## 7.5 Data-Sharing Attribute Clauses
+
+Several constructs accept clauses that allow a user to control the data-sharing attributes of variables referenced in the construct. Not all of the clauses listed in this section are valid on all directives. The set of clauses that is valid on a particular directive is described with the directive. The reduction clauses are explained in Section 7.6.
+
+A list item may be specified in both firstprivate and lastprivate clauses.
+
+C++
+
+If a variable referenced in a data-sharing attribute clause has a type derived from a template and the OpenMP program does not otherwise reference that variable, any behavior related to that variable is unspecified.
+
+C++
+
+## Fortran
+
+If individual members of a common block appear in a data-sharing attribute clause other than the shared clause, the variables no longer have a Fortran storage association with the common block. Fortran
+
+## 7.5.1 default Clause
+
+<table><tr><td>Name: default</td><td>Properties: unique, post-modified</td></tr></table>
+
+## Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>data-sharing-attribute</td><td>Keyword:firstprivate,none, private, shared</td><td>default</td></tr></table>
+
+## Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>variable-category</td><td>implicit-behavior</td><td>Keyword: aggregate, all, allocatable, pointer, scalar</td><td>default</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+parallel, target, target\_data, task, taskloop, teams
+
+## Semantics
+
+The default clause determines the implicitly determined data-sharing attributes of certain variables that are referenced in the construct, in accordance with the rules given in Section 7.1.1.
+
+The variable-category specifies the variables for which the attribute may be set, and the attribute is specified by implicit-behavior. If no variable-category is specified in the clause then the efect is as if all was specified for the variable-category.
+
+C / C++
+
+The scalar variable-category specifies non-pointer scalar variables.
+
+C / C++
+
+Fortran
+
+The scalar variable-category specifies non-pointer and non-allocatable scalar variables. The allocatable variable-category specifies variables with the ALLOCATABLE attribute.
+
+Fortran
+
+The pointer variable-category specifies variables of pointer type. The aggregate variable-category specifies aggregate variables. Finally, the all variable-category specifies all variables.
+
+If data-sharing-attribute is not none, the data-sharing attributes of the selected variables will be data-sharing-attribute. If data-sharing-attribute is none, the data-sharing attribute is not implicitly determined. If data-sharing-attribute is shared then the clause has no efect on a target construct; otherwise, its efect on a target construct is equivalent to specifying the defaultmap clause with the same data-sharing-attribute and variable-category. If both the default and defaultmap clauses are specified on a target construct, and their variable-category modifiers specify intersecting categories, the defaultmap clause has precedence over the default clause for variables of those categories.
+
+## Restrictions
+
+Restrictions to the default clause are as follows:
+
+• If data-sharing-attribute is none, each variable that is referenced in the construct and does not have a predetermined data-sharing attribute must have an explicitly determined data-sharing attribute.
+
+## C / C++
+
+• If data-sharing-attribute is firstprivate or private, each variable with static storage duration that is declared in a namespace or global scope, is referenced in the construct, and does not have a predetermined data-sharing attribute must have an explicitly determined data-sharing attribute.
+
+## Cross References
+
+• defaultmap Clause, see Section 7.9.9
+
+• parallel Construct, see Section 12.1
+
+• target Construct, see Section 15.8
+
+• target\_data Construct, see Section 15.7
+
+• task Construct, see Section 14.1
+
+• taskloop Construct, see Section 14.2
+
+• teams Construct, see Section 12.2
+
+## 7.5.2 shared Clause
+
+<table><tr><td>Name: shared</td><td>Properties: data-environment attribute, data-sharing attribute</td></tr></table>
+
+## Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>list</td><td>list of variable list item type</td><td>default</td></tr></table>
+
+## Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+parallel, target\_data, task, taskloop, teams
+
+## Semantics
+
+The shared clause declares one or more list items to have a shared attribute in tasks generated by the construct on which it appears. All references to a list item within a task refer to the storage area of the original list item at the point the directive was encountered.
+
+The programmer must ensure, by adding proper synchronization, that storage shared by an explicit task region does not reach the end of its lifetime before the explicit task region completes its execution.
+
+## Fortran
+
+The list items may include assumed-type variables and procedure pointers.
+
+The association status of a shared pointer becomes undefined upon entry to and exit from the construct if it is associated with a target or a subobject of a target that appears as a privatized list item in a data-sharing attribute clause on the construct. A reference to the shared storage that is associated with the dummy argument by any other task must be synchronized with the reference to the procedure to avoid possible data races.
+
+## Fortran
+
+## Cross References
+
+• parallel Construct, see Section 12.1
+
+• target\_data Construct, see Section 15.7
+
+• task Construct, see Section 14.1
+
+• taskloop Construct, see Section 14.2
+
+• teams Construct, see Section 12.2
+
+## 7.5.3 private Clause
+
+<table><tr><td>Name: private</td><td>Properties: data-environment attribute, data-sharing attribute, innermost-leaf, privatization</td></tr></table>
+
+## Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>list</td><td>list of variable list item type</td><td>default</td></tr></table>
+
+## Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+distribute, do, for, loop, parallel, scope, sections, simd, single, target, target\_data, task, taskloop, teams
+
+## Semantics
+
+The private clause specifies that its list items are to be privatized list item according to Section 7.4. Each task or SIMD lane that references a list item in the construct receives only one new list item, unless the construct has one or more afected loops and an order clause that specifies concurrent is also present. Each new list item is a private-only variable, unless otherwise specified.
+
+Fortran
+
+The list items may include procedure pointers.
+
+Fortran
+
+## Restrictions
+
+Restrictions to the private clause are as specified in Section 7.4.
+
+## Cross References
+
+• distribute Construct, see Section 13.7
+
+• do Construct, see Section 13.6.2
+
+• for Construct, see Section 13.6.1
+
+• List Item Privatization, see Section 7.4
+
+• loop Construct, see Section 13.8
+
+• parallel Construct, see Section 12.1
+
+• scope Construct, see Section 13.2
+
+• sections Construct, see Section 13.3
+
+• simd Construct, see Section 12.4
+
+• single Construct, see Section 13.1
+
+• target Construct, see Section 15.8
+
+• target\_data Construct, see Section 15.7
+
+• task Construct, see Section 14.1
+
+• taskloop Construct, see Section 14.2
+
+• teams Construct, see Section 12.2
+
+## 7.5.4 firstprivate Clause
+
+<table><tr><td>Name: firstprivate</td><td>Properties: data-environment attribute, data-sharing attribute, privatization</td></tr></table>
+
+## Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>list</td><td>list of variable list item type</td><td>default</td></tr></table>
+
+Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>saved</td><td>list</td><td>Keyword: saved</td><td>default</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+distribute, do, for, parallel, scope, sections, single, target, target\_data, task, taskloop, teams
+
+## Semantics
+
+The firstprivate clause provides a superset of the functionality provided by the private clause. A list item that appears in a firstprivate clause is subject to the private clause semantics descrilbed in Section 7.5.3, except as noted. In addition, the new list item has the firstprivate attribute and is initialized from the original list item. The initialization of the new list item is done once for each task that references the list item in any statement in the construct. The initialization is done prior to the execution of the construct.
+
+For a firstprivate clause on a construct that is not a work-distribution construct, the initial value of the new list item is the value of the original list item that exists immediately prior to the construct in the task region where the construct is encountered unless otherwise specified. For a firstprivate clause on a work-distribution construct, the initial value of the new list item for each implicit task of the threads that execute the construct is the value of the original list item that exists in the implicit task immediately prior to the point in time that the construct is encountered unless otherwise specified.
+
+To avoid data races, concurrent updates of the original list item must be synchronized with the read of the original list item that occurs as a result of the firstprivate clause.
+
+$$
+\mathrm{C} / \mathrm{C} + +
+$$
+
+For variables of non-array type, the initialization occurs by copy assignment. For an array of elements of non-array type, each element is initialized as if by assignment from an element of the original array to the corresponding element of the new array.
+
+$$
+\mathrm{C/C++}
+$$
+
+For each variable of class type:
+
+• If the firstprivate clause is not on a target construct then a copy constructor is invoked to perform the initialization; and
+
+• If the firstprivate clause is on a target construct then how many copy constructors, if any, are invoked is unspecified.
+
+If copy constructors are called, the order in which copy constructors for diferent variables of class type are called is unspecified.
+
+C++
+
+Fortran
+
+If the firstprivate clause is on a target construct and a variable is of polymorphic type, the behavior is unspecified.
+
+If an original list item does not have the POINTER attribute, initialization of the new list items occurs as if by intrinsic assignment unless the original list item has a compatible type-bound defined assignment, in which case initialization of the new list items occurs as if by the defined assignment. If an original list item that does not have the POINTER attribute has an allocation status of unallocated, the new list items will have the same status.
+
+If an original list item has the POINTER attribute, the new list items receive the same association status as the original list item, as if by pointer assignment.
+
+The list items may include named constants and procedure pointers.
+
+Fortran
+
+## Restrictions
+
+Restrictions to the firstprivate clause are as follows:
+
+• A list item that is private within a parallel region must not appear in a firstprivate clause on a worksharing construct if any of the worksharing regions that arise from the worksharing construct ever bind to any of the parallel regions that arise from the parallel construct.
+
+• A list item that is private within a teams region must not appear in a firstprivate clause on a distribute construct if any of the distribute regions that arise from the distribute construct ever bind to any of the teams regions that arise from the teams construct.
+
+• A list item that appears in a reduction clause on a parallel construct must not appear in a firstprivate clause on a task or taskloop construct if any of the task regions that arise from the task or taskloop construct ever bind to any of the parallel regions that arise from the parallel construct.
+
+• A list item that appears in a reduction clause on a worksharing construct must not appear in a firstprivate clause on a task construct encountered during execution of any of the worksharing regions that arise from the worksharing construct.
+
+C++
+
+• A variable of class type (or array thereof) that appears in a firstprivate clause requires an accessible, unambiguous copy constructor for the class type.
+
+• If the original list item in a firstprivate clause on a work-distribution construct has a reference type then it must bind to the same object for all threads in the binding thread set of the work-distribution region.
+
+![](images/a34c5b571a5d7d370924aba110a3480405b7969a61b3a724deed30fddd570743.jpg)
+
+## Cross References
+
+• distribute Construct, see Section 13.7
+
+• do Construct, see Section 13.6.2
+
+• for Construct, see Section 13.6.1
+
+• parallel Construct, see Section 12.1
+
+• private Clause, see Section 7.5.3
+
+• scope Construct, see Section 13.2
+
+• sections Construct, see Section 13.3
+
+• single Construct, see Section 13.1
+
+• target Construct, see Section 15.8
+
+• target\_data Construct, see Section 15.7
+
+• task Construct, see Section 14.1
+
+• taskloop Construct, see Section 14.2
+
+• teams Construct, see Section 12.2

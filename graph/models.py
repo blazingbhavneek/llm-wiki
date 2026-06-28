@@ -21,16 +21,16 @@ def now_iso() -> str:
 class Settings:
     """All tunables for one engine instance."""
 
-    chat_base_url: str = "http://localhost:8000/v1"
+    chat_base_url: str = "http://180.21.170.235:42374/v1"
     chat_api_key: str = "local"
-    chat_model: str = "gemma4"
+    chat_model: str = "nvidia/Qwen3.6-35B-A3B-NVFP4"
     chat_temperature: float = 0.2
 
     embed_backend: str = "server"
     embed_base_url: str = "http://localhost:8080/v1"
     embed_api_key: str = "local"
-    embed_model: str = "cl-nagoya/ruri-v3-310m"
-    hf_embed_model: str = "cl-nagoya/ruri-v3-310m"
+    embed_model: str = "cl-nagoya/ruri-v3-30m"
+    hf_embed_model: str = "cl-nagoya/ruri-v3-30m"
     hf_device: str = "cuda:0"
     embed_dim: int = 768
 
@@ -40,6 +40,10 @@ class Settings:
     vector_query_k: int = 1
     cascade_max_hops: int = 2
     cascade_max_nodes: int = 50
+    agent_max_steps: int = 6
+    agent_patience: int = 3
+    search_rrf_k: int = 60
+    entity_dedup: bool = True
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -64,6 +68,11 @@ class Settings:
             vector_query_k=int(env("WIKI_VECTOR_K", cls.vector_query_k)),
             cascade_max_hops=int(env("WIKI_CASCADE_MAX_HOPS", cls.cascade_max_hops)),
             cascade_max_nodes=int(env("WIKI_CASCADE_MAX_NODES", cls.cascade_max_nodes)),
+            agent_max_steps=int(env("WIKI_AGENT_MAX_STEPS", cls.agent_max_steps)),
+            agent_patience=int(env("WIKI_AGENT_PATIENCE", cls.agent_patience)),
+            search_rrf_k=int(env("WIKI_SEARCH_RRF_K", cls.search_rrf_k)),
+            entity_dedup=env("WIKI_ENTITY_DEDUP", "1" if cls.entity_dedup else "0")
+            not in {"0", "false", "False", ""},
         )
 
 
@@ -112,6 +121,10 @@ class Edge(BaseModel):
     label: str
     summary: str = ""
     created_at: str = Field(default_factory=now_iso)
+    valid_at: str | None = None
+    invalid_at: str | None = None
+    expired_at: str | None = None
+    source_episode_ids: list[str] = Field(default_factory=list)
 
 
 # endregion CORE GRAPH MODELS
@@ -136,6 +149,11 @@ class ClaimExtraction(BaseModel):
     claims: list[str] = Field(default_factory=list)
 
 
+class EntityMatch(BaseModel):
+    is_same: bool = False
+    target_node_id: str | None = None
+
+
 # endregion LLM EXCHANGE MODELS
 
 # region QUERY AND METRICS
@@ -144,6 +162,14 @@ class QueryResult(BaseModel):
     value: str
     nodes: list[Node] = Field(default_factory=list)
     edges: list[Edge] = Field(default_factory=list)
+
+
+class AgentAnswer(BaseModel):
+    question: str
+    answer: str = ""
+    cited_node_ids: list[str] = Field(default_factory=list)
+    exogenous_node_id: str | None = None
+    steps: int = 0
 
 
 class GraphStats(BaseModel):

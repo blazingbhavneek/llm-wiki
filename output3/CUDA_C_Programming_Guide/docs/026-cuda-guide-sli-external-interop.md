@@ -1,0 +1,19 @@
+## 6.2.15.3 SLI Interoperability
+
+In a system with multiple GPUs, all CUDA-enabled GPUs are accessible via the CUDA driver and runtime as separate devices. There are however special considerations as described below when the system is in SLI mode.
+
+First, an allocation in one CUDA device on one GPU will consume memory on other GPUs that are part of the SLI configuration of the Direct3D or OpenGL device. Because of this, allocations may fail earlier than otherwise expected.
+
+Second, applications should create multiple CUDA contexts, one for each GPU in the SLI configuration. While this is not a strict requirement, it avoids unnecessary data transfers between devices. The application can use the cudaD3D[9|10|11]GetDevices() for Direct3D and cudaGLGetDevices() for OpenGL set of calls to identify the CUDA device handle(s) for the device(s) that are performing the rendering in the current and next frame. Given this information the application will typically choose the appropriate device and map Direct3D or OpenGL resources to the CUDA device returned by cudaD3D[9|10|11]GetDevices() or cudaGLGetDevices() when the deviceList parameter is set to cudaD3D[9|10|11]DeviceListCurrentFrame or cudaGLDeviceListCurrentFrame.
+
+Please note that resource returned from cudaGraphicsD9D[9|10|11]RegisterResource and cudaGraphicsGLRegister[Buffer|Image] must be only used on device the registration happened. Therefore on SLI configurations when data for diferent frames is computed on diferent CUDA devices it is necessary to register the resources for each separately.
+
+See Direct3D Interoperability and OpenGL Interoperability for details on how the CUDA runtime interoperate with Direct3D and OpenGL, respectively.
+
+## 6.2.16. External Resource Interoperability
+
+External resource interoperability allows CUDA to import certain resources that are explicitly exported by other APIs. These objects are typically exported by other APIs using handles native to the Operating System, like file descriptors on Linux or NT handles on Windows. They could also be exported using other unified interfaces such as the NVIDIA Software Communication Interface. There are two types of resources that can be imported: memory objects and synchronization objects.
+
+Memory objects can be imported into CUDA using cudaImportExternalMemory(). An imported memory object can be accessed from within kernels using device pointers mapped onto the memory object via cudaExternalMemoryGetMappedBuffer()or CUDA mipmapped arrays mapped via cudaExternalMemoryGetMappedMipmappedArray(). Depending on the type of memory object, it may be possible for more than one mapping to be setup on a single memory object. The mappings must match the mappings setup in the exporting API. Any mismatched mappings result in undefined behavior. Imported memory objects must be freed using cudaDestroyExternalMemory(). Freeing a memory object does not free any mappings to that object. Therefore, any device pointers mapped onto that object must be explicitly freed using cudaFree() and any CUDA mipmapped arrays mapped onto that object must be explicitly freed using cudaFreeMipmappedArray(). It is illegal to access mappings to an object after it has been destroyed.
+
+Synchronization objects can be imported into CUDA using cudaImportExternalSemaphore(). An imported synchronization object can then be signaled using cudaSignalExternalSemaphoresAsync() and waited on using cudaWaitExternalSemaphoresAsync(). It is illegal to issue a wait before the corresponding signal has been issued. Also, depending on the type of the imported synchronization object, there may be additional constraints imposed on how they can be signaled and waited on, as described in subsequent sections. Imported semaphore objects must be freed using cudaDestroyExternalSemaphore(). All outstanding signals and waits must have completed before the semaphore object is destroyed.

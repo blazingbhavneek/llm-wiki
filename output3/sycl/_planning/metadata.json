@@ -1,0 +1,258 @@
+{
+  "original_file_name": "sycl.md",
+  "inferred_file_name": "data-parallel-cpp-sycl-programming-accelerated-systems-cpp-second-edition.md",
+  "files": [
+    {
+      "name": "title-copyright-front-matter.md",
+      "header": "Document Administration"
+    },
+    {
+      "name": "table-of-contents.md",
+      "header": "Table of Contents"
+    },
+    {
+      "name": "about-the-authors.md",
+      "header": "About the Authors"
+    },
+    {
+      "name": "preface-intro.md",
+      "header": "Preface and Introduction"
+    },
+    {
+      "name": "introduction-sycl-parallel.md",
+      "header": "Introduction to SYCL and Parallel Computing"
+    },
+    {
+      "name": "cpp-lambda-expressions.md",
+      "header": "C++ Lambda Expressions and Function Objects"
+    },
+    {
+      "name": "portability-concurrency.md",
+      "header": "Portability and Concurrency Concepts"
+    },
+    {
+      "name": "where-code-executes-intro.md",
+      "header": "Where Code Executes: Single-Source and Host/Device Code"
+    },
+    {
+      "name": "device-selection-methods.md",
+      "header": "Device Selection Methods: Default, CPU, and GPU"
+    },
+    {
+      "name": "advanced-device-selection.md",
+      "header": "Advanced Device Selection: Multiple Devices and Custom Selectors"
+    },
+    {
+      "name": "creating-work-on-device.md",
+      "header": "Creating Work on a Device: Task Graphs and Actions"
+    },
+    {
+      "name": "data-management.md",
+      "header": "Data Management: USM and Buffers"
+    },
+    {
+      "name": "data-management-strategy-handler.md",
+      "header": "Data Management: Strategy Selection and Handler Reference"
+    },
+    {
+      "name": "expressing-parallelism-kernels-vs-loops.md",
+      "header": "Expressing Parallelism: Kernels vs Loops"
+    },
+    {
+      "name": "expressing-parallelism-basic-kernels.md",
+      "header": "Expressing Parallelism: Basic Data-Parallel Kernels"
+    },
+    {
+      "name": "expressing-parallelism-nd-range-kernels.md",
+      "header": "Expressing Parallelism: Explicit ND-Range Kernels"
+    },
+    {
+      "name": "expressing-parallelism-mapping-selection.md",
+      "header": "Expressing Parallelism: Mapping and Kernel Selection"
+    },
+    {
+      "name": "error-handling.md",
+      "header": "Error Handling"
+    },
+    {
+      "name": "unified-shared-memory.md",
+      "header": "Unified Shared Memory"
+    },
+    {
+      "name": "buffers.md",
+      "header": "Buffers"
+    },
+    {
+      "name": "accessors.md",
+      "header": "Accessors"
+    },
+    {
+      "name": "scheduling-kernels-and-data-movement.md",
+      "header": "Scheduling Kernels and Data Movement"
+    },
+    {
+      "name": "communication-and-synchronization.md",
+      "header": "Communication and Synchronization"
+    },
+    {
+      "name": "defining-kernels.md",
+      "header": "Defining Kernels"
+    },
+    {
+      "name": "vectors-and-math-arrays.md",
+      "header": "Vectors and Math Arrays"
+    },
+    {
+      "name": "device-information-and-kernel-specialization.md",
+      "header": "Device Information and Kernel Specialization"
+    },
+    {
+      "name": "practical-tips-compilation-debugging-profiling.md",
+      "header": "Practical Tips: Compilation, Debugging, and Profiling"
+    },
+    {
+      "name": "practical-tips-data-access-translation-units.md",
+      "header": "Practical Tips: Data Access, Translation Units, and Lambda Naming"
+    },
+    {
+      "name": "common-parallel-patterns-overview.md",
+      "header": "Common Parallel Patterns: Overview, Map, Stencil, Reduction, Scan, Pack/Unpack"
+    },
+    {
+      "name": "common-parallel-patterns-reduction-lib.md",
+      "header": "Common Parallel Patterns: Overview, Map, Stencil, Reduction, Scan, Pack/Unpack"
+    },
+    {
+      "name": "common-parallel-patterns-group-algorithms.md",
+      "header": "Common Parallel Patterns: Group Algorithms and Direct Programming"
+    },
+    {
+      "name": "common-parallel-patterns-pack-unpack.md",
+      "header": "Common Parallel Patterns: Pack/Unpack and Summary"
+    },
+    {
+      "name": "programming-for-gpus-overview.md",
+      "header": "Programming for GPUs: Overview and Building Blocks"
+    },
+    {
+      "name": "programming-for-gpus-processors-matmul.md",
+      "header": "Programming for GPUs: Simpler Processors and Matrix Multiplication Intro"
+    },
+    {
+      "name": "gpu-parallelism-expressions.md",
+      "header": "Expressing Parallelism in GPU Kernels"
+    },
+    {
+      "name": "gpu-simd-efficiency-latency.md",
+      "header": "SIMD Efficiency and Latency Hiding"
+    },
+    {
+      "name": "gpu-offloading-stack.md",
+      "header": "Offloading Kernels to GPUs"
+    },
+    {
+      "name": "gpu-memory-access.md",
+      "header": "GPU Memory Access Best Practices"
+    },
+    {
+      "name": "gpu-computation-optimization.md",
+      "header": "GPU Computation Optimization"
+    },
+    {
+      "name": "gpu-summary-references.md",
+      "header": "Chapter Summary and References"
+    },
+    {
+      "name": "cpu-intro-architecture.md",
+      "header": "CPU Programming: Introduction and Architecture"
+    },
+    {
+      "name": "cpu-simd-stream-triad.md",
+      "header": "CPU Programming: SIMD and STREAM Triad Example"
+    },
+    {
+      "name": "cpu-thread-affinity.md",
+      "header": "CPU Programming: Thread-Level Parallelism and Affinity"
+    },
+    {
+      "name": "cpu-memory-first-touch-simd.md",
+      "header": "CPU Programming: Memory First Touch and SIMD Vectorization"
+    },
+    {
+      "name": "cpu-summary-fpga-intro.md",
+      "header": "CPU Programming: Summary and FPGA Introduction"
+    },
+    {
+      "name": "fpga-spatial-architecture.md",
+      "header": "FPGA Spatial Architecture and Pipeline Parallelism"
+    },
+    {
+      "name": "fpga-use-cases-execution.md",
+      "header": "FPGA Use Cases and Execution"
+    },
+    {
+      "name": "writing-kernels-fpgas.md",
+      "header": "Writing Kernels for FPGAs"
+    },
+    {
+      "name": "fpga-architecture-closing.md",
+      "header": "FPGA Architecture and Closing Topics"
+    },
+    {
+      "name": "libraries-intro-built-in.md",
+      "header": "Libraries: Introduction and Built-In Functions"
+    },
+    {
+      "name": "libraries-std-onedpl.md",
+      "header": "Libraries: C++ Standard Library and oneDPL"
+    },
+    {
+      "name": "memory-model-intro.md",
+      "header": "Memory Model and Atomics: Introduction"
+    },
+    {
+      "name": "memory-ordering-scopes.md",
+      "header": "Memory Model and Atomics: Memory Ordering and Scopes"
+    },
+    {
+      "name": "atomic-operations-sycl.md",
+      "header": "Memory Model and Atomics: Atomic Operations in SYCL"
+    },
+    {
+      "name": "device-wide-sync.md",
+      "header": "Memory Model and Atomics: Device-Wide Synchronization"
+    },
+    {
+      "name": "memory-model-summary.md",
+      "header": "Memory Model and Atomics: Summary and References"
+    },
+    {
+      "name": "backend-interop-intro.md",
+      "header": "Backend Interoperability: Introduction and Concepts"
+    },
+    {
+      "name": "backend-interop-extract.md",
+      "header": "Backend Interoperability: Extracting Backend Objects"
+    },
+    {
+      "name": "backend-interop-kernels.md",
+      "header": "Backend Interoperability: Kernel Integration"
+    },
+    {
+      "name": "backend-interop-hints.md",
+      "header": "Backend Interoperability: Hints and Tips"
+    },
+    {
+      "name": "migrating-cuda-code.md",
+      "header": "Migrating CUDA Code"
+    },
+    {
+      "name": "future-direction-of-sycl.md",
+      "header": "Future Direction of SYCL"
+    },
+    {
+      "name": "index.md",
+      "header": "Index"
+    }
+  ]
+}

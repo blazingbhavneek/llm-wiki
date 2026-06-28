@@ -1,0 +1,281 @@
+Fortran
+
+## Cross References
+
+• declare\_mapper Directive, see Section 7.9.10
+
+• device Clause, see Section 15.2
+
+• from Clause, see Section 7.10.2
+
+• Array Sections, see Section 5.2.5
+
+• Array Shaping, see Section 5.2.4
+
+• iterator Modifier, see Section 5.2.6
+
+• target\_update Construct, see Section 15.9
+
+• to Clause, see Section 7.10.1
+
+## 7.10.1 to Clause
+
+<table><tr><td>Name: to</td><td>Properties: data-motion attribute</td></tr></table>
+
+Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>locator-list</td><td>list of locator list item type</td><td>default</td></tr></table>
+
+Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>present-modifier</td><td>locator-list</td><td>Keyword: present</td><td>default</td></tr><tr><td>mapper</td><td>locator-list</td><td>Complex, name: mapperArguments:mapper-identifier OpenMPidentifier (default)</td><td>unique</td></tr><tr><td>iterator</td><td>locator-list</td><td>Complex, name: iteratorArguments:iterator-specifier list of iterator specifier list item type (default)</td><td>unique</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+target\_update
+
+## Semantics
+
+The to clause is a data-motion clause that specifies data movement to the target devices from the encountering device so the corresponding list items are the assigned list items and the compatible map types are to and tofrom.
+
+C++
+
+A list item for which a mapper does not exist is ignored if it has static storage duration and either it has the constexpr specifier or it is a non-mutable member of a structure that has the constexpr specifier.
+
+C++
+
+Cross References
+
+• iterator Modifier, see Section 5.2.6
+
+• target\_update Construct, see Section 15.9
+
+## 7.10.2 from Clause
+
+<table><tr><td>Name: from</td><td>Properties: data-motion attribute</td></tr></table>
+
+Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>locator-list</td><td>list of locator list item type</td><td>default</td></tr></table>
+
+Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>present-modifier</td><td>locator-list</td><td>Keyword: present</td><td>default</td></tr><tr><td>mapper</td><td>locator-list</td><td>Complex, name: mapperArguments:mapper-identifier OpenMPidentifier (default)</td><td>unique</td></tr><tr><td>iterator</td><td>locator-list</td><td>Complex, name: iteratorArguments:iterator-specifier list of iterator specifier list item type (default)</td><td>unique</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+target\_update
+
+## Semantics
+
+The from clause is a data-motion clause that specifies data movement from the target devices to the encountering device so the original list items are the assigned list items and the compatible map types are from and tofrom.
+
+C
+
+A list item for which a mapper does not exist is ignored if it has the const specifier or if it is a member of a structure that has the const specifier.
+
+C
+
+C++
+
+A list item for which a mapper does not exist is ignored if it has the const or constexpr specifier or if it is a non-mutable member of a structure that has the const or constexpr specifier.
+
+C++
+
+## Cross References
+
+• iterator Modifier, see Section 5.2.6
+
+• target\_update Construct, see Section 15.9
+
+## 7.11 uniform Clause
+
+<table><tr><td>Name: uniform</td><td>Properties: data-environment attribute</td></tr></table>
+
+Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>parameter-list</td><td>list of parameter list item type</td><td>default</td></tr></table>
+
+Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+declare\_simd
+
+## Semantics
+
+The uniform clause declares one or more arguments to have an invariant value for all concurrent invocations of the function in the execution of a single SIMD loop.
+
+## Restrictions
+
+Restrictions to the uniform clause are as follows:
+
+• Only named parameter list items can be specified in the parameter-list.
+
+## Cross References
+
+• declare\_simd Directive, see Section 9.8
+
+## 7.12 aligned Clause
+
+<table><tr><td>Name: aligned</td><td>Properties: data-environment attribute, post-modified</td></tr></table>
+
+## Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>list</td><td>list of variable list item type</td><td>default</td></tr></table>
+
+## Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>alignment</td><td>list</td><td>OpenMP integer expression</td><td>positive, region invariant, ultimate, unique</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+declare\_simd, simd
+
+## Semantics
+
+C / C++
+
+The aligned clause declares that the object to which each list item points is aligned to the number of bytes expressed in alignment.
+
+C / C++
+
+Fortran
+
+The aligned clause declares that the target of each list item is aligned to the number of bytes expressed in alignment.
+
+## Fortran
+
+The alignment modifier specifies the alignment that the program ensures related to the list items. If the alignment modifier is not specified, implementation defined default alignments for SIMD instructions on the target platforms are assumed.
+
+## Restrictions
+
+Restrictions to the aligned clause are as follows:
+
+• If the clause appears on a declare\_simd directive, each list item must be a named parameter list item of the associated procedure.
+
+• The type of each list item must be an array or pointer type.
+
+C++
+
+• The type of each list item must be an array, pointer, reference to array, or reference to pointer type.
+
+C++
+
+• Each list item must be an array.
+
+Fortran
+
+Fortran
+
+## Cross References
+
+• declare\_simd Directive, see Section 9.8
+
+• simd Construct, see Section 12.4
+
+## 7.13 groupprivate Directive
+
+<table><tr><td>Name: groupprivateCategory: declarative</td><td>Association: explicitProperties: pure</td></tr></table>
+
+## Arguments
+
+groupprivate(list)
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>list</td><td>list of variable list item type</td><td>default</td></tr></table>
+
+## Clauses
+
+device\_type
+
+## Semantics
+
+The groupprivate directive specifies that list items have the groupprivate attribute and therefore they are replicated such that each contention group receives its own copy. Each copy of the list item is uninitialized upon creation. The lifetime of a groupprivate variable is limited to the lifetime of all tasks in the contention group.
+
+For a device\_type clause that is specified implicitly or explicitly on the directive, the behavior is as if the list items appear in a local clause on a declare target directive on which the same device\_type clause is specified and at the same program point.
+
+All references to a variable in list in any task will refer to the groupprivate copy of that variable that is created for the contention group of the innermost enclosing implicit parallel region.
+
+## Restrictions
+
+Restrictions to the groupprivate directive are as follows:
+
+• A task that executes in a particular contention group must not access the storage of a groupprivate copy of the list item that is created for a diferent contention group.
+
+• A variable that is declared with an initializer must not appear in a groupprivate directive.
+
+• Each list item must be a file-scope, namespace-scope, or static block-scope variable.
+
+• No list item may have an incomplete type.
+
+• The address of a groupprivate variable must not be an address constant.
+
+• If any list item is a file-scope variable, the directive must appear outside any definition or declaration, and must lexically precede all references to any of the variables in the list.
+
+• If any list item is a namespace-scope variable, the directive must appear outside any definition or declaration other than the namespace definition itself and must lexically precede all references to any of the variables in the list.
+
+• Each variable in the list of a groupprivate directive at file, namespace, or class scope must refer to a variable declaration at file, namespace, or class scope that lexically precedes the directive.
+
+• If any list item is a static block-scope variable, the directive must appear in the scope of the variable and not in a nested scope and must lexically precede all references to any of the variables in the list.
+
+• Each variable in the list of a groupprivate directive in block scope must have static storage duration and must refer to a variable declaration in the same scope that lexically precedes the directive.
+
+• If a variable is specified in a groupprivate directive in one compilation unit, it must be specified in a groupprivate directive in every compilation unit in which it is declared.
+
+C / C++ C++
+
+• If any list item is a static class member variable, the directive must appear in the class definition, in the same scope in which the member variable is declared, and must lexically precede all references the variable.
+
+• A groupprivate variable must not have an incomplete type or a reference type.
+
+C++ Fortran
+
+• Each list item must be a named variable or a named common block; a named common block must appear between slashes.
+
+• The list argument must not include any coarrays or associate names.
+
+• The groupprivate directive must appear in the declaration section of a scoping unit in which the common block or variable is declared.
+
+• If a groupprivate directive that specifies a common block name appears in one compilation unit, then such a directive must also appear in every other compilation unit that contains a COMMON statement that specifies the same name. Each such directive must appear after the last such COMMON statement in that compilation unit.
+
+• If a groupprivate variable or a groupprivate common block is declared with the BIND attribute, the corresponding C entities must also be specified in a groupprivate directive in the C program.
+
+• A variable may only appear as an argument in a groupprivate directive in the scope in which it is declared. It must not be an element of a common block or appear in an EQUIVALENCE statement.
+
+• A variable that appears as a list item in a groupprivate directive must be declared in the scope of a module or have the SAVE attribute, either explicitly or implicitly.
+
+• The efect of an access to a groupprivate variable in a DO CONCURRENT construct is unspecified.
+
+Fortran
+
+## Cross References
+
+• device\_type Clause, see Section 15.1
+
+• local Clause, see Section 7.14
+
+## 7.14 local Clause
+
+<table><tr><td>Name: local</td><td>Properties: data-environment attribute</td></tr></table>
+
+Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>list</td><td>list of variable list item type</td><td>default</td></tr></table>
+
+Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+declare\_target
+
+## Semantics
+
+The local clause specifies that each list item has the device-local attribute. A reference to a list item on a given device will refer to a copy of the list item that is a device-local variable and is in memory associated with the device.
+
+## Cross References
+
+• declare\_target Directive, see Section 9.9.1

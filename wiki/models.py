@@ -59,16 +59,16 @@ from pydantic import BaseModel, Field
 # Runtime config
 # ---------------------------------------------------------------------
 
-SOURCE_PATH = "/run/media/blaze/Common/Code/llm-wiki/input/"
-OUTPUT_ROOT = "/run/media/blaze/Common/Code/llm-wiki/output/"
+SOURCE_PATH = "/run/media/blaze/Common/Code/llm-wiki/input"
+OUTPUT_ROOT = "/run/media/blaze/Common/Code/llm-wiki/output2"
 
 PHASE = "all"  # all | generate | generate-flat | verify | repair
 
-BASE_URL = os.environ.get("OPENAI_BASE_URL", "http://localhost:8000/v1")
+BASE_URL = os.environ.get("OPENAI_BASE_URL", "http://180.21.170.235:42374/v1")
 API_KEY = os.environ.get("OPENAI_API_KEY", "local")
 
-GEN_MODEL = "gemma4"
-VERIFY_MODEL = "gemma4"
+GEN_MODEL = "nvidia/Qwen3.6-35B-A3B-NVFP4"
+VERIFY_MODEL = "nvidia/Qwen3.6-35B-A3B-NVFP4"
 
 GENERATION_LINES = 200
 VERIFICATION_LINES = 25

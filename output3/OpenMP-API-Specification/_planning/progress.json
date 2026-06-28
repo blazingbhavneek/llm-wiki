@@ -1,0 +1,1026 @@
+{
+  "files": [
+    {
+      "title": "OpenMP Application Programming Interface - Front Matter",
+      "filename": "openmp-front-matter.md",
+      "source_start": 1,
+      "source_end": 344,
+      "summary": "Front matter, copyright notice, and the Table of Contents for the OpenMP 6.0 specification. This section outlines the structure of the document, covering definitions, environment variables, directive syntax, base language formats, and loop concepts."
+    },
+    {
+      "title": "OpenMP Runtime Library Routines: Types and Parallel/Teams Support",
+      "filename": "openmp-runtime-types-parallel.md",
+      "source_start": 345,
+      "source_end": 412,
+      "summary": "Continues the Table of Contents for the OpenMP API specification. Covers the remainder of Chapter 20 (Runtime Library Definitions, including extensive type definitions for memory management, synchronization, affinity, and tools) and Chapter 21 (Parallel Region Support Routines such as thread count and schedule queries). Also includes the start of Chapter 22 (Teams Region Routines)."
+    },
+    {
+      "title": "OpenMP Runtime Library Routines: Tasking, Devices, and Memory",
+      "filename": "openmp-runtime-tasking-devices-memory.md",
+      "source_start": 413,
+      "source_end": 510,
+      "summary": "Covers the remainder of Chapter 22 (Teams Region Routines), Chapter 23 (Tasking Support Routines), Chapter 24 (Device Information Routines), Chapter 25 (Device Memory Routines including allocation, mapping, and copying), and Chapter 26 (Interoperability Routines). Also includes the start of Chapter 27 (Memory Management Routines), covering memory space retrieval and partitioning."
+    },
+    {
+      "title": "OpenMP Runtime Library Routines: Memory Allocation and Locks",
+      "filename": "openmp-runtime-allocation-locks.md",
+      "source_start": 511,
+      "source_end": 828,
+      "summary": "Covers the remainder of Chapter 27 (Memory Management Routines, including allocator handling and standard allocation functions like malloc/calloc/realloc/free), Chapter 28 (Lock Routines including init, destroy, acquire, release, and test), Chapter 29 (Thread Affinity Routines), and the start of Chapter 30 (Execution Control Routines, including cancellation, resource relinquishing, and timing)."
+    },
+    {
+      "title": "OMPD Overview: Execution Model and Memory Model (Continued)",
+      "filename": "ompd-overview-execution-memory.md",
+      "source_start": 829,
+      "source_end": 1000,
+      "summary": "Continuation of the previous section, covering the List of Figures and Tables, followed by the start of Chapter 1 (Overview of the OpenMP API), including Scope, Execution Model, and the beginning of the Memory Model section."
+    },
+    {
+      "title": "Memory Model Details and Tool Interfaces",
+      "filename": "openmp-memory-model-and-tools.md",
+      "source_start": 1001,
+      "source_end": 1183,
+      "summary": "Covers the remainder of the Memory Model sections (Flush Operation, Flush Synchronization, Memory Consistency), Tool Interfaces (OMPT and OMPD), OpenMP Compliance, and Normative References."
+    },
+    {
+      "title": "Document Organization and Glossary (continued)",
+      "filename": "openmp-document-organization-and-glossary.md",
+      "source_start": 1184,
+      "source_end": 2500,
+      "summary": "Continuation of the OpenMP glossary from the previous chunk, covering terms from 'current team tasks' through 'extended list item'."
+    },
+    {
+      "title": "OpenMP Glossary: E to F",
+      "filename": "openmp-glossary-e-to-f.md",
+      "source_start": 2501,
+      "source_end": 2700,
+      "summary": "Continuation of the OpenMP glossary covering terms from 'extended address range' through 'hardware thread', including extension traits, finalized taskgraph records, final tasks, first-party tools, firstprivate attributes, flush operations, foreign runtime environments, frames, free-agent threads, and function concepts."
+    },
+    {
+      "title": "OpenMP Glossary: G to H",
+      "filename": "openmp-glossary-g-to-h.md",
+      "source_start": 2701,
+      "source_end": 3000,
+      "summary": "Glossary terms from 'has-device-addr attribute' through 'lastprivate attribute', covering host addresses, ICVs (Internal Control Variables), idle threads, implementation-defined behavior, implicit barriers and tasks, induction operations, initial tasks, and leaf constructs."
+    },
+    {
+      "title": "OpenMP Glossary: L to M",
+      "filename": "openmp-glossary-l-to-m.md",
+      "source_start": 3001,
+      "source_end": 3300,
+      "summary": "Glossary terms from 'lastprivate variable' through 'memory-allocating routine', covering linear attributes, list items, lock mechanisms, logical iterations, loop-nest-associated constructs, map-entering/exiting clauses, mappable storage, memory allocation, and copying routines."
+    },
+    {
+      "title": "OpenMP Glossary: M to N",
+      "filename": "openmp-glossary-m-to-n.md",
+      "source_start": 3301,
+      "source_end": 3500,
+      "summary": "Continuation of the OpenMP glossary covering terms from 'memory resource' through 'nested lock routine', including definitions for memory management, task types, modifiers, mutexes, and native thread concepts."
+    },
+    {
+      "title": "OpenMP Glossary: N to O",
+      "filename": "openmp-glossary-n-to-o.md",
+      "source_start": 3501,
+      "source_end": 3700,
+      "summary": "OpenMP glossary entries for terms starting with 'N' and 'O', including nested constructs, NUMA domains, NULL, OMPD/OMPT interfaces and properties, opaque types, and core OpenMP program/thread definitions."
+    },
+    {
+      "title": "OpenMP Glossary: O (continued) to P",
+      "filename": "openmp-glossary-o-p.md",
+      "source_start": 3701,
+      "source_end": 4000,
+      "summary": "Continuation of the OpenMP glossary from the previous chunk, covering terms starting with O (OpenMP property, OpenMP thread, optional property, order-concurrent-nestable, original list item, orphaned construct, overlapping type, overloaded) through to terms starting with P (parallel handle, parallelism-generating, parallel region, parameter list, parent device, parent thread, partial tile, partitioned, perfectly nested loop, persistent self map, place, pointer, positive, post-modified, preceding dependence, predecessor, predefined, preference, pre-modified, preprocessed, present storage, primary thread, private, procedure, processor, product order, program order, progress group, property, pure property)."
+    },
+    {
+      "title": "OpenMP Glossary: R",
+      "filename": "openmp-glossary-r.md",
+      "source_start": 4001,
+      "source_end": 4195,
+      "summary": "OpenMP glossary entries for terms starting with R, including raw-memory-allocating, read-modify-write, read structured block, rectangular-memory-copying, reduction (attribute, clause, expression, identifier, operation, participating, scoping, variable), referenced pointee, referencing variable, referring pointer, region, region endpoint, region-invariant, registered callback, release flush, release sequence, repeatable, replacement candidate, replayable, replay execution, reproducible schedule, required, reservation type, reserved locator, reserved thread, resource-relinquishing, reverse-offload, routine, runtime entry point, and runtime error termination."
+    },
+    {
+      "title": "OpenMP Glossary: S (continued)",
+      "filename": "openmp-glossary-s.md",
+      "source_start": 4196,
+      "source_end": 4500,
+      "summary": "Continuation of the OpenMP glossary covering terms starting with 'S', from 'safesync-compatible expression' through 'soft pause'."
+    },
+    {
+      "title": "OpenMP Glossary: S (continued) and T",
+      "filename": "openmp-glossary-s-t.md",
+      "source_start": 4501,
+      "source_end": 4817,
+      "summary": "Continuation of the OpenMP glossary covering terms from 'synchronizes with' through 'user selector set', including the start of the 'T' section."
+    },
+    {
+      "title": "OpenMP Glossary: T (continued) and U",
+      "filename": "openmp-glossary-t-u.md",
+      "source_start": 4818,
+      "source_end": 5000,
+      "summary": "Continuation of the OpenMP glossary covering terms from 'ultimate property' through 'worksharing construct', including definitions for U and V entries."
+    },
+    {
+      "title": "OpenMP Glossary: W, Z, and Internal Control Variables (ICVs) Introduction",
+      "filename": "openmp-glossary-w-z-icv-intro.md",
+      "source_start": 5001,
+      "source_end": 5054,
+      "summary": "Continuation of the OpenMP glossary covering W and Z entries, followed by the introduction to Chapter 3 on Internal Control Variables (ICVs), including their scope and purpose."
+    },
+    {
+      "title": "ICV Descriptions and Initial Values (Tables 3.1 and 3.2)",
+      "filename": "icv-descriptions-initial-values.md",
+      "source_start": 5055,
+      "source_end": 5097,
+      "summary": "Tables 3.1 and 3.2 detailing ICV scopes, descriptions, associated environment variables, and initial values, along with semantics for device-specific environment variables and initialization rules."
+    },
+    {
+      "title": "ICV Modification, Retrieval, and Per-Data Environment Behavior",
+      "filename": "icv-modification-retrieval-behavior.md",
+      "source_start": 5098,
+      "source_end": 5275,
+      "summary": "Table 3.3 listing routines for modifying and retrieving ICV values, semantics for specific ICVs, and detailed rules on how per-data environment ICVs are inherited and modified during task, parallel, and teams construct execution."
+    },
+    {
+      "title": "ICV Override Relationships and Environment Variables Overview",
+      "filename": "icv-overrides-env-vars-overview.md",
+      "source_start": 5276,
+      "source_end": 5334,
+      "summary": "Table 3.4 showing ICV override relationships with construct clauses, cross-references, and the introduction to Chapter 4 on Environment Variables, including setting examples and device-specific variable restrictions."
+    },
+    {
+      "title": "Parallel Region Environment Variables: Dynamic, Threads, Limits, Places, and Binding",
+      "filename": "parallel-region-env-vars.md",
+      "source_start": 5335,
+      "source_end": 5503,
+      "summary": "Covers Section 4.1 (Parallel Region Environment Variables), including Abstract Name Values, OMP_DYNAMIC, OMP_NUM_THREADS, OMP_THREAD_LIMIT, OMP_MAX_ACTIVE_LEVELS, OMP_PLACES, and OMP_PROC_BIND."
+    },
+    {
+      "title": "Teams and Program Execution Environment Variables",
+      "filename": "teams-and-program-exec-env-vars.md",
+      "source_start": 5504,
+      "source_end": 5678,
+      "summary": "Covers Section 4.2 (Teams Environment Variables: OMP_NUM_TEAMS, OMP_TEAMS_THREAD_LIMIT) and Section 4.3.1-4.3.5 (Program Execution: OMP_SCHEDULE, OMP_STACKSIZE, OMP_WAIT_POLICY, OMP_DISPLAY_AFFINITY, OMP_AFFINITY_FORMAT)."
+    },
+    {
+      "title": "Device, Memory, and Tool Environment Variables",
+      "filename": "device-memory-tool-env-vars.md",
+      "source_start": 5679,
+      "source_end": 5956,
+      "summary": "Covers Section 4.3.6-4.3.11 (Cancellation, Available/Default/Offload Devices, Thread Reserve, Task Priority), Section 4.4 (Memory Allocation: OMP_ALLOCATOR), and Section 4.5 (OMPT Tool Interface: OMP_TOOL, OMP_TOOL_LIBRARIES, OMP_TOOL_VERBOSE_INIT)."
+    },
+    {
+      "title": "OMPD and Display Environment Variables",
+      "filename": "ompd-display-env-vars.md",
+      "source_start": 5957,
+      "source_end": 5993,
+      "summary": "Continuation of the previous chunk covering OMP_DEBUG and OMP_DISPLAY_ENV environment variables, including their values, examples, and cross-references."
+    },
+    {
+      "title": "Directive and Construct Syntax Overview",
+      "filename": "directive-syntax-overview.md",
+      "source_start": 5994,
+      "source_end": 6066,
+      "summary": "Introduction to Chapter 5, defining the syntax of directives and clauses. Covers restrictions on OpenMP programs, including language-specific rules for C/C++ and Fortran, and restrictions on explicit regions and exceptions."
+    },
+    {
+      "title": "Directive Format",
+      "filename": "directive-format.md",
+      "source_start": 6067,
+      "source_end": 6352,
+      "summary": "Detailed specification of directive formats across C/C++ (pragmas, attributes) and Fortran (sentinels). Defines directive categories (declarative, executable, etc.), formation syntax (unassociated, block-associated, etc.), and restrictions on mixing syntaxes."
+    },
+    {
+      "title": "Source Form Directives and Clause Format",
+      "filename": "source-form-and-clause-format.md",
+      "source_start": 6353,
+      "source_end": 6529,
+      "summary": "Covers the syntax for OpenMP directives in free and fixed source forms, followed by the general format of clauses, arguments, modifiers, and their syntactic properties and restrictions."
+    },
+    {
+      "title": "OpenMP Argument Lists and Locators",
+      "filename": "argument-lists-and-locators.md",
+      "source_start": 6530,
+      "source_end": 6671,
+      "summary": "Defines OpenMP argument lists (parameter, variable, locator, etc.), reserved locators like omp_all_memory, OpenMP operations, and the array shaping operator."
+    },
+    {
+      "title": "Array Sections and Iterator Modifier",
+      "filename": "array-sections-and-iterator.md",
+      "source_start": 6672,
+      "source_end": 6927,
+      "summary": "Details the syntax and restrictions for array sections in OpenMP directives, followed by the definition, usage, and restrictions of the iterator modifier."
+    },
+    {
+      "title": "Conditional Compilation",
+      "filename": "conditional-compilation.md",
+      "source_start": 6928,
+      "source_end": 7008,
+      "summary": "Covers the continuation of section 5.3 Conditional Compilation from the previous chunk, including free and fixed source form sentinels for Fortran."
+    },
+    {
+      "title": "Directive Name Modifier and Clauses",
+      "filename": "directive-name-modifier.md",
+      "source_start": 7009,
+      "source_end": 7225,
+      "summary": "Defines the directive-name-modifier universal modifier, lists all supported clauses with their cross-references, and covers the if clause definition including modifiers, arguments, directives, semantics, restrictions, and cross-references."
+    },
+    {
+      "title": "Init and Destroy Clauses",
+      "filename": "init-destroy-clauses.md",
+      "source_start": 7226,
+      "source_end": 7372,
+      "summary": "Details the init clause (modifiers, arguments, directives, semantics, restrictions) and the destroy clause (arguments, modifiers, directives, additional information, semantics, restrictions) along with their cross-references."
+    },
+    {
+      "title": "Base Language Formats and Restrictions Continued",
+      "filename": "base-language-formats-continued.md",
+      "source_start": 7373,
+      "source_end": 7470,
+      "summary": "Continues the definition of OpenMP types and identifiers, covering base language neutrality for C/C++ and Fortran, logical/integer/string types, and generic naming conventions for OMPD/OMPT types."
+    },
+    {
+      "title": "OpenMP Stylized Expressions and Structured Blocks",
+      "filename": "openmp-stylized-expressions-structured-blocks.md",
+      "source_start": 7471,
+      "source_end": 7542,
+      "summary": "Defines OpenMP stylized expressions and the concept of structured blocks, including general restrictions on entry/exit points and language-specific constraints for C/C++ (setjmp/longjmp, exceptions) and Fortran (ASYNCHRONOUS/VOLATILE attributes)."
+    },
+    {
+      "title": "Context-Specific Structured Blocks: Allocator and Function Dispatch",
+      "filename": "context-specific-structured-blocks.md",
+      "source_start": 7543,
+      "source_end": 7611,
+      "summary": "Details specific structured block types: OpenMP Allocator Structured Blocks (Fortran) and OpenMP Function Dispatch Structured Blocks (C/C++ and Fortran), including their syntactic forms and restrictions."
+    },
+    {
+      "title": "OpenMP Atomic Structured Blocks: Definitions and Forms",
+      "filename": "openmp-atomic-structured-blocks.md",
+      "source_start": 7612,
+      "source_end": 7869,
+      "summary": "Defines OpenMP Atomic Structured Blocks, including read, write, update, conditional-update, and capture variants for both C/C++ and Fortran. Includes detailed syntactic forms and variable constraints for each atomic operation type."
+    },
+    {
+      "title": "Atomic Structured Block Restrictions and Loop Concepts",
+      "filename": "atomic-restrictions-loop-concepts.md",
+      "source_start": 7870,
+      "source_end": 8008,
+      "summary": "Continuation of atomic structured block restrictions for C/C++ and Fortran, followed by the introduction to Loop Concepts (Section 6.4), defining Canonical Loop Nest Form (Section 6.4.1) including grammar, variables, bounds, and restrictions."
+    },
+    {
+      "title": "Canonical Loop Sequence and Loop-Iteration Spaces",
+      "filename": "canonical-loop-sequence-spaces.md",
+      "source_start": 8009,
+      "source_end": 8339,
+      "summary": "Details on Canonical Loop Sequence Form (Section 6.4.2), OpenMP Loop-Iteration Spaces and Vectors (Section 6.4.3) including iteration count computation and collapsed iteration spaces, Consistent Loop Schedules (Section 6.4.4), and the collapse Clause (Section 6.4.5)."
+    },
+    {
+      "title": "Ordered, Looprange Clauses and Data Environment Introduction",
+      "filename": "ordered-looprange-data-env.md",
+      "source_start": 8340,
+      "source_end": 8508,
+      "summary": "Covers consistent loop schedules, collapse clause, ordered clause, looprange clause, and the introduction to the Data Environment chapter including data-sharing vs data-mapping clauses."
+    },
+    {
+      "title": "Data-Sharing Attribute Rules",
+      "filename": "data-sharing-attribute-rules.md",
+      "source_start": 8509,
+      "source_end": 8623,
+      "summary": "Details the rules for determining data-sharing attributes for variables referenced in constructs (Section 7.1.1) and regions outside constructs (Section 7.1.2), including predetermined, explicit, and implicit attributes."
+    },
+    {
+      "title": "saved Modifier and threadprivate Directive",
+      "filename": "saved-modifier-threadprivate.md",
+      "source_start": 8624,
+      "source_end": 8784,
+      "summary": "Describes the saved modifier for replayable constructs and provides the full specification for the threadprivate directive, including semantics, initialization, persistence across parallel regions, and restrictions."
+    },
+    {
+      "title": "List Item Privatization",
+      "filename": "list-item-privatization.md",
+      "source_start": 8785,
+      "source_end": 8888,
+      "summary": "Explains how list items are privatized for constructs, including allocation, initialization, storage association, and restrictions on privatization for various data types and languages."
+    },
+    {
+      "title": "Data-Sharing Attribute Clauses: default, shared, private, and firstprivate",
+      "filename": "data-sharing-clauses-default-shared-private-firstprivate.md",
+      "source_start": 8889,
+      "source_end": 9176,
+      "summary": "Covers the introduction to data-sharing attribute clauses in Section 7.5, followed by the detailed specifications for the default, shared, private, and firstprivate clauses, including their arguments, modifiers, directives, semantics, restrictions, and cross-references."
+    },
+    {
+      "title": "Data-Sharing Attribute Clauses: lastprivate, linear, and device pointer clauses",
+      "filename": "data-sharing-clauses-lastprivate-linear-device.md",
+      "source_start": 9177,
+      "source_end": 9508,
+      "summary": "Covers sections 7.5.5 through 7.5.10, detailing the lastprivate, linear, is_device_ptr, use_device_ptr, has_device_addr, and use_device_addr clauses, including their semantics, arguments, modifiers, and restrictions for C/C++ and Fortran."
+    },
+    {
+      "title": "Reduction and Induction Clauses and Directives: Identifiers, Expressions, and Common Properties",
+      "filename": "reduction-induction-identifiers-expressions.md",
+      "source_start": 9509,
+      "source_end": 9830,
+      "summary": "Covers sections 7.6 through 7.6.5, introducing reduction and induction clauses. It details reduction and induction identifiers, expressions (combiner, initializer, inductor, collector), implicitly declared identifiers for C/C++ and Fortran, and properties/restrictions common to all reduction and induction clauses."
+    },
+    {
+      "title": "Reduction Clauses: Common Properties, Scoping, Participating, and Specific reduction Clause",
+      "filename": "reduction-clauses-common-scoping-specific.md",
+      "source_start": 9831,
+      "source_end": 10008,
+      "summary": "Covers properties common to all reduction clauses, execution model events, tool callbacks, restrictions, reduction scoping clauses, reduction participating clauses, the reduction-identifier modifier, and the specific reduction clause including its semantics, modifiers, and restrictions."
+    },
+    {
+      "title": "Task Reduction, In Reduction, Induction, and Declare Directives",
+      "filename": "task-reduction-in-reduction-induction-declare.md",
+      "source_start": 10009,
+      "source_end": 10277,
+      "summary": "Covers the task_reduction clause, in_reduction clause, induction clause, and the declare_reduction directive along with its combiner and initializer clauses."
+    },
+    {
+      "title": "Declare Induction Directive and Clauses",
+      "filename": "declare-induction-directive-clauses.md",
+      "source_start": 10278,
+      "source_end": 10465,
+      "summary": "Covers the declare_induction directive, the inductor clause, and the collector clause, including their semantics, arguments, modifiers, and restrictions."
+    },
+    {
+      "title": "Scan Directive",
+      "filename": "scan-directive.md",
+      "source_start": 10466,
+      "source_end": 10543,
+      "summary": "Continuation of the Scan Directive section, covering semantics, restrictions, and cross-references for the scan directive."
+    },
+    {
+      "title": "Scan Clauses",
+      "filename": "scan-clauses.md",
+      "source_start": 10544,
+      "source_end": 10615,
+      "summary": "Details for the inclusive, exclusive, and init_complete clauses used with the scan directive."
+    },
+    {
+      "title": "Data Copying Clauses",
+      "filename": "data-copying-clauses.md",
+      "source_start": 10616,
+      "source_end": 10761,
+      "summary": "Documentation for the copyin and copyprivate clauses, including semantics, restrictions, and cross-references."
+    },
+    {
+      "title": "Data-Mapping Control",
+      "filename": "data-mapping-control.md",
+      "source_start": 10762,
+      "source_end": 10990,
+      "summary": "Covers the introduction to data-mapping control, map-type modifiers, map-type decay rules, and implicit data-mapping attribute rules for Fortran, C, and C++."
+    },
+    {
+      "title": "Mapper Identifiers and Modifier",
+      "filename": "mapper-identifiers-and-modifier.md",
+      "source_start": 10991,
+      "source_end": 11063,
+      "summary": "Describes mapper identifiers, the mapper modifier, ref-modifier semantics, and the beginning of the map clause specification including arguments, modifiers, and initial semantics regarding list items and mappers."
+    },
+    {
+      "title": "Map Clause Semantics and Execution",
+      "filename": "map-clause-semantics-and-execution.md",
+      "source_start": 11064,
+      "source_end": 11217,
+      "summary": "Details the map clause semantics including mappable storage blocks, reference counting, pointer attachment, execution model events, tool callbacks, and all restrictions for C/C++ and Fortran."
+    },
+    {
+      "title": "Enter Clause",
+      "filename": "enter-clause.md",
+      "source_start": 11218,
+      "source_end": 11287,
+      "summary": "Specifies the enter clause for the declare_target directive, its semantics for creating device storage, automap behavior for allocatable variables, and restrictions."
+    },
+    {
+      "title": "Link Clause",
+      "filename": "link-clause.md",
+      "source_start": 11288,
+      "source_end": 11338,
+      "summary": "Describes the link clause for the declare_target directive, which supports compilation of device procedures referring to variables with static storage duration without mapping them."
+    },
+    {
+      "title": "Defaultmap Clause",
+      "filename": "defaultmap-clause.md",
+      "source_start": 11339,
+      "source_end": 11420,
+      "summary": "Explains the defaultmap clause for the target directive, which controls implicitly determined data-mapping or data-sharing attributes for specific variable categories."
+    },
+    {
+      "title": "Declare Mapper Directive",
+      "filename": "declare-mapper-directive.md",
+      "source_start": 11421,
+      "source_end": 11491,
+      "summary": "Details the declare_mapper directive for defining user-defined mappers, including syntax, semantics, visibility, and restrictions on type definitions and cyclic mappings."
+    },
+    {
+      "title": "Data-Motion Clauses (to, from) and Environment Clauses",
+      "filename": "data-motion-and-environment-clauses.md",
+      "source_start": 11492,
+      "source_end": 11773,
+      "summary": "Covers the continuation of the 'to' and 'from' clauses, including their semantics, restrictions, and cross-references. Also includes the 'uniform' clause for SIMD invariant values, the 'aligned' clause for SIMD alignment requirements, and the 'groupprivate' directive which replicates variables per contention group with specific scope and initialization rules."
+    },
+    {
+      "title": "Memory Management Chapter",
+      "filename": "memory-management.md",
+      "source_start": 11774,
+      "source_end": 12157,
+      "summary": "Covers Chapter 8 on Memory Management, including memory spaces, allocators, and the allocate directive, clauses, and construct definitions."
+    },
+    {
+      "title": "Variant Directives Chapter (Continued): Contexts, Selectors, and Metadirectives",
+      "filename": "variant-directives-contexts-metadirectives.md",
+      "source_start": 12158,
+      "source_end": 12508,
+      "summary": "Continuation of Chapter 9 covering OpenMP Contexts (9.1), Context Selectors (9.2), Matching and Scoring (9.3), and Metadirectives (9.4) including when, otherwise, and begin metadirective clauses."
+    },
+    {
+      "title": "Semantic Requirement Set and Declare Variant Directives",
+      "filename": "semantic-requirement-declare-variant.md",
+      "source_start": 12509,
+      "source_end": 12872,
+      "summary": "Covers the Semantic Requirement Set (9.5), Declare Variant Directives (9.6) including match, adjust_args, and append_args clauses, and the begin declare_variant directive (9.6.5)."
+    },
+    {
+      "title": "Dispatch Construct and Related Clauses",
+      "filename": "dispatch-construct.md",
+      "source_start": 12873,
+      "source_end": 13008,
+      "summary": "Covers the dispatch construct (Section 9.7) and its specific clauses: interop, novariants, and nocontext. Includes semantics, restrictions, and cross-references for each clause."
+    },
+    {
+      "title": "Declare SIMD Directive and Branch Clauses",
+      "filename": "declare-simd.md",
+      "source_start": 13009,
+      "source_end": 13158,
+      "summary": "Covers the declare_simd directive (Section 9.8), including its arguments, clause groups, semantics, and restrictions for C/C++ and Fortran. Also includes the branch clause group and its inbranch/notinbranch clauses (Section 9.8.1)."
+    },
+    {
+      "title": "Declare Target Directives Overview",
+      "filename": "declare-target-overview.md",
+      "source_start": 13159,
+      "source_end": 13221,
+      "summary": "Covers the general introduction to Declare Target Directives (Section 9.9), including implicit rules, execution model events, tool callbacks, and general restrictions applicable to all declare target directives."
+    },
+    {
+      "title": "Declare Target and Begin Declare Target Directives",
+      "filename": "declare-target-directives.md",
+      "source_start": 13222,
+      "source_end": 13359,
+      "summary": "Covers the declare_target directive (Section 9.9.1) and begin declare_target directive (Section 9.9.2), including their arguments, clauses, semantics, and specific restrictions for C/C++ and Fortran."
+    },
+    {
+      "title": "Indirect Clause",
+      "filename": "indirect-clause.md",
+      "source_start": 13360,
+      "source_end": 13398,
+      "summary": "Covers the indirect clause (Section 9.9.3), including its arguments, semantics regarding indirect device invocation, and restrictions."
+    },
+    {
+      "title": "Informational and Utility Directives (Continued)",
+      "filename": "informational-utility-directives.md",
+      "source_start": 13399,
+      "source_end": 13518,
+      "summary": "Covers the error directive, at clause, message clause, and severity clause, including their semantics, execution model events, tool callbacks, and restrictions."
+    },
+    {
+      "title": "Requires Directive and Requirement Clauses",
+      "filename": "requires-directive.md",
+      "source_start": 13519,
+      "source_end": 13802,
+      "summary": "Details the requires directive and its requirement clauses: atomic_default_mem_order, dynamic_allocators, reverse_offload, unified_address, unified_shared_memory, self_maps, and device_safesync."
+    },
+    {
+      "title": "Assumption Directives and Clauses (Continued)",
+      "filename": "assumption-directives-continued.md",
+      "source_start": 13803,
+      "source_end": 14038,
+      "summary": "Continues the section on Assumption Directives, covering the assumption clause groups (absent, contains, holds, no_openmp, no_openmp_constructs, no_openmp_routines, no_parallelism) and the assumes, assume, and begin assumes directives."
+    },
+    {
+      "title": "nothing Directive",
+      "filename": "nothing-directive.md",
+      "source_start": 14039,
+      "source_end": 14131,
+      "summary": "Defines the nothing directive, a utility directive that has no effect unless specified by the apply clause, and its role in loop-transforming constructs."
+    },
+    {
+      "title": "Loop-Transforming Constructs",
+      "filename": "loop-transforming-constructs.md",
+      "source_start": 14132,
+      "source_end": 14159,
+      "summary": "Chapter 11 introduction to loop-transforming constructs, defining how they replace loop nests or sequences and the general restrictions and semantics for generated loops."
+    },
+    {
+      "title": "apply and sizes Clauses",
+      "filename": "apply-sizes-clauses.md",
+      "source_start": 14160,
+      "source_end": 14253,
+      "summary": "Details the apply clause for applying loop-nest-associated constructs to generated loops, and the sizes clause for specifying grid cell subdivisions in loop transformations."
+    },
+    {
+      "title": "Loop Transformation Constructs (fuse, interchange, reverse, split)",
+      "filename": "loop-transform-constructs-part1.md",
+      "source_start": 14254,
+      "source_end": 14391,
+      "summary": "Defines the fuse, interchange (including permutation clause), reverse, and split constructs, including their semantics, clauses, and restrictions."
+    },
+    {
+      "title": "split counts Clause and stripe Construct",
+      "filename": "split-stripe.md",
+      "source_start": 14392,
+      "source_end": 14457,
+      "summary": "Covers the counts clause for the split construct and the stripe construct, which stripes execution order across grid cells of the logical iteration space."
+    },
+    {
+      "title": "tile Construct",
+      "filename": "tile-construct.md",
+      "source_start": 14458,
+      "source_end": 14497,
+      "summary": "Defines the tile construct, which partitions the iteration space into tiles (grid loops and tile loops) and handles partial/complete tiles."
+    },
+    {
+      "title": "unroll Construct and Clauses",
+      "filename": "unroll-construct.md",
+      "source_start": 14498,
+      "source_end": 14582,
+      "summary": "Covers the unroll construct definition, its clauses (apply, full, partial), and detailed semantics/restrictions for the full and partial clauses."
+    },
+    {
+      "title": "Chapter 12: Parallelism Generation and Control - parallel Construct",
+      "filename": "parallel-construct.md",
+      "source_start": 14583,
+      "source_end": 14877,
+      "summary": "Covers the parallel construct definition, semantics, execution model events, tool callbacks, and detailed sections on determining thread count, num_threads clause, thread affinity, proc_bind clause, and safesync clause."
+    },
+    {
+      "title": "Chapter 12: Parallelism Generation and Control - teams Construct",
+      "filename": "teams-construct.md",
+      "source_start": 14878,
+      "source_end": 15008,
+      "summary": "Covers the teams construct (Section 12.2) and the num_teams clause (Section 12.2.1), including semantics, execution model events, tool callbacks, and restrictions."
+    },
+    {
+      "title": "Chapter 12: Parallelism Generation and Control - order, simd, masked Constructs",
+      "filename": "order-simd-masked.md",
+      "source_start": 15009,
+      "source_end": 15264,
+      "summary": "Covers the order clause (Section 12.3), simd construct (Section 12.4) and its clauses (nontemporal, safelen, simdlen), and the masked construct (Section 12.5) with its filter clause."
+    },
+    {
+      "title": "Chapter 13: Work-Distribution Constructs - Introduction and single, scope, sections",
+      "filename": "work-distribution-single-scope-sections.md",
+      "source_start": 15265,
+      "source_end": 15454,
+      "summary": "Covers the introduction to work-distribution constructs, the single construct (Section 13.1), scope construct (Section 13.2), sections construct (Section 13.3), and the section directive (Section 13.3.1)."
+    },
+    {
+      "title": "Chapter 13: Work-Distribution Constructs - workshare Construct",
+      "filename": "workshare-construct.md",
+      "source_start": 15455,
+      "source_end": 15554,
+      "summary": "Continuation of the workshare construct documentation, covering binding, semantics, execution model events, tool callbacks, restrictions, and cross-references for Fortran."
+    },
+    {
+      "title": "Chapter 13: Work-Distribution Constructs - workdistribute Construct",
+      "filename": "workdistribute-construct.md",
+      "source_start": 15555,
+      "source_end": 15635,
+      "summary": "Documentation for the workdistribute construct, including binding, semantics, execution model events, tool callbacks, restrictions, and cross-references for Fortran."
+    },
+    {
+      "title": "Chapter 13: Work-Distribution Constructs - Worksharing-Loop Constructs and for/do",
+      "filename": "worksharing-loop-constructs.md",
+      "source_start": 15636,
+      "source_end": 15790,
+      "summary": "Documentation for the Worksharing-Loop Constructs section, including general semantics, execution model, tool callbacks, and the specific for and do constructs with their clauses and cross-references."
+    },
+    {
+      "title": "Chapter 13: Work-Distribution Constructs - schedule Clause",
+      "filename": "schedule-clause.md",
+      "source_start": 15791,
+      "source_end": 15853,
+      "summary": "Documentation for the schedule clause, detailing arguments, modifiers, semantics for static/dynamic/guided/auto/runtime schedules, restrictions, and cross-references."
+    },
+    {
+      "title": "Chapter 13: Work-Distribution Constructs - distribute Construct",
+      "filename": "distribute-construct.md",
+      "source_start": 15854,
+      "source_end": 15933,
+      "summary": "Documentation for the distribute construct, including clauses, binding, semantics, execution model events, tool callbacks, restrictions, and cross-references."
+    },
+    {
+      "title": "Chapter 13: Work-Distribution Constructs - dist_schedule Clause",
+      "filename": "dist-schedule-clause.md",
+      "source_start": 15934,
+      "source_end": 15965,
+      "summary": "Documentation for the dist_schedule clause, including arguments, modifiers, semantics, restrictions, and cross-references."
+    },
+    {
+      "title": "Chapter 13: Work-Distribution Constructs - loop Construct",
+      "filename": "loop-construct.md",
+      "source_start": 15966,
+      "source_end": 16032,
+      "summary": "Covers the loop construct definition, semantics, restrictions, and the bind clause (13.8 and 13.8.1)."
+    },
+    {
+      "title": "Chapter 14: Tasking Constructs - Task Construct",
+      "filename": "task-construct.md",
+      "source_start": 16033,
+      "source_end": 16170,
+      "summary": "Covers the task construct (14.1), including its clauses, semantics, execution model events, and tool callbacks."
+    },
+    {
+      "title": "Chapter 14: Tasking Constructs - Taskloop Construct and Clauses",
+      "filename": "taskloop-construct.md",
+      "source_start": 16171,
+      "source_end": 16400,
+      "summary": "Covers the taskloop construct (14.2), grainsize clause (14.2.1), num_tasks clause (14.2.2), and task_iteration directive (14.2.3)."
+    },
+    {
+      "title": "Chapter 14: Tasking Constructs - Taskgraph Construct and Clauses",
+      "filename": "taskgraph-construct.md",
+      "source_start": 16401,
+      "source_end": 16536,
+      "summary": "Covers the taskgraph construct, its semantics, record handling, and the graph_id and graph_reset clauses."
+    },
+    {
+      "title": "Chapter 14: Tasking Constructs - Task Clauses (Untied, Mergeable, Replayable, Final, Threadset, Priority, Affinity, Detach)",
+      "filename": "task-clauses.md",
+      "source_start": 16537,
+      "source_end": 16800,
+      "summary": "Covers the untied, mergeable, replayable, final, threadset, priority, affinity, and detach clauses applicable to task and related constructs."
+    },
+    {
+      "title": "Chapter 14: Tasking Constructs - Taskyield, Initial Task, and Task Scheduling",
+      "filename": "task-scheduling.md",
+      "source_start": 16801,
+      "source_end": 16926,
+      "summary": "Covers the taskyield construct, initial task execution model events, and the detailed rules and constraints of task scheduling."
+    },
+    {
+      "title": "Chapter 15: Device Directives and Clauses - Device Type and Device",
+      "filename": "device-directives-clauses.md",
+      "source_start": 16927,
+      "source_end": 17011,
+      "summary": "Continuation of Chapter 15 covering the device_type and device clauses, including thread_limit and device initialization events."
+    },
+    {
+      "title": "Chapter 15: Device Directives and Clauses - Data Mapping Constructs",
+      "filename": "data-mapping-constructs.md",
+      "source_start": 17012,
+      "source_end": 17213,
+      "summary": "Covers the target_enter_data and target_exit_data constructs, which handle explicit data mapping to and from device environments."
+    },
+    {
+      "title": "Chapter 15: Device Directives and Clauses - Target Data Construct",
+      "filename": "target-data-construct.md",
+      "source_start": 17214,
+      "source_end": 17314,
+      "summary": "Covers the target_data construct, a composite directive that combines data mapping with a task region for execution on a device."
+    },
+    {
+      "title": "Chapter 15: Device Directives and Clauses - Target Construct",
+      "filename": "target-construct.md",
+      "source_start": 17315,
+      "source_end": 17475,
+      "summary": "Covers the target construct, the primary directive for offloading execution to a device, including its clauses, semantics, and restrictions."
+    },
+    {
+      "title": "Chapter 15: Device Directives and Clauses - Target Update Construct (Continued)",
+      "filename": "target-update-construct.md",
+      "source_start": 17476,
+      "source_end": 17550,
+      "summary": "Continuation of the target_update construct documentation, covering binding, semantics, execution model events, tool callbacks, and cross references."
+    },
+    {
+      "title": "Chapter 16: Interoperability",
+      "filename": "interop.md",
+      "source_start": 17551,
+      "source_end": 17686,
+      "summary": "Chapter 16 on Interoperability, including the interop construct, foreign runtime identifiers, use clause, and prefer-type modifier."
+    },
+    {
+      "title": "Chapter 17: Synchronization Constructs and Clauses - Hint, Critical, and Barriers",
+      "filename": "synchronization-ch17-part1.md",
+      "source_start": 17687,
+      "source_end": 17901,
+      "summary": "Chapter 17 introduction, hint clause, critical construct, barrier constructs, and implicit/implementation-specific barriers."
+    },
+    {
+      "title": "Chapter 17: Synchronization Constructs and Clauses - Taskgroup, Taskwait",
+      "filename": "synchronization-ch17-part2.md",
+      "source_start": 17902,
+      "source_end": 18028,
+      "summary": "Continues the previous section with the `taskgroup` construct (Section 17.4) and the `taskwait` construct (Section 17.5), including their semantics, execution model events, tool callbacks, and restrictions."
+    },
+    {
+      "title": "Chapter 17: Synchronization Constructs and Clauses - nowait, nogroup, Memory Ordering",
+      "filename": "synchronization-ch17-part4.md",
+      "source_start": 18029,
+      "source_end": 18520,
+      "summary": "Covers the nowait and nogroup clauses, followed by the introduction to OpenMP Memory Ordering, including the memory-order clause group and its members (acq_rel, acquire, relaxed, release, seq_cst), atomic clauses (read, update, write), extended-atomic clauses (capture, compare, fail, weak), and the memscope clause."
+    },
+    {
+      "title": "Chapter 17: Synchronization Constructs and Clauses - atomic and flush",
+      "filename": "synchronization-ch17-part5.md",
+      "source_start": 18521,
+      "source_end": 18822,
+      "summary": "Details the atomic construct (semantics, C/C++ specifics, execution model events, tool callbacks, restrictions) and the flush construct (arguments, semantics, C/C++/Fortran specifics, execution model events, tool callbacks, restrictions). Includes the section on implicit flushes and their synchronization behavior."
+    },
+    {
+      "title": "Chapter 17: Synchronization Constructs and Clauses - Dependences (Continued)",
+      "filename": "synchronization-ch17-part7.md",
+      "source_start": 18823,
+      "source_end": 19330,
+      "summary": "Continuation of Chapter 17 covering task-dependence-type modifier, depend objects, depobj construct, update and depend clauses, transparent clause, doacross clause, and the ordered construct (stand-alone, block-associated, and parallelization-level clauses)."
+    },
+    {
+      "title": "Chapter 18: Cancellation Constructs",
+      "filename": "cancellation-ch18.md",
+      "source_start": 19331,
+      "source_end": 19533,
+      "summary": "Covers Section 18 (Cancellation Constructs), including cancel-directive-name clauses, the cancel construct, and the cancellation_point construct, along with their semantics, restrictions, and cross-references."
+    },
+    {
+      "title": "Chapter 19: Composition of Constructs",
+      "filename": "composition-ch19.md",
+      "source_start": 19534,
+      "source_end": 19767,
+      "summary": "Covers Section 19 (Composition of Constructs), defining compound directive names, clauses on compound constructs, and compound construct semantics."
+    },
+    {
+      "title": "Chapter 20: Runtime Library Definitions (Continued)",
+      "filename": "runtime-library-ch20.md",
+      "source_start": 19768,
+      "source_end": 20088,
+      "summary": "Continuation of Chapter 20 definitions, covering interop return codes (omp_interop_rc_t) and the beginning of the OpenMP Memory Management Types section."
+    },
+    {
+      "title": "Chapter 20: OpenMP Memory Management Types",
+      "filename": "memory-management-types.md",
+      "source_start": 20089,
+      "source_end": 20542,
+      "summary": "OpenMP Memory Management Types including allocator_handle, alloctrait, mempartition, mempartitioner, and memspace_handle definitions and constants."
+    },
+    {
+      "title": "Chapter 20: OpenMP Synchronization and Affinity Types",
+      "filename": "sync-and-affinity-types.md",
+      "source_start": 20543,
+      "source_end": 20732,
+      "summary": "OpenMP Synchronization Types (depend, impex, lock, nest_lock, sync_hint) and OpenMP Affinity Support Types (proc_bind)."
+    },
+    {
+      "title": "Chapter 20: Resource Relinquishing and Tool Types",
+      "filename": "resource-and-tool-types.md",
+      "source_start": 20733,
+      "source_end": 20850,
+      "summary": "OpenMP Resource Relinquishing Types (pause_resource) and OpenMP Tool Types (control_tool, control_tool_result)."
+    },
+    {
+      "title": "Chapter 21: Parallel Region Support Routines (continued)",
+      "filename": "parallel-region-routines.md",
+      "source_start": 20851,
+      "source_end": 21346,
+      "summary": "Continuation of Chapter 21 covering omp_get_num_threads, omp_get_thread_num, omp_get_max_threads, omp_get_thread_limit, omp_in_parallel, omp_set_dynamic, omp_get_dynamic, omp_set_schedule, omp_get_schedule, omp_get_supported_active_levels, omp_set_max_active_levels, omp_get_max_active_levels, omp_get_level, omp_get_ancestor_thread_num, omp_get_team_size, and omp_get_active_level."
+    },
+    {
+      "title": "Chapter 22: Teams Region Routines",
+      "filename": "teams-region-routines.md",
+      "source_start": 21347,
+      "source_end": 21529,
+      "summary": "Chapter 22 detailing routines for teams region support, including omp_get_num_teams, omp_set_num_teams, omp_get_team_num, omp_get_max_teams, omp_get_teams_thread_limit, and omp_set_teams_thread_limit."
+    },
+    {
+      "title": "Chapter 23: Tasking Support Routines",
+      "filename": "tasking-support-routines.md",
+      "source_start": 21530,
+      "source_end": 21755,
+      "summary": "This section covers OpenMP tasking support routines, including querying task execution properties (max priority, explicit task status, final status, free agent status) and the event routine for fulfilling task dependences."
+    },
+    {
+      "title": "Chapter 24: Device Information Routines",
+      "filename": "device-information-routines.md",
+      "source_start": 21756,
+      "source_end": 22221,
+      "summary": "Documentation for Chapter 24, covering device-information routines such as omp_set_default_device, omp_get_num_devices, omp_get_device_num, and routines for managing teams and thread limits on specific devices."
+    },
+    {
+      "title": "Chapter 25: Device Memory Routines",
+      "filename": "device-memory-routines.md",
+      "source_start": 22222,
+      "source_end": 22808,
+      "summary": "Covers Chapter 25, detailing device memory routines including asynchronous routines, memory information routines (is_present, is_accessible, get_mapped_ptr), allocation/freeing (alloc, free), pointer association/disassociation (associate_ptr, disassociate_ptr), memory copying routines (memcpy, memcpy_rect, and their async variants), and memory setting routines (memset and its async variant). Includes Fortran/C prototypes, effects, execution model events, and tool callbacks for each."
+    },
+    {
+      "title": "Chapter 26: Interoperability Routines",
+      "filename": "interop-routines.md",
+      "source_start": 22809,
+      "source_end": 23118,
+      "summary": "Documentation for the Interoperability Routines section of the OpenMP specification, covering general properties, restrictions, and specific routines for retrieving interoperability object properties (omp_get_num_interop_properties, omp_get_interop_int, omp_get_interop_ptr, omp_get_interop_str, omp_get_interop_name, omp_get_interop_type_desc, omp_get_interop_rc_desc)."
+    },
+    {
+      "title": "Chapter 27: Memory Management Routines (Continued)",
+      "filename": "memory-management-routines.md",
+      "source_start": 23119,
+      "source_end": 24473,
+      "summary": "Continuation of Chapter 27 covering memory partitioner routines (omp_destroy_mempartitioner, omp_init_mempartition, etc.), memory allocator routines (omp_init_allocator, omp_destroy_allocator, retrieving routines, default allocator), and memory allocating routines (omp_alloc, omp_aligned_alloc, omp_calloc, omp_realloc, omp_free)."
+    },
+    {
+      "title": "Chapter 28: Lock Routines (Continued)",
+      "filename": "lock-routines-continued.md",
+      "source_start": 24474,
+      "source_end": 25063,
+      "summary": "Continuation of Chapter 28, covering lock initializing, destroying, acquiring, releasing, and testing routines for both simple and nestable locks, including their prototypes, effects, execution model events, and tool callbacks."
+    },
+    {
+      "title": "Chapter 29: Thread Affinity Routines",
+      "filename": "thread-affinity-routines.md",
+      "source_start": 25064,
+      "source_end": 25445,
+      "summary": "Chapter 29 describing routines for thread affinity policies, including getting/setting processor bind, place numbers, partition information, and affinity format/capture/display."
+    },
+    {
+      "title": "Chapter 30: Execution Control Routines",
+      "filename": "chapter-30-execution-control-routines.md",
+      "source_start": 25446,
+      "source_end": 25620,
+      "summary": "Covers the execution control routines for OpenMP, including cancellation monitoring, resource relinquishing (omp_pause_resource), timing measurements (omp_get_wtime, omp_get_wtick), and environment display (omp_display_env)."
+    },
+    {
+      "title": "Chapter 31: Tool Support Routines",
+      "filename": "chapter-31-tool-support-routines.md",
+      "source_start": 25621,
+      "source_end": 25694,
+      "summary": "Describes the omp_control_tool routine, which allows OpenMP programs to pass commands to first-party tools via the OMPT interface."
+    },
+    {
+      "title": "Chapter 32: OMPT Overview (Continued)",
+      "filename": "chapter-32-ompt-overview-continued.md",
+      "source_start": 25695,
+      "source_end": 26062,
+      "summary": "Continuation of Chapter 32, covering OMPT interfaces, activation flow, entry point binding, host activity monitoring, target device tracing, and tool finalization."
+    },
+    {
+      "title": "Chapter 33: OMPT Data Types",
+      "filename": "chapter-33-ompt-data-types.md",
+      "source_start": 26063,
+      "source_end": 26538,
+      "summary": "Continuation and completion of Chapter 33, covering OMPT data types including any_record_ompt, buffer, callback, callbacks, cancel_flag, data, dependence, dependence_type, device, device_time, dispatch, dispatch_chunk, frame, frame_flag, hwid, id, interface_fn, mutex, native_mon_flag, parallel_flag, record, record_abstract, record_native, record_ompt, scope_endpoint, set_result, severity, start_tool_result, state, subvolume, sync_region, target, target_data_op, target_map_flag, task_flag, task_status, thread, wait_id, and work."
+    },
+    {
+      "title": "Chapter 33: OMPT Data Types (continued)",
+      "filename": "chapter-33-ompt-data-types-continued.md",
+      "source_start": 26539,
+      "source_end": 26862,
+      "summary": "Continuation of Chapter 33, covering remaining OMPT data types and definitions."
+    },
+    {
+      "title": "Chapter 34: General Callbacks and Trace Records (Continued)",
+      "filename": "chapter-34-general-callbacks-and-trace-records.md",
+      "source_start": 26863,
+      "source_end": 27038,
+      "summary": "Continuation of Chapter 34, covering the introduction, restrictions, and initialization/finalization callbacks (initialize, finalize, thread_begin, thread_end) and the error callback."
+    },
+    {
+      "title": "Chapter 34: Parallelism and Work Distribution Callbacks",
+      "filename": "chapter-34-parallelism-and-work-distribution-callbacks.md",
+      "source_start": 27039,
+      "source_end": 27279,
+      "summary": "Covers parallelism generation callbacks (parallel_begin, parallel_end, masked) and work distribution callbacks (work, dispatch), including their type signatures, trace records, and semantics."
+    },
+    {
+      "title": "Chapter 34: Tasking and Synchronization Callbacks (Continued)",
+      "filename": "chapter-34-tasking-and-synchronization-callbacks.md",
+      "source_start": 27280,
+      "source_end": 27871,
+      "summary": "Continuation of Chapter 34, covering task creation, scheduling, implicit tasks, cancellation, and detailed synchronization callbacks including dependences, mutex operations, lock management, and the control_tool interface."
+    },
+    {
+      "title": "Chapter 35: Device Callbacks and Tracing",
+      "filename": "chapter-35-device-callbacks-and-tracing.md",
+      "source_start": 27872,
+      "source_end": 28274,
+      "summary": "Continuation of Chapter 35, covering device tracing callbacks including device_initialize, device_finalize, device_load, device_unload, buffer_request, buffer_complete, target_data_op_emi, target_emi, target_map_emi, and target_submit_emi. This section details the semantics, arguments, type signatures, and restrictions for each callback used to monitor and trace device execution events."
+    },
+    {
+      "title": "Chapter 36: General Entry Points",
+      "filename": "chapter-36-general-entry-points.md",
+      "source_start": 28275,
+      "source_end": 28814,
+      "summary": "This section covers the general OMPT entry points available on the host. It includes function lookup, state enumeration, callback registration/retrieval, and various query functions for thread data, processor IDs, parallel region info, task info, and device counts."
+    },
+    {
+      "title": "Chapter 37: Device Tracing Entry Points",
+      "filename": "chapter-37-device-tracing-entry-points.md",
+      "source_start": 28815,
+      "source_end": 29215,
+      "summary": "Documentation for OMPT device tracing entry points, including functions for querying device properties, enabling/disabling tracing, managing trace buffers, and interpreting trace records."
+    },
+    {
+      "title": "Chapter 38: OMPD Overview",
+      "filename": "chapter-38-ompd-overview.md",
+      "source_start": 29216,
+      "source_end": 29283,
+      "summary": "Overview of the OMPD interface for third-party tools, including activation, library loading, and runtime support requirements."
+    },
+    {
+      "title": "Chapter 39: OMPD Data Types (Part 1)",
+      "filename": "chapter-39-ompd-data-types-part-1.md",
+      "source_start": 29284,
+      "source_end": 29449,
+      "summary": "Definition of OMPD data types including addresses, callbacks, device information, and type sizes."
+    },
+    {
+      "title": "Chapter 39: OMPD Data Types (Part 3)",
+      "filename": "chapter-39-ompd-data-types-part-3.md",
+      "source_start": 29450,
+      "source_end": 29697,
+      "summary": "Continuation of OMPD data types covering frame_info, icv_id, rc, seg, scope, size, team_generator, thread_context, thread_id, wait_id, word, and handle types (address_space, parallel, task, thread)."
+    },
+    {
+      "title": "Chapter 40: OMPD Callback Interface",
+      "filename": "chapter-40-ompd-callback-interface.md",
+      "source_start": 29698,
+      "source_end": 30084,
+      "summary": "Details the OMPD Callback Interface, including memory management callbacks (alloc_memory, free_memory), program/runtime memory access callbacks (symbol_addr_lookup, memory_read, read_memory, read_string, write_memory), context management callbacks (get_thread_context_for_thread_id, sizeof_type), device translating callbacks (device_host type, device_to_host, host_to_device), and the print_string callback."
+    },
+    {
+      "title": "Chapter 41: OMPD Routines (Initialization and Process Setup)",
+      "filename": "chapter-41-initialization-and-process.md",
+      "source_start": 30085,
+      "source_end": 30333,
+      "summary": "Covers the print_string callback, library initialization/finalization routines (ompd_initialize, ompd_get_api_version, ompd_get_version_string, ompd_finalize), and process/device initialization routines (ompd_process_initialize, ompd_device_initialize, ompd_get_device_thread_id_kinds)."
+    },
+    {
+      "title": "Chapter 41: OMPD Routines (Address Space, Thread, and Parallel Handles)",
+      "filename": "chapter-41-address-thread-parallel.md",
+      "source_start": 30334,
+      "source_end": 30621,
+      "summary": "Covers address space information (ompd_get_omp_version, ompd_get_omp_version_string), thread handle routines (ompd_get_thread_in_parallel, ompd_get_thread_handle, ompd_get_thread_id, ompd_get_device_from_thread), and parallel region handle routines (ompd_get_curr_parallel_handle, ompd_get_enclosing_parallel_handle, ompd_get_task_parallel_handle)."
+    },
+    {
+      "title": "Chapter 41: OMPD Routines (Task Handles)",
+      "filename": "chapter-41-task-handles.md",
+      "source_start": 30622,
+      "source_end": 30805,
+      "summary": "Covers task handle routines including getting current/generating/scheduling tasks, tasks in parallel, task functions, and task frames (ompd_get_curr_task_handle, ompd_get_generating_task_handle, ompd_get_scheduling_task_handle, ompd_get_task_in_parallel, ompd_get_task_function, ompd_get_task_frame)."
+    },
+    {
+      "title": "Chapter 41: OMPD Routines (Handle Comparison, Release, and State)",
+      "filename": "chapter-41-handle-compare-release-state.md",
+      "source_start": 30806,
+      "source_end": 31041,
+      "summary": "Continuation of Chapter 41 covering handle comparison routines (parallel, task, thread), handle releasing routines (address space, parallel, task, thread), and thread state querying routines (enumerate states, get state)."
+    },
+    {
+      "title": "Chapter 41: OMPD Routines (Display Control and Scope-Specific Information)",
+      "filename": "chapter-41-display-control-scope-info.md",
+      "source_start": 31042,
+      "source_end": 31265,
+      "summary": "Covers display control variables (get and release), and accessing scope-specific information including enumerating ICVs, getting ICV values and strings from scope, and accessing tool data."
+    },
+    {
+      "title": "Chapter 42: OMPD Breakpoint Symbol Names",
+      "filename": "chapter-42-breakpoint-symbols.md",
+      "source_start": 31266,
+      "source_end": 31497,
+      "summary": "Describes the OMPD breakpoint symbols that OpenMP implementations must define for events such as thread begin/end, device begin/end, parallel begin/end, teams begin/end, task begin/end, and target begin/end."
+    },
+    {
+      "title": "Part VI: Appendices (OpenMP Implementation-Defined Behaviors)",
+      "filename": "part-vi-appendices-impl-defined-behaviors.md",
+      "source_start": 31498,
+      "source_end": 31830,
+      "summary": "Appendix A listing implementation-defined behaviors for OpenMP chapters 1 through 42, covering memory models, environment variables, language-specific constructs, runtime routines, and OMPT interfaces."
+    },
+    {
+      "title": "Part VI: Appendices (Features History)",
+      "filename": "part-vi-appendices-features-history.md",
+      "source_start": 31831,
+      "source_end": 32038,
+      "summary": "Continuation of the previous chunk, covering deprecated features and differences between OpenMP versions 5.2-6.0, 5.1-5.2, 5.0-5.1, 4.5-5.0, 4.0-4.5, 3.1-4.0, 3.0-3.1, and 2.5-3.0."
+    },
+    {
+      "title": "Part VI: Appendices (Nesting of Regions)",
+      "filename": "part-vi-appendices-nesting-of-regions.md",
+      "source_start": 32039,
+      "source_end": 32538,
+      "summary": "Continuation of previous chunk containing differences between OpenMP versions 5.2, 5.1, 5.0, 4.5, 4.0, 3.1, 3.0, and 2.5, followed by the Appendix C content describing restrictions on the nesting of regions."
+    },
+    {
+      "title": "Part VII: Appendices (Conforming Compound Directive Names)",
+      "filename": "part-vii-appendices-conforming-compound-directive-names.md",
+      "source_start": 32539,
+      "source_end": 32676,
+      "summary": "Appendix D detailing the grammar and constraints for deriving conforming compound-directive names, including BNF-like productions for various combined and composite directive structures."
+    },
+    {
+      "title": "Part VIII: Index",
+      "filename": "part-viii-index.md",
+      "source_start": 32677,
+      "source_end": 32966,
+      "summary": "The alphabetical index of the OpenMP specification, covering symbols, keywords, clauses, constructs, routines, and types from A to W."
+    }
+  ]
+}
