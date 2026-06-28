@@ -128,14 +128,14 @@ export default function GraphCanvas({
   }
 
   const nodeRadius = (n) =>
-    n.id === currentId ? 11 : usedIds?.has(n.id) ? 8 : n.type === 'agent' ? 5.5 : 4.5
+    n.id === currentId ? 15 : usedIds?.has(n.id) ? 11 : n.type === 'agent' ? 8.5 : 7.5
 
   return (
     <div ref={wrapRef} className="graph-grid relative h-full overflow-hidden" style={{ backgroundSize: `${gridSize}px ${gridSize}px`, backgroundPosition: `${view.panX}px ${view.panY}px` }}>
       <div className="absolute left-[18px] top-[18px] z-[3] w-[330px] border border-line bg-white/90 px-[14px] py-[13px] shadow-md backdrop-blur">
-        <h2 className="m-0 text-[14px] font-bold tracking-tight">Infinite graph canvas</h2>
-        <p className="mt-[5px] text-[12px] leading-[1.4] text-muted">
-          Drag to pan, scroll to zoom. Notes grouped into dotted chapter regions. Zoom into a region to read it.
+          <h2 className="m-0 text-[14px] font-bold tracking-tight">Infinite graph canvas</h2>
+          <p className="mt-[5px] text-[12px] leading-[1.4] text-muted">
+          Drag to pan, scroll to zoom. Notes grouped into dotted topic regions. Zoom into a region to read it.
         </p>
       </div>
 

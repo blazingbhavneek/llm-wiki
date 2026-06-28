@@ -191,7 +191,12 @@ class DomainEngine:
     def recluster(self, resolution: float = 1.0) -> dict[str, str]:
         return self.analytics.recluster(resolution=resolution, namer=self._llm_cluster_namer)
 
-    def _llm_cluster_namer(self, keywords: list[str], titles: list[str]) -> str | None:
+    def _llm_cluster_namer(
+        self,
+        keywords: list[str],
+        titles: list[str],
+        used_names: list[str] | None = None,
+    ) -> str | None:
         """Name one community from its distinctive keywords + sample titles.
 
         Best-effort: returns ``None`` on any failure / unusable output so the
@@ -199,14 +204,19 @@ class DomainEngine:
         """
         if not keywords and not titles:
             return None
+        avoided = used_names or []
         system = (
-            "You name topic clusters for a knowledge graph. Given keywords and "
-            "sample section titles, reply with ONE concise topic name of at most 4 "
-            "words. No quotes, no punctuation, no explanation — just the name."
+            "You name one topic cluster for a knowledge graph. Choose a specific "
+            "name that distinguishes this cluster from the other names already used. "
+            "Prefer the most specific technical subtopic visible in the keywords and "
+            "sample section titles. Avoid broad source names like CUDA, SYCL, OpenMP, "
+            "or oneAPI when a narrower topic is present. Reply with ONE concise topic "
+            "name of at most 4 words. No quotes, no punctuation, no explanation."
         )
         user = (
             f"Keywords: {', '.join(keywords) or '(none)'}\n"
-            f"Sample titles: {'; '.join(titles) or '(none)'}\n\n"
+            f"Sample titles: {'; '.join(titles) or '(none)'}\n"
+            f"Already used names to avoid: {', '.join(avoided) or '(none)'}\n\n"
             "Topic name:"
         )
         try:
@@ -215,6 +225,8 @@ class DomainEngine:
             return None
         name = " ".join(raw.strip().strip('"\'').split())
         if not name or len(name) > 60 or len(name.split()) > 6:
+            return None
+        if name.lower() in {used.lower() for used in avoided}:
             return None
         return name.title()
 

@@ -751,14 +751,14 @@ class GraphAnalytics:
         resolution: float = 1.0,
         seed: int = 42,
         persist: bool = True,
-        namer: Callable[[list[str], list[str]], str | None] | None = None,
+        namer: Callable[..., str | None] | None = None,
     ) -> dict[str, str]:
         """Detect communities (Louvain) and label each.
 
-        ``namer(top_keywords, sample_titles) -> name`` is an optional caller-supplied
-        labeller (e.g. an LLM in the engine layer). It keeps this module LLM-free:
-        the callback receives plain strings and returns a name, or ``None``/empty to
-        fall back to the deterministic TF-IDF keyword label.
+        ``namer(top_keywords, sample_titles, used_names) -> name`` is an optional
+        caller-supplied labeller (e.g. an LLM in the engine layer). It keeps this
+        module LLM-free: the callback receives plain strings and returns a name,
+        or ``None``/empty to fall back to the deterministic TF-IDF keyword label.
         """
         import networkx as nx
         nodes = [node for node in self.database.get_all_nodes() if node.status == NodeStatus.active]
@@ -805,12 +805,19 @@ class GraphAnalytics:
         n_comms = max(len(ordered), 1)
         mapping: dict[str, str] = {}
         used: Counter[str] = Counter()
+        used_labels: list[str] = []
         for index, members in enumerate(ordered):
-            keywords = self._tfidf_keywords(per_comm[index], doc_freq, n_comms, k=5)
+            keywords = self._tfidf_keywords(per_comm[index], doc_freq, n_comms, k=8)
+            sample_titles = titles[index][:12]
             label = ""
             if namer:
                 try:
-                    label = (namer(keywords, titles[index][:6]) or "").strip()
+                    label = (namer(keywords, sample_titles, used_labels) or "").strip()
+                except TypeError:
+                    try:
+                        label = (namer(keywords, sample_titles) or "").strip()
+                    except Exception:  # noqa: BLE001 - LLM naming is best-effort
+                        label = ""
                 except Exception:  # noqa: BLE001 - LLM naming is best-effort
                     label = ""
             if not label:
@@ -818,6 +825,7 @@ class GraphAnalytics:
             used[label] += 1
             if used[label] > 1:
                 label = f"{label} {used[label]}"
+            used_labels.append(label)
             for node_id in members:
                 mapping[node_id] = label
         if persist:

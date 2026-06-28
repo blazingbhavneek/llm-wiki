@@ -21,9 +21,9 @@ def now_iso() -> str:
 class Settings:
     """All tunables for one engine instance."""
 
-    chat_base_url: str = "http://180.21.170.235:42374/v1"
+    chat_base_url: str = "http://localhost:8000/v1"
     chat_api_key: str = "local"
-    chat_model: str = "nvidia/Qwen3.6-35B-A3B-NVFP4"
+    chat_model: str = "gemma4"
     chat_temperature: float = 0.2
 
     embed_backend: str = "server"
