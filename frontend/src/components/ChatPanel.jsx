@@ -1,8 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import mermaid from 'mermaid'
 
-export default function ChatPanel({ messages, health, onAsk, onSearch, onOpenNode, onAddWiki }) {
+mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'strict' })
+
+export default function ChatPanel({
+  messages,
+  health,
+  onAsk,
+  onSearch,
+  onOpenNode,
+  onAddWiki,
+  onViewAnswer,
+  activeAnswerId,
+  savedIds,
+}) {
   const [question, setQuestion] = useState('')
   const [search, setSearch] = useState('')
   const endRef = useRef(null)
@@ -75,57 +88,15 @@ export default function ChatPanel({ messages, health, onAsk, onSearch, onOpenNod
               </div>
             </div>
           ) : (
-            <div key={i} className="mb-[16px]">
-              <div className="mb-[8px] flex items-center gap-2 text-[12px] text-muted">
-                <span className="inline-grid h-[22px] w-[22px] place-items-center bg-blue/10 text-[11px] font-bold text-[#244a9d]">
-                  AI
-                </span>
-                Answer completed
-              </div>
-
-              <div className="border border-line bg-white px-[15px] py-[14px] text-[14px] leading-[1.5] shadow-sm">
-                {m.title && <div className="mb-[8px] font-bold">{m.title}</div>}
-
-                <MarkdownMessage>{m.text}</MarkdownMessage>
-
-                {m.refs?.length > 0 && (
-                  <div className="mt-[12px] border-t border-line pt-[12px]">
-                    <h3 className="m-0 mb-[8px] text-[12px] font-bold uppercase tracking-wider text-muted">
-                      References
-                    </h3>
-
-                    <ol className="m-0 list-decimal pl-[20px] text-[13px] text-muted">
-                      {m.refs.map((r) => (
-                        <li key={r.id} className="my-[6px] pl-[3px]">
-                          <button
-                            className="border-b border-dotted border-[#244a9d]/40 text-left text-[#244a9d] hover:text-blue"
-                            onClick={() => onOpenNode(r.id)}
-                          >
-                            {r.label}
-                          </button>{' '}
-                          — {r.note}
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-                )}
-
-                {m.canSave && (
-                  <div className="mt-[13px] flex items-center gap-[10px]">
-                    <button
-                      className="border-0 bg-ink px-[13px] py-[10px] text-[13px] font-bold text-white shadow-md"
-                      onClick={onAddWiki}
-                    >
-                      Add to wiki
-                    </button>
-
-                    <span className="text-[12px] text-muted">
-                      Creates a clean markdown note from this answer.
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
+            <AssistantMessage
+              key={i}
+              m={m}
+              onOpenNode={onOpenNode}
+              onAddWiki={onAddWiki}
+              onViewAnswer={onViewAnswer}
+              activeAnswerId={activeAnswerId}
+              saved={!!(m.answer && savedIds?.has(m.answer.id))}
+            />
           ),
         )}
 
@@ -152,12 +123,206 @@ export default function ChatPanel({ messages, health, onAsk, onSearch, onOpenNod
   )
 }
 
-function MarkdownMessage({ children }) {
+function ActivityTray({ activity, streaming }) {
+  if (!activity?.length) {
+    return streaming ? (
+      <div className="flex items-center gap-2 text-[12.5px] text-muted">
+        <Spinner /> Thinking…
+      </div>
+    ) : null
+  }
+
+  return (
+    <ul className="m-0 list-none space-y-[5px] p-0 text-[12.5px] text-muted">
+      {activity.map((line, idx) => {
+        const last = idx === activity.length - 1
+        return (
+          <li key={idx} className="flex items-center gap-2">
+            <span className="text-[10px] text-muted2">
+              {streaming && last ? <Spinner /> : '✓'}
+            </span>
+            <span className={streaming && last ? 'text-ink' : ''}>{line}</span>
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
+const SPINNER_FRAMES = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+
+function Spinner() {
+  const [i, setI] = useState(0)
+  useEffect(() => {
+    const id = setInterval(() => setI((v) => (v + 1) % SPINNER_FRAMES.length), 80)
+    return () => clearInterval(id)
+  }, [])
+  return (
+    <span className="inline-block w-[11px] text-center font-mono leading-none text-blue">
+      {SPINNER_FRAMES[i]}
+    </span>
+  )
+}
+
+function AssistantMessage({ m, onOpenNode, onAddWiki, onViewAnswer, activeAnswerId, saved }) {
+  const [open, setOpen] = useState(false)
+  const streaming = !!m.streaming
+  const activity = m.activity || []
+  const hasSteps = !streaming && activity.length > 0
+
+  return (
+    <div className="mb-[16px]">
+      <div className="mb-[8px] flex items-center gap-2 text-[12px] text-muted">
+        <span className="inline-grid h-[22px] w-[22px] place-items-center bg-blue/10 text-[11px] font-bold text-[#244a9d]">
+          AI
+        </span>
+        {streaming ? 'Working…' : 'Answer completed'}
+      </div>
+
+      <div className="border border-line bg-white px-[15px] py-[14px] text-[14px] leading-[1.5] shadow-sm">
+        {m.title && (
+          <div className="mb-[8px] flex items-center gap-2 font-bold">
+            <span>{m.title}</span>
+            {hasSteps && (
+              <button
+                className="text-[11px] font-normal text-[#244a9d] hover:text-blue"
+                onClick={() => setOpen((v) => !v)}
+              >
+                {open ? '▾ hide steps' : '▸ show steps'}
+              </button>
+            )}
+          </div>
+        )}
+
+        {streaming && (
+          <div className="border-l-[3px] border-blue/30 bg-blue/5 px-[12px] py-[10px]">
+            <ActivityTray activity={activity} streaming />
+          </div>
+        )}
+
+        {hasSteps && open && (
+          <div className="mb-[10px] border-l-[3px] border-line bg-soft px-[12px] py-[10px]">
+            <ActivityTray activity={activity} />
+          </div>
+        )}
+
+        {!streaming && <MarkdownMessage diagramState={m.diagramState}>{m.text}</MarkdownMessage>}
+
+        {m.refs?.length > 0 && (
+          <div className="mt-[12px] border-t border-line pt-[12px]">
+            <h3 className="m-0 mb-[8px] text-[12px] font-bold uppercase tracking-wider text-muted">
+              References
+            </h3>
+
+            <ol className="m-0 list-decimal pl-[20px] text-[13px] text-muted">
+              {m.refs.map((r) => (
+                <li key={r.id} className="my-[6px] pl-[3px]">
+                  <button
+                    className="border-b border-dotted border-[#244a9d]/40 text-left text-[#244a9d] hover:text-blue"
+                    onClick={() => onOpenNode(r.id)}
+                  >
+                    {r.label}
+                  </button>{' '}
+                  — {r.note}
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
+
+        {m.answer && (
+          <div className="mt-[13px] flex items-center gap-[10px]">
+            <button
+              className="border border-blue/25 bg-blue/10 px-[13px] py-[10px] text-[13px] font-bold text-[#244a9d] disabled:cursor-default disabled:opacity-45"
+              onClick={() => onViewAnswer(m.answer)}
+              disabled={m.answer.id === activeAnswerId}
+            >
+              {m.answer.id === activeAnswerId ? 'Viewing →' : 'View'}
+            </button>
+
+            <button
+              className="border-0 bg-ink px-[13px] py-[10px] text-[13px] font-bold text-white shadow-md disabled:cursor-default disabled:opacity-45"
+              onClick={() => onAddWiki(m.answer)}
+              disabled={saved}
+            >
+              {saved ? 'Saved ✓' : 'Add to wiki'}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function MermaidBlock({ code, state }) {
+  const [svg, setSvg] = useState('')
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    if (state === 'pending') return
+    let alive = true
+    const id = 'mmd-' + Math.random().toString(36).slice(2)
+    mermaid
+      .render(id, code)
+      .then((res) => alive && setSvg(res.svg))
+      .catch(() => alive && setFailed(true))
+    return () => {
+      alive = false
+    }
+  }, [code, state])
+
+  if (state === 'pending') {
+    return (
+      <div className="my-[10px] flex items-center gap-2 border border-line bg-soft px-[12px] py-[14px] text-[13px] text-muted">
+        <Spinner /> Building diagram…
+      </div>
+    )
+  }
+
+  if (state === 'failed' || failed) {
+    // Couldn't render — fall back to the raw code, never a broken diagram.
+    return (
+      <pre className="my-[10px] max-w-full overflow-x-auto border border-line bg-[#0f172a] p-[12px] text-white">
+        <code className="font-mono text-[12.5px]">{code}</code>
+      </pre>
+    )
+  }
+
+  if (!svg) {
+    return (
+      <div className="my-[10px] flex items-center gap-2 border border-line bg-soft px-[12px] py-[14px] text-[13px] text-muted">
+        <Spinner /> Rendering diagram…
+      </div>
+    )
+  }
+
+  return (
+    <div
+      className="my-[12px] overflow-x-auto border border-line bg-white p-[12px] text-center"
+      dangerouslySetInnerHTML={{ __html: svg }}
+    />
+  )
+}
+
+function MarkdownMessage({ children, diagramState }) {
+  const isMermaid = (cls) => (cls || '').includes('language-mermaid')
   return (
     <div className="max-w-none overflow-hidden text-[14px] leading-[1.55] text-ink">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
+          pre: ({ node, children, ...props }) => {
+            const child = Array.isArray(children) ? children[0] : children
+            if (isMermaid(child?.props?.className)) return <>{children}</>
+            return (
+              <pre
+                className="my-[10px] max-w-full overflow-x-auto border border-line bg-[#0f172a] p-[12px] text-white"
+                {...props}
+              >
+                {children}
+              </pre>
+            )
+          },
           h1: ({ node, ...props }) => (
             <h1 className="mb-[10px] mt-[14px] text-[20px] font-extrabold leading-tight" {...props} />
           ),
@@ -203,6 +368,14 @@ function MarkdownMessage({ children }) {
             <strong className="font-bold text-ink" {...props} />
           ),
           code: ({ node, inline, className, children, ...props }) => {
+            if (!inline && isMermaid(className)) {
+              return (
+                <MermaidBlock
+                  code={String(children).replace(/\n$/, '')}
+                  state={diagramState}
+                />
+              )
+            }
             if (inline) {
               return (
                 <code
@@ -220,12 +393,6 @@ function MarkdownMessage({ children }) {
               </code>
             )
           },
-          pre: ({ node, ...props }) => (
-            <pre
-              className="my-[10px] max-w-full overflow-x-auto border border-line bg-[#0f172a] p-[12px] text-white"
-              {...props}
-            />
-          ),
           table: ({ node, ...props }) => (
             <div className="my-[10px] max-w-full overflow-x-auto">
               <table className="w-full border-collapse text-[13px]" {...props} />

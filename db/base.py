@@ -83,6 +83,20 @@ class BaseDatabase(ABC):
     def keyword_search(self, text: str, limit: int = 20) -> list[Node]:
         raise NotImplementedError
 
+    def reset_vec_tables(self) -> None:
+        """Drop vector tables + forget stored dim (used on embed-model change)."""
+        raise NotImplementedError
+
+    def get_meta(self, key: str) -> str | None:
+        raise NotImplementedError
+
+    def set_meta(self, key: str, value: str) -> None:
+        raise NotImplementedError
+
+    def count_vectors(self, table: str = "vec_body") -> int:
+        """Number of stored vectors (used to detect incomplete coverage)."""
+        raise NotImplementedError
+
     @abstractmethod
     def set_vector(self, node_id: str, table: str, vector: list[float]) -> None:
         raise NotImplementedError

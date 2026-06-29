@@ -17,11 +17,14 @@ layout (x/y) and view styling from node.type / node.status / edge.label.
 from __future__ import annotations
 
 import asyncio
+import json
+import queue
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from graph import DomainEngine, Settings
@@ -156,6 +159,51 @@ async def ask(payload: AskBody) -> dict:
     # persist=False: the chat answer is a draft. The user saves it via /api/exogenous.
     answer = await _run(lambda: _engine().ask(payload.question, persist=False))
     return answer.model_dump()
+
+
+@app.post("/api/ask/stream")
+async def ask_stream(payload: AskBody) -> StreamingResponse:
+    """SSE: stream step-level agent progress, then the final answer.
+
+    The blocking `engine.ask` runs on the single engine thread and pushes progress
+    events (incl. from subagent threads) into a thread-safe queue; this async
+    generator drains the queue and emits SSE frames until a sentinel.
+    """
+    loop = asyncio.get_running_loop()
+    events: queue.Queue = queue.Queue()
+    sentinel = object()
+
+    def run() -> None:
+        try:
+            answer = _engine().ask(
+                payload.question, persist=False, on_event=events.put
+            )
+            events.put({"type": "answer", **answer.model_dump()})
+        except Exception as exc:  # noqa: BLE001 - surface as an error frame
+            events.put({"type": "error", "message": str(exc)})
+        finally:
+            events.put(sentinel)
+
+    future = loop.run_in_executor(_executor, run)
+
+    async def stream():
+        yield ": connected\n\n"
+        while True:
+            try:
+                event = await loop.run_in_executor(None, lambda: events.get(timeout=15))
+            except queue.Empty:
+                yield ": ping\n\n"  # heartbeat to survive idle proxies
+                continue
+            if event is sentinel:
+                break
+            yield f"data: {json.dumps(event)}\n\n"
+        await future
+
+    return StreamingResponse(
+        stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @app.post("/api/exogenous")

@@ -75,6 +75,8 @@ async def phase_generate(args: argparse.Namespace, embedder) -> None:
     plan_md_path = planning_dir / "concept-plan.md"
     coverage_json_path = planning_dir / "coverage.json"
     metadata_json_path = planning_dir / "metadata.json"
+    original_source_path = planning_dir / "original.md"
+    shutil.copy2(source_path, original_source_path)
 
     llm = make_llm(
         model=args.gen_model,
@@ -139,6 +141,7 @@ async def phase_generate(args: argparse.Namespace, embedder) -> None:
     manifest["planning"]["semantic_percentile"] = SEM_PERCENTILE
     manifest["planning"]["llm_confirm"] = USE_LLM_CONFIRM
     manifest["planning"]["docs_dir"] = "docs"
+    manifest["planning"]["original_source"] = "original.md"
     manifest["planning"]["file_count"] = len(ordered_concept_files)
     manifest["planning"]["coverage_verified_at"] = utc_now_iso()
     manifest["planning"]["render_integrity"] = "exact_source_slice_match"
@@ -171,6 +174,7 @@ async def phase_generate(args: argparse.Namespace, embedder) -> None:
         inferred_file_name=inferred_global_name,
         files=ordered_concept_files,
         headers=inferred_headers,
+        original_source="original.md",
     )
     print(f"[{tag}] wrote plan + coverage.json + metadata.json")
 

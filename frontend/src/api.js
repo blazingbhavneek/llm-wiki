@@ -1,7 +1,7 @@
 // Thin client over the FastAPI backend (app.py).
 // Base URL configurable via VITE_API_URL; defaults to the dev server port.
 
-const BASE = import.meta.env.VITE_API_URL || 'http://10.160.144.101:51026'
+const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8787'
 
 async function req(path, opts) {
   const res = await fetch(`${BASE}${path}`, {
@@ -30,6 +30,49 @@ export const api = {
   search: (q, limit) =>
     req(`/api/search?q=${encodeURIComponent(q)}${limit ? `&limit=${limit}` : ''}`),
   ask: (question) => req('/api/ask', { method: 'POST', body: JSON.stringify({ question }) }),
+
+  // Stream step-level agent progress via SSE. Calls onEvent(ev) per event;
+  // resolves when the stream ends. Falls back to throwing on a non-OK response.
+  askStream: async (question, onEvent) => {
+    const res = await fetch(`${BASE}/api/ask/stream`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question }),
+    })
+    if (!res.ok || !res.body) {
+      const detail = await res.text().catch(() => res.statusText)
+      throw new Error(`${res.status}: ${detail}`)
+    }
+
+    const reader = res.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      buffer += decoder.decode(value, { stream: true })
+
+      let sep
+      while ((sep = buffer.indexOf('\n\n')) !== -1) {
+        const frame = buffer.slice(0, sep)
+        buffer = buffer.slice(sep + 2)
+
+        for (const line of frame.split('\n')) {
+          if (!line.startsWith('data:')) continue // skip ": ping"/comments
+          const payload = line.slice(5).trim()
+          if (!payload) continue
+          let ev
+          try {
+            ev = JSON.parse(payload)
+          } catch {
+            continue // ignore malformed frame
+          }
+          onEvent(ev) // throws here propagate to the caller
+        }
+      }
+    }
+  },
   createExogenous: (body, sourceNodeIds, origin) =>
     req('/api/exogenous', {
       method: 'POST',

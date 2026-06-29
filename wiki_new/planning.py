@@ -1834,6 +1834,7 @@ def write_metadata_json(
     inferred_file_name: str,
     files: list[ConceptFilePlan],
     headers: list[str],
+    original_source: str | None = None,
 ) -> None:
     """
     Writes metadata.json.
@@ -1847,11 +1848,12 @@ def write_metadata_json(
         for item, header in zip(files, headers)
     ]
 
-    write_json(
-        path,
-        {
-            "original_file_name": original_file_name,
-            "inferred_file_name": inferred_file_name,
-            "files": file_records,
-        },
-    )
+    payload = {
+        "original_file_name": original_file_name,
+        "inferred_file_name": inferred_file_name,
+        "files": file_records,
+    }
+    if original_source:
+        payload["original_source"] = original_source
+
+    write_json(path, payload)

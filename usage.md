@@ -50,7 +50,7 @@ python -m graph.cli --llm query "how do I configure this?"
 ```
 
 `--llm` uses `OPENAI_BASE_URL`, `OPENAI_API_KEY`, and `WIKI_MODEL` (default:
-`gemma4`). The `--wiki` option must appear before the subcommand:
+`nvidia/Qwen3.6-35B-A3B-NVFP4`). The `--wiki` option must appear before the subcommand:
 
 ```bash
 python -m graph.cli --wiki /path/to/state bootstrap --output output

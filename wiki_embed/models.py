@@ -35,7 +35,7 @@ OUTPUT_ROOT = "/run/media/blaze/Common/Code/llm-wiki/output_embed"
 PHASE = "all"  # all | generate
 
 # Chat LLM (boundary confirmation + enrichment).
-BASE_URL = os.environ.get("OPENAI_BASE_URL", "http://180.21.170.235:42374/v1")
+BASE_URL = os.environ.get("OPENAI_BASE_URL", "http://194.14.47.19:23149/v1")
 API_KEY = os.environ.get("OPENAI_API_KEY", "local")
 
 GEN_MODEL = "nvidia/Qwen3.6-35B-A3B-NVFP4"

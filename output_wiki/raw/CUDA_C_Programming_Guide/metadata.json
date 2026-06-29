@@ -1,0 +1,178 @@
+{
+  "original_file_name": "CUDA_C_Programming_Guide.md",
+  "inferred_file_name": "cuda-c-programming-guide-reference.md",
+  "files": [
+    {
+      "name": "contents.md",
+      "header": "Table of Contents"
+    },
+    {
+      "name": "chapter-1.-overview.md",
+      "header": "Chapter 1. Overview"
+    },
+    {
+      "name": "6.1.1.2-just-in-time-compilation.md",
+      "header": "6.1.1.2 Just-in-Time Compilation"
+    },
+    {
+      "name": "6.2.5.-distributed-shared-memory.md",
+      "header": "6.2.5. Distributed Shared Memory"
+    },
+    {
+      "name": "6.2.8.5.2-default-stream.md",
+      "header": "6.2.8.5.2 Default Stream"
+    },
+    {
+      "name": "6.2.8.7.5.3-individual-node-update.md",
+      "header": "6.2.8.7.5.3 Individual Node Update"
+    },
+    {
+      "name": "6.2.8.7.8.5-conditional-switch-nodes.md",
+      "header": "6.2.8.7.8.5 Conditional SWITCH Nodes"
+    },
+    {
+      "name": "6.2.14.1.2-16-bit-floating-point-textures.md",
+      "header": "6.2.14.1.2 16-Bit Floating-Point Textures"
+    },
+    {
+      "name": "6.2.15.2.2-direct3d-10-version.md",
+      "header": "6.2.15.2.2 Direct3D 10 Version"
+    },
+    {
+      "name": "6.2.16.1.5-importing-synchronization-objects.md",
+      "header": "6.2.16.1.5 Importing Synchronization Objects"
+    },
+    {
+      "name": "6.2.16.4-direct3d-11-interoperability.md",
+      "header": "6.2.16.4 Direct3D 11 Interoperability"
+    },
+    {
+      "name": "6.2.16.5.2-mapping-bufers-onto-imported-memory-objects.md",
+      "header": "6.2.16.5.2 Mapping Buffers onto Imported Memory Objects"
+    },
+    {
+      "name": "8.3.-maximize-memory-throughput.md",
+      "header": "8.3. Maximize Memory Throughput"
+    },
+    {
+      "name": "10.6.-synchronization-functions.md",
+      "header": "10.6. Synchronization Functions"
+    },
+    {
+      "name": "10.13.-time-function.md",
+      "header": "10.13. Time Function"
+    },
+    {
+      "name": "10.14.1.9-nv-atomic-exchange.md",
+      "header": "10.14.1.9 __nv_atomic_exchange()"
+    },
+    {
+      "name": "10.21.-warp-reduce-functions.md",
+      "header": "10.21 Warp Reduce Functions"
+    },
+    {
+      "name": "10.25.-dpx.md",
+      "header": "10.25 DPX"
+    },
+    {
+      "name": "10.28.-asynchronous-data-copies-using-cudapipeline.md",
+      "header": "10.28 Asynchronous Data Copies using cuda::pipeline"
+    },
+    {
+      "name": "10.29.-asynchronous-data-copies-using-the-tensor-memory-accelerator-tma.md",
+      "header": "10.29 Asynchronous Data Copies using the Tensor Memory Accelerator (TMA)"
+    },
+    {
+      "name": "10.29.2.1-multi-dimensional-tma-ptx-wrappers.md",
+      "header": "10.29.2.1 Multi-dimensional TMA PTX wrappers"
+    },
+    {
+      "name": "10.31.-profiler-counter-function.md",
+      "header": "10.31. Profiler Counter Function"
+    },
+    {
+      "name": "10.37.-execution-configuration.md",
+      "header": "10.37. Execution Configuration"
+    },
+    {
+      "name": "10.44.-cuda-c-memory-model.md",
+      "header": "10.44. CUDA C++ Memory Model"
+    },
+    {
+      "name": "11.5.2.-labeled-partition.md",
+      "header": "11.5.2. labeled_partition"
+    },
+    {
+      "name": "11.6.4.-execution-control.md",
+      "header": "11.6.4. Execution control"
+    },
+    {
+      "name": "12.2.4.-cluster-launch-control-for-thread-block-clusters.md",
+      "header": "12.2.4. Cluster Launch Control for Thread Block Clusters"
+    },
+    {
+      "name": "13.3.1.2-streams.md",
+      "header": "13.3.1.2 Streams"
+    },
+    {
+      "name": "13.6.2.1.2-streams-cdp1.md",
+      "header": "13.6.2.1.2 Streams (CDP1)"
+    },
+    {
+      "name": "14.3.2.-memory-type.md",
+      "header": "14.3.2. Memory Type"
+    },
+    {
+      "name": "15.11.-ipc-memory-pools.md",
+      "header": "15.11. IPC Memory Pools"
+    },
+    {
+      "name": "16.3.4.-cudagraphinstantiateflagautofreeonlaunch.md",
+      "header": "16.3.4. cudaGraphInstantiateFlagAutoFreeOnLaunch"
+    },
+    {
+      "name": "18.5.3.-qualifiers.md",
+      "header": "18.5.3. Qualifiers"
+    },
+    {
+      "name": "18.5.10.8-operator-function.md",
+      "header": "18.5.10.8 Operator Function"
+    },
+    {
+      "name": "18.5.24.-c17-features.md",
+      "header": "18.5.24. C++17 Features"
+    },
+    {
+      "name": "example.md",
+      "header": "18.5.24. C++17 Features"
+    },
+    {
+      "name": "2.-otherwise.md",
+      "header": "18.5.24. C++17 Features"
+    },
+    {
+      "name": "20.3.-floating-point-standard.md",
+      "header": "20.3. Floating-Point Standard"
+    },
+    {
+      "name": "21.1.-context.md",
+      "header": "21.1. Context"
+    },
+    {
+      "name": "21.5.4.-guidelines-for-cugetprocaddress.md",
+      "header": "21.5.4. Guidelines for cuGetProcAddress"
+    },
+    {
+      "name": "24.1.2.4-diference-between-unified-memory-and-mapped-memory.md",
+      "header": "24.1.2.4. Difference between Unified Memory and Mapped Memory"
+    },
+    {
+      "name": "system-allocator.md",
+      "header": "System Allocator"
+    },
+    {
+      "name": "chapter-26.-extended-gpu-memory.md",
+      "header": "Extended GPU Memory"
+    }
+  ]
+}

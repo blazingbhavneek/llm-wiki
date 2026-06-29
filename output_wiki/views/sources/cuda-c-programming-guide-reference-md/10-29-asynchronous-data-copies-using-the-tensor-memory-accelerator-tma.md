@@ -1,0 +1,10 @@
+# 10.29. Asynchronous Data Copies using the Tensor Memory Accelerator (TMA)
+
+Part of [Cuda C Programming Guide Reference](README.md). Source lines L10218-L10563.
+
+- [Tensor Memory Accelerator (TMA)](../../../concepts/tensor-memory-accelerator.md) — The Tensor Memory Accelerator (TMA) is a hardware feature introduced in Compute Capability 9.0 that provides an efficient data transfer mechanism from global memory to shared memory for multi-dimensional arrays, offloading address calculations and repetitive loading/storing operations.
+- [Tensor Map](../../../concepts/tensor-map.md) — A tensor map is a hardware object describing the layout of a multi-dimensional array in global and shared memory, required for bulk tensor asynchronous copies and typically created via cuTensorMapEncode.
+- [TMA Completion Mechanisms](../../../concepts/tma-completion-mechanisms.md) — Tensor Memory Accelerator (TMA) data transfers are asynchronous, utilizing Shared Memory Barriers (mbarrier) for Global-to-Shared reads and Bulk Async-Group mechanisms for Shared-to-Global/Shared writes to signal completion.
+- [TMA One-Dimensional Operations](../../../concepts/tma-1d-operations.md) — Procedures for using TMA to transfer one-dimensional contiguous arrays, including initializing shared memory barriers, initiating bulk-asynchronous copies (Global to Shared and Shared to Global), synchronizing threads, and handling alignment requirements.
+- [Tensor Map Creation and Host-to-Device Transfer](../../../concepts/tensor-map-creation-and-transfer.md) — This page details the creation of tensor maps using the cuTensorMapEncodeTiled driver API and describes three methods for transferring them to the device: as __grid_constant__ kernel parameters, via __constant__ memory, or via global memory with explicit fencing.
+- [TMA Multi-Dimensional (2D) Operations](../../../concepts/tma-2d-operations.md) — Implementation of Tensor Memory Accelerator (TMA) for 2D array transfers, enabling asynchronous bulk copies between global and shared memory using specific PTX/CUDA functions and requiring 128-byte alignment.

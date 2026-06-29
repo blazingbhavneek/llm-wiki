@@ -1,0 +1,174 @@
+{
+  "original_file_name": "oneapi_optimizations.md",
+  "inferred_file_name": "oneapi-gpu-optimization-guide.md",
+  "files": [
+    {
+      "name": "oneapi-gpu-optimization-guide.md",
+      "header": "oneAPI GPU Optimization Guide"
+    },
+    {
+      "name": "thread-mapping-and-gpu-occupancy.md",
+      "header": "Thread Mapping and GPU Occupancy"
+    },
+    {
+      "name": "kernels.md",
+      "header": "Kernels"
+    },
+    {
+      "name": "removing-conditional-checks.md",
+      "header": "Removing Conditional Checks"
+    },
+    {
+      "name": "optimizing-register-spills.md",
+      "header": "Optimizing Register Spills"
+    },
+    {
+      "name": "sub-group-has-256-private-histogram-bins.md",
+      "header": "Sub-group Has 256 Private Histogram Bins"
+    },
+    {
+      "name": "bank-conflicts.md",
+      "header": "Bank Conflicts"
+    },
+    {
+      "name": "atomic-operations.md",
+      "header": "Atomic Operations"
+    },
+    {
+      "name": "considerations-for-selecting-work-group-size.md",
+      "header": "Considerations for Selecting Work-Group Size"
+    },
+    {
+      "name": "reduction.md",
+      "header": "Reduction"
+    },
+    {
+      "name": "submitting-kernels-to-multiple-queues.md",
+      "header": "Submitting Kernels to Multiple Queues"
+    },
+    {
+      "name": "optimizing-explicit-simd-kernels.md",
+      "header": "Optimizing Explicit SIMD Kernels"
+    },
+    {
+      "name": "using-libraries-for-gpu-offload.md",
+      "header": "Using Libraries for GPU Offload"
+    },
+    {
+      "name": "boost-matrix-multiplication-performance-with-intel-xe-matrix-extensions.md",
+      "header": "Boost Matrix Multiplication Performance with Intel® Xe Matrix Extensions"
+    },
+    {
+      "name": "performance-considerations.md",
+      "header": "Performance Considerations"
+    },
+    {
+      "name": "optimizing-data-transfers-in-openmp.md",
+      "header": "Optimizing Data Transfers in OpenMP"
+    },
+    {
+      "name": "hostdevice-coordination.md",
+      "header": "Host/Device Coordination"
+    },
+    {
+      "name": "compilation.md",
+      "header": "Compilation"
+    },
+    {
+      "name": "simple-trip-count-use-case.md",
+      "header": "Simple Trip Count Use Case"
+    },
+    {
+      "name": "example-the-log-function.md",
+      "header": "Example: The log Function"
+    },
+    {
+      "name": "ahead-of-time-aot-compilation.md",
+      "header": "Ahead-Of-Time (AOT) Compilation"
+    },
+    {
+      "name": "speeding-up-independent-consecutive-gemm-calls.md",
+      "header": "Speeding Up Independent, Consecutive GEMM Calls"
+    },
+    {
+      "name": "tools-for-analyzing-performance-of-openmp-applications.md",
+      "header": "Tools for Analyzing Performance of OpenMP Applications"
+    },
+    {
+      "name": "choose-map-type-appropriately.md",
+      "header": "Choose Map-Type Appropriately"
+    },
+    {
+      "name": "compilation-command.md",
+      "header": "Compilation Command"
+    },
+    {
+      "name": "making-better-use-of-openmp-constructs.md",
+      "header": "Making Better Use of OpenMP Constructs"
+    },
+    {
+      "name": "note.md",
+      "header": "Note"
+    },
+    {
+      "name": "omp-target-memcpy.md",
+      "header": "omp_target_memcpy"
+    },
+    {
+      "name": "version-2.md",
+      "header": "Version 2"
+    },
+    {
+      "name": "has-device-addr.md",
+      "header": "has_device_addr"
+    },
+    {
+      "name": "atomics-with-slm.md",
+      "header": "Atomics with SLM"
+    },
+    {
+      "name": "compilation-command.md",
+      "header": "Compilation Command"
+    },
+    {
+      "name": "multi-gpu-and-multi-stack-architecture-and-programming.md",
+      "header": "Multi-GPU and Multi-Stack Architecture and Programming"
+    },
+    {
+      "name": "composite-mode-programming.md",
+      "header": "COMPOSITE Mode Programming"
+    },
+    {
+      "name": "explicit-scaling-openmp.md",
+      "header": "Explicit Scaling - OpenMP"
+    },
+    {
+      "name": "cross-stack-traffic.md",
+      "header": "Cross-Stack Traffic"
+    },
+    {
+      "name": "using-intel-mpi-library.md",
+      "header": "Using Intel® MPI Library"
+    },
+    {
+      "name": "intra-device-and-inter-device-data-transfers-for-mpiopenmp-programs.md",
+      "header": "Intra-Device and Inter-Device Data Transfers for MPI+OpenMP Programs"
+    },
+    {
+      "name": "using-multiple-ccss-in-openmp.md",
+      "header": "Using Multiple CCSs in OpenMP"
+    },
+    {
+      "name": "terminology.md",
+      "header": "Terminology"
+    },
+    {
+      "name": "optimizing-media-operations.md",
+      "header": "Optimizing Media Operations"
+    },
+    {
+      "name": "terms-and-conditions.md",
+      "header": "Terms and Conditions"
+    }
+  ]
+}

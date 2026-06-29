@@ -1,0 +1,190 @@
+{
+  "source_line_count": 11421,
+  "file_count": 23,
+  "files": [
+    {
+      "title": "Data Parallel C++",
+      "filename": "data-parallel-c.md",
+      "source_start": 1,
+      "source_end": 435,
+      "summary": "",
+      "header": "Data Parallel C++"
+    },
+    {
+      "title": "About the Authors",
+      "filename": "about-the-authors.md",
+      "source_start": 436,
+      "source_end": 1032,
+      "summary": "",
+      "header": "About the Authors"
+    },
+    {
+      "title": "Where Code Executes",
+      "filename": "where-code-executes.md",
+      "source_start": 1033,
+      "source_end": 1530,
+      "summary": "",
+      "header": "Where Code Executes"
+    },
+    {
+      "title": "Where Is the Device Code?",
+      "filename": "where-is-the-device-code.md",
+      "source_start": 1531,
+      "source_end": 1883,
+      "summary": "",
+      "header": "Where Is the Device Code?"
+    },
+    {
+      "title": "Accessing Memory Through Pointers",
+      "filename": "accessing-memory-through-pointers.md",
+      "source_start": 1884,
+      "source_end": 2427,
+      "summary": "",
+      "header": "Accessing Memory Through Pointers"
+    },
+    {
+      "title": "Expressing Parallelism",
+      "filename": "expressing-parallelism.md",
+      "source_start": 2428,
+      "source_end": 3028,
+      "summary": "",
+      "header": "Expressing Parallelism"
+    },
+    {
+      "title": "Error Handling",
+      "filename": "error-handling.md",
+      "source_start": 3029,
+      "source_end": 3620,
+      "summary": "",
+      "header": "Error Handling"
+    },
+    {
+      "title": "Data Management",
+      "filename": "data-management.md",
+      "source_start": 3621,
+      "source_end": 4215,
+      "summary": "",
+      "header": "Data Management"
+    },
+    {
+      "title": "Scheduling Kernels and Data Movement",
+      "filename": "scheduling-kernels-and-data-movement.md",
+      "source_start": 4216,
+      "source_end": 4655,
+      "summary": "",
+      "header": "Scheduling Kernels and Data Movement"
+    },
+    {
+      "title": "Work-Group Barriers and Local Memory in ND-Range Kernels",
+      "filename": "work-group-barriers-and-local-memory-in-nd-range-kernels.md",
+      "source_start": 4656,
+      "source_end": 5307,
+      "summary": "",
+      "header": "Work-Group Barriers and Local Memory in ND-Range Kernels"
+    },
+    {
+      "title": "Vectors and Math Arrays",
+      "filename": "vectors-and-math-arrays.md",
+      "source_start": 5308,
+      "source_end": 5625,
+      "summary": "",
+      "header": "Vectors and Math Arrays"
+    },
+    {
+      "title": "Device Information and Kernel Specialization",
+      "filename": "device-information-and-kernel-specialization.md",
+      "source_start": 5626,
+      "source_end": 6118,
+      "summary": "",
+      "header": "Device Information and Kernel Specialization"
+    },
+    {
+      "title": "Practical Tips",
+      "filename": "practical-tips.md",
+      "source_start": 6119,
+      "source_end": 6674,
+      "summary": "",
+      "header": "Practical Tips"
+    },
+    {
+      "title": "Chapter 13 Practical Tips",
+      "filename": "chapter-13-practical-tips.md",
+      "source_start": 6675,
+      "source_end": 7051,
+      "summary": "",
+      "header": "Practical Tips"
+    },
+    {
+      "title": "Group Algorithms",
+      "filename": "group-algorithms.md",
+      "source_start": 7052,
+      "source_end": 7474,
+      "summary": "",
+      "header": "Group Algorithms"
+    },
+    {
+      "title": "Programming for GPUs",
+      "filename": "programming-for-gpus.md",
+      "source_start": 7475,
+      "source_end": 7878,
+      "summary": "",
+      "header": "Programming for GPUs"
+    },
+    {
+      "title": "Programming for CPUs",
+      "filename": "programming-for-cpus.md",
+      "source_start": 7879,
+      "source_end": 8381,
+      "summary": "",
+      "header": "Programming for CPUs"
+    },
+    {
+      "title": "Programming for FPGAs",
+      "filename": "programming-for-fpgas.md",
+      "source_start": 8382,
+      "source_end": 8970,
+      "summary": "",
+      "header": "Programming for FPGAs"
+    },
+    {
+      "title": "Libraries",
+      "filename": "libraries.md",
+      "source_start": 8971,
+      "source_end": 9436,
+      "summary": "",
+      "header": "Libraries"
+    },
+    {
+      "title": "Memory Model and Atomics",
+      "filename": "memory-model-and-atomics.md",
+      "source_start": 9437,
+      "source_end": 9999,
+      "summary": "",
+      "header": "Memory Model and Atomics"
+    },
+    {
+      "title": "Computing a Histogram",
+      "filename": "computing-a-histogram.md",
+      "source_start": 10000,
+      "source_end": 10630,
+      "summary": "",
+      "header": "Computing a Histogram"
+    },
+    {
+      "title": "Migrating CUDA Code",
+      "filename": "migrating-cuda-code.md",
+      "source_start": 10631,
+      "source_end": 11248,
+      "summary": "",
+      "header": "Migrating CUDA Code"
+    },
+    {
+      "title": "B",
+      "filename": "b.md",
+      "source_start": 11249,
+      "source_end": 11421,
+      "summary": "",
+      "header": "Migrating CUDA Code"
+    }
+  ]
+}

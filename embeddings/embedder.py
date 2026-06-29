@@ -142,6 +142,18 @@ class Embedder:
             self._dim = len(self.embed_query("dimension probe"))
         return self._dim
 
+    @property
+    def model_name(self) -> str:
+        """Identity of the active embedding model (post-fallback).
+
+        Used to detect an embedding-model change against the value stored in the
+        DB so vectors can be rebuilt. Reflects the backend actually in use, so a
+        server->HF fallback is recorded as the HF model.
+        """
+        if self._backend == "hf":
+            return f"hf:{self.settings.hf_embed_model}"
+        return f"server:{self.settings.embed_model}"
+
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
         if not texts:
             return []

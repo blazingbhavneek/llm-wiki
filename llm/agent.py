@@ -39,11 +39,16 @@ class AgentClient(LlmClient):
         dispatch: Callable[[str, dict[str, Any]], str],
         max_steps: int,
         finish_tool: str = "finish",
+        finish_guard: Callable[[dict[str, Any]], str | None] | None = None,
     ) -> ToolLoopResult:
         """Loop: model picks tools, `dispatch` runs them, until finish/no-call/cap.
 
         `dispatch(name, args) -> observation_text` is supplied by the caller and is
         the only domain-aware part; this client stays domain-agnostic.
+
+        `finish_guard(args) -> reason | None` (optional) can VETO an early finish:
+        if it returns a reason string, finish is rejected, the reason is fed back
+        as a tool observation, and the loop continues (still bounded by max_steps).
         """
         from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
 
@@ -64,6 +69,12 @@ class AgentClient(LlmClient):
                 name = call.get("name")
                 args = call.get("args") or {}
                 if name == finish_tool:
+                    reason = finish_guard(args) if finish_guard else None
+                    if reason:
+                        messages.append(
+                            ToolMessage(content=reason, tool_call_id=call.get("id"))
+                        )
+                        continue
                     finished = args
                     break
                 observation = dispatch(name, args)

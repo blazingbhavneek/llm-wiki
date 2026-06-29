@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ChatPanel from './components/ChatPanel'
 import GraphCanvas from './components/GraphCanvas'
 import MarkdownView from './components/MarkdownView'
+import AnswerView from './components/AnswerView'
 import ErrorBoundary from './components/ErrorBoundary'
 import { api } from './api'
 import { layoutGraph, docFromNode } from './data/layout'
@@ -35,7 +36,9 @@ export default function App() {
   const [currentId, setCurrentId] = useState(null)
   const [tab, setTab] = useState('graph')
   const [messages, setMessages] = useState([])
-  const [pending, setPending] = useState(null) // {answer, citedIds} draft awaiting save
+  const [activeAnswerId, setActiveAnswerId] = useState(null) // which message's answer the Answer tab shows
+  const [savedIds, setSavedIds] = useState(() => new Set()) // answer ids already added to the wiki
+  const answerSeq = useRef(0)
 
   const [isEditing, setEditing] = useState(false)
   const [draft, setDraft] = useState({ title: '', markdown: '' })
@@ -49,6 +52,12 @@ export default function App() {
   const graph = useMemo(() => layoutGraph(raw.nodes, raw.edges), [raw])
   const rawById = useMemo(() => new Map(raw.nodes.map((n) => [n.id, n])), [raw])
   const usedIds = useMemo(() => new Set(focusIds || []), [focusIds])
+
+  // The answer currently shown in the Answer tab (one of possibly many in the chat).
+  const activeAnswer = useMemo(() => {
+    for (const m of messages) if (m.answer && m.answer.id === activeAnswerId) return m.answer
+    return null
+  }, [messages, activeAnswerId])
 
   const doc = currentId === '__draft__' ? docs['__draft__'] : docs[currentId]
   const editable = currentId && currentId !== '__draft__'
@@ -174,85 +183,151 @@ export default function App() {
     }
   }
 
-  const ask = async (q) => {
-    setMessages((prev) => [...prev, { role: 'user', text: q }])
+  // Replace the last (streaming) assistant message in place.
+  const patchLast = (fn) =>
+    setMessages((prev) => {
+      const copy = prev.slice()
+      const i = copy.length - 1
+      if (i >= 0 && copy[i].role === 'assistant') copy[i] = fn(copy[i])
+      return copy
+    })
 
-    try {
-      const ans = await api.ask(q)
-      const cited = ans.cited_node_ids || []
-      const refs = cited.map(refLabel)
-      const hasAnswer = !!(ans.answer && ans.answer.trim())
-
-      setMessages((prev) => [
-        ...prev,
-        hasAnswer
-          ? {
-              role: 'assistant',
-              title: `Answer in ${ans.steps} step${ans.steps === 1 ? '' : 's'}.`,
-              text: ans.answer,
-              refs,
-              canSave: true,
-            }
-          : {
-              role: 'assistant',
-              title: 'Found sources, but no written answer.',
-              text: `The agent gathered ${cited.length} source${
-                cited.length === 1 ? '' : 's'
-              } in ${ans.steps} steps but did not produce a final answer. Sources are highlighted in the graph — open one, or try a stronger chat model.`,
-              refs,
-              canSave: false,
-            },
-      ])
-
-      setFocusIds(new Set(cited))
-
-      // Keep the user on whatever tab they're on.
-      // The answer is in the chat; cited nodes light up in the graph.
-      if (hasAnswer) {
-        setPending({ answer: ans.answer, citedIds: cited, question: q })
-
-        openDoc(
-          '__draft__',
-          {
-            title: 'Draft answer',
-            badge: 'Agent note',
-            meta: 'Unsaved draft. Click "Add to wiki" in the chat to keep it.',
-            markdown: ans.answer,
-          },
-          { switchTab: false },
-        )
-      } else {
-        setPending(null)
-
-        if (cited[0]) openById(cited[0], { switchTab: false })
-      }
-    } catch (e) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          title: 'Request failed',
-          text: e.message,
-        },
-      ])
+  const activityLine = (ev) => {
+    const who = ev.agent ? `Explorer ${ev.agent}` : null
+    const t = (n) => n?.title || n?.id || '…'
+    switch (ev.type) {
+      case 'search':
+        return who ? `${who} · searching “${ev.query}”` : `Searching “${ev.query}”`
+      case 'candidates':
+        return `Found ${ev.count} page${ev.count === 1 ? '' : 's'}`
+      case 'subagents_spawned':
+        return `Spawned ${ev.starts?.length || 0} explorers`
+      case 'subagent_start':
+        return `${who} · exploring ${t(ev.node)}`
+      case 'read':
+        return `${who} · reading ${t(ev.node)}`
+      case 'follow_link':
+        return `${who} · following links from ${t(ev.node)} (${ev.neighbors})`
+      case 'subagent_done':
+        return `${who} · done (${ev.cited?.length || 0} source${ev.cited?.length === 1 ? '' : 's'})`
+      case 'compiling':
+        return 'Compiling answer…'
+      case 'diagram_pending':
+        return 'Building diagram…'
+      case 'diagram_ready':
+        return 'Diagram ready'
+      case 'diagram_failed':
+        return 'Diagram could not be rendered'
+      default:
+        return null
     }
   }
 
-  const addWiki = async () => {
-    if (!pending) return
+  const openAnswer = (answer) => {
+    if (!answer) return
+    setActiveAnswerId(answer.id)
+    setTab('answer')
+    setFocusIds(new Set(answer.citedIds || []))
+  }
+
+  const finalizeAnswer = (ans, activity, q) => {
+    const cited = ans.cited_node_ids || []
+    const refs = cited.map(refLabel)
+    const hasAnswer = !!(ans.answer && ans.answer.trim())
+
+    setFocusIds(new Set(cited))
+
+    if (hasAnswer) {
+      answerSeq.current += 1
+      const id = answerSeq.current
+      // Carry the answer payload on the message itself, so every answer in the
+      // conversation stays independently viewable. Diagram events ran first and
+      // stashed _diagState/_diagMd on the streaming message — fold them in.
+      patchLast((prev) => ({
+        role: 'assistant',
+        title: `Answer ready in ${ans.steps} step${ans.steps === 1 ? '' : 's'}.`,
+        text: 'Opened in the workspace on the right →. Review it, then add it to the wiki.',
+        activity,
+        answer: {
+          id,
+          question: q,
+          title: q,
+          markdown: prev?._diagMd ?? ans.answer,
+          refs,
+          steps: ans.steps,
+          citedIds: cited,
+          diagramState: prev?._diagState,
+        },
+      }))
+      setActiveAnswerId(id)
+      setTab('answer')
+    } else {
+      patchLast(() => ({
+        role: 'assistant',
+        title: 'Found sources, but no written answer.',
+        text: `The agent gathered ${cited.length} source${
+          cited.length === 1 ? '' : 's'
+        } in ${ans.steps} steps but did not produce a final answer. Sources are highlighted in the graph — open one, or try a stronger chat model.`,
+        refs,
+        activity,
+      }))
+      if (cited[0]) openById(cited[0], { switchTab: false })
+    }
+  }
+
+  const ask = async (q) => {
+    setMessages((prev) => [
+      ...prev,
+      { role: 'user', text: q },
+      { role: 'assistant', streaming: true, title: 'Working…', activity: [] },
+    ])
+
+    const activity = []
+    try {
+      await api.askStream(q, (ev) => {
+        if (ev.type === 'answer') {
+          finalizeAnswer(ev, activity, q)
+          return
+        }
+        if (ev.type === 'error') {
+          patchLast(() => ({ role: 'assistant', title: 'Request failed', text: ev.message }))
+          return
+        }
+        // Diagram events arrive before the final answer; stash markdown/state on
+        // the streaming message so finalizeAnswer can fold them into the payload.
+        if (ev.type === 'diagram_pending') {
+          patchLast((m) => ({ ...m, _diagState: 'pending' }))
+        } else if (ev.type === 'diagram_ready') {
+          patchLast((m) => ({ ...m, _diagState: 'ready', _diagMd: ev.answer ?? m._diagMd }))
+        } else if (ev.type === 'diagram_failed') {
+          patchLast((m) => ({ ...m, _diagState: 'failed', _diagMd: ev.answer ?? m._diagMd }))
+        }
+
+        const line = activityLine(ev)
+        if (!line) return
+        activity.push(line)
+        patchLast((m) => ({ ...m, activity: [...activity] }))
+      })
+    } catch (e) {
+      patchLast(() => ({ role: 'assistant', title: 'Request failed', text: e.message }))
+    }
+  }
+
+  const addWiki = async (answer) => {
+    if (!answer || savedIds.has(answer.id)) return
 
     try {
       const node = await api.createExogenous(
-        pending.answer,
-        pending.citedIds,
-        `agent:${pending.question.slice(0, 60)}`,
+        answer.markdown,
+        answer.citedIds,
+        `agent:${answer.question.slice(0, 60)}`,
       )
 
       await reload()
 
-      setPending(null)
+      setSavedIds((prev) => new Set(prev).add(answer.id))
       openDoc(node.id, docFromNode(node))
-      setFocusIds(new Set([node.id, ...pending.citedIds]))
+      setFocusIds(new Set([node.id, ...answer.citedIds]))
 
       fireToast('Saved as a wiki note. It now lives in the graph, linked to its sources.')
     } catch (e) {
@@ -377,7 +452,9 @@ export default function App() {
         onSearch={onSearch}
         onOpenNode={openById}
         onAddWiki={addWiki}
-        canSave={!!pending}
+        onViewAnswer={openAnswer}
+        activeAnswerId={activeAnswerId}
+        savedIds={savedIds}
       />
 
       <div
@@ -409,6 +486,12 @@ export default function App() {
             {doc && (
               <TabBtn active={tab === 'editor'} onClick={() => setTab('editor')} dot="bg-orange" unsaved={dirty}>
                 {(doc.title || 'Note').slice(0, 25)}.md
+              </TabBtn>
+            )}
+
+            {activeAnswer && (
+              <TabBtn active={tab === 'answer'} onClick={() => setTab('answer')} dot="bg-green">
+                Answer
               </TabBtn>
             )}
           </div>
@@ -478,6 +561,15 @@ export default function App() {
                   onShowGraph={() => setTab('graph')}
                   onChangeTitle={(title) => setDraft((d) => ({ ...d, title }))}
                   onChangeBody={(markdown) => setDraft((d) => ({ ...d, markdown }))}
+                />
+              </div>
+
+              <div className={`h-full ${tab === 'answer' ? 'block' : 'hidden'}`}>
+                <AnswerView
+                  answer={activeAnswer}
+                  canSave={!!activeAnswer && !savedIds.has(activeAnswer.id)}
+                  onAddWiki={() => addWiki(activeAnswer)}
+                  onOpenNode={openById}
                 />
               </div>
             </ErrorBoundary>

@@ -104,6 +104,63 @@ AGENT_SYSTEM_PROMPT = (
     "If you have read fewer than 3 useful nodes and more relevant nodes are available, keep searching or reading."
 )
 
+MAIN_AGENT_SYSTEM_PROMPT = (
+    "You are the LEAD researcher answering a question from a knowledge-graph wiki. "
+    "You coordinate; you do NOT read nodes yourself.\n\n"
+
+    "You have two capabilities:\n"
+    "- search(text): find candidate nodes (already reranked by relevance). Returns "
+    "node ids + titles + summaries only.\n"
+    "- explore(node_ids): hand a list of DISTINCT starting node ids to a team of "
+    "subagents. Each subagent reads and navigates the graph from one starting node "
+    "and reports back what it found. Use this to investigate the promising leads.\n"
+    "- finish(answer, cited_node_ids): give the final compiled answer.\n\n"
+
+    "How to work:\n"
+    "1. Search the main question, then search individual key terms/functions in it. "
+    "Do a few searches to surface different parts of the graph.\n"
+    "2. From all the candidates, pick the best DISTINCT starting nodes that cover "
+    "DIFFERENT sub-topics (avoid near-duplicates so subagents explore different "
+    "subgraphs).\n"
+    "3. Call explore(node_ids) ONCE with those starting nodes. The team explores in "
+    "parallel and returns each subagent's findings and the node bodies it read.\n"
+    "4. Read the subagents' reports. If a clear gap remains, you may search again and "
+    "run explore once more; otherwise compile.\n"
+    "5. Call finish with a thorough answer grounded ONLY in what the subagents "
+    "reported, citing the node ids they used as evidence.\n\n"
+
+    "Rules:\n"
+    "- You cannot read node bodies directly; rely on the subagents' reports.\n"
+    "- Always copy node ids exactly as shown, including any 'node:' prefix.\n"
+    "- Do not finish before running explore at least once.\n"
+    "- Prefer breadth: give explore distinct starting points rather than several "
+    "ids about the same thing."
+)
+
+SUBAGENT_SYSTEM_PROMPT = (
+    "You are a research subagent exploring ONE region of a knowledge-graph wiki. "
+    "A lead researcher gave you a starting node. Investigate it thoroughly and "
+    "report concrete, grounded findings.\n\n"
+
+    "Tools:\n"
+    "- read(node_id): read a node's full body. START by reading your assigned node.\n"
+    "- follow_link(node_id, direction): jump to a node's neighbors to follow "
+    "references, examples, prerequisites, related concepts.\n"
+    "- search(text): find more nodes by keyword if your region needs them.\n"
+    "- finish(answer, cited_node_ids): report your findings + the node ids you read.\n\n"
+
+    "Rules:\n"
+    "1. Read your assigned starting node FIRST.\n"
+    "2. Follow links and read 2-5 nodes in YOUR region to gather real evidence.\n"
+    "3. Stay in your lane: other subagents cover the sibling starting nodes listed "
+    "in your task. Do NOT re-explore those; focus on your own subgraph so the team "
+    "covers more ground.\n"
+    "4. Base your report ONLY on node bodies you actually read.\n"
+    "5. Copy node ids exactly, including any 'node:' prefix.\n"
+    "6. When done, call finish with a focused summary of what this region says about "
+    "the question, citing the node ids you used."
+)
+
 ENTITY_DEDUP_PROMPT = (
     "You maintain a wiki graph. Given a NEW node and a list of CANDIDATE existing "
     "nodes, decide whether the new node describes the SAME real-world entity/topic "
@@ -126,11 +183,15 @@ class GraphRuntime:
         embedder: object,
         llm: object,
         settings: Settings,
+        subagent: bool = False,
     ) -> None:
         self.database = database
         self.embedder = embedder
         self.llm = llm
         self.settings = settings
+        # Subagent runtimes are read-only and share the already-synced model, so
+        # they must never trigger a re-embed (it would run once per subagent).
+        self.subagent = subagent
         self._vec_ready = False
 
     # endregion LIFECYCLE
@@ -263,9 +324,100 @@ class GraphRuntime:
 
     # region EMBEDDINGS
     def ensure_vec(self) -> None:
-        if not self._vec_ready:
-            self.database.ensure_vec_tables(self.embedder.dim)
-            self._vec_ready = True
+        # Cheap, query-time guard: only make sure the vector tables exist. The
+        # embedding-model consistency check + any re-embed happens ONCE eagerly
+        # at startup in prepare_embeddings(), never lazily on a user query.
+        if self._vec_ready:
+            return
+        self.database.ensure_vec_tables(self.embedder.dim)
+        self._vec_ready = True
+
+    def prepare_embeddings(self) -> None:
+        """Startup check: make stored vectors consistent with the current model.
+
+        Runs once, eagerly, at engine construction (server start) — NOT on a user
+        query. Triggers a full rebuild of every node's vectors when any of these
+        hold:
+          - the embedding dim changed (old vectors are a different size),
+          - the embedding model identity changed (vectors no longer comparable),
+          - coverage is incomplete (a previous re-embed was interrupted, leaving
+            the graph half-embedded).
+        The re-embed always wipes and redoes the ENTIRE graph, so a partially
+        migrated DB is fully repaired. The model identity is recorded only after
+        a successful pass, so an interruption is retried on the next start.
+        """
+        if self.subagent:
+            return
+        try:
+            current_model = self.embedder.model_name
+            current_dim = self.embedder.dim
+        except Exception as exc:  # noqa: BLE001 - embedder down: cannot prepare now
+            print(f"[prepare_embeddings] embedder unavailable: {exc}", flush=True)
+            return
+
+        stored_model = self.database.get_meta("embed_model")
+        stored_dim_raw = self.database.get_meta("embed_dim")
+        stored_dim = int(stored_dim_raw) if stored_dim_raw else None
+
+        active_nodes = [
+            node
+            for node in self.database.get_all_nodes()
+            if node.status == NodeStatus.active
+        ]
+
+        dim_changed = stored_dim is not None and stored_dim != current_dim
+        model_changed = stored_model is not None and stored_model != current_model
+
+        # Coverage check needs the tables to exist at the current dim. Only safe
+        # to create/count them when the dim has NOT changed (otherwise the table
+        # is the wrong size and must be dropped by the re-embed anyway).
+        coverage_incomplete = False
+        if not dim_changed:
+            self.database.ensure_vec_tables(current_dim)
+            vec_count = self.database.count_vectors("vec_body")
+            coverage_incomplete = vec_count < len(active_nodes)
+            if coverage_incomplete:
+                print(
+                    f"[prepare_embeddings] incomplete coverage: {vec_count} vectors "
+                    f"for {len(active_nodes)} active nodes",
+                    flush=True,
+                )
+
+        if dim_changed or model_changed or coverage_incomplete:
+            print(
+                "[prepare_embeddings] rebuilding ALL vectors "
+                f"(stored model={stored_model} dim={stored_dim} -> "
+                f"current model={current_model} dim={current_dim}; "
+                f"dim_changed={dim_changed} model_changed={model_changed} "
+                f"coverage_incomplete={coverage_incomplete})",
+                flush=True,
+            )
+            self._reembed_all(active_nodes, current_dim)
+            self.database.set_meta("embed_model", current_model)
+            print("[prepare_embeddings] re-embed complete", flush=True)
+        else:
+            # Already consistent — just record the identity for legacy DBs that
+            # never stored it, so future model changes are detectable.
+            if stored_model != current_model:
+                self.database.set_meta("embed_model", current_model)
+
+        self._vec_ready = True
+
+    def _reembed_all(self, nodes: list[Node], dim: int) -> None:
+        self.database.reset_vec_tables()
+        self.database.ensure_vec_tables(dim)
+        total = len(nodes)
+        for index, node in enumerate(nodes, start=1):
+            try:
+                body_vec = self.embedder.embed_document(node.body)
+                self.database.set_vector(node.id, "vec_body", body_vec)
+                if node.summary.strip():
+                    summary_vec = self.embedder.embed_document(node.summary)
+                    self.database.set_vector(node.id, "vec_summary", summary_vec)
+            except Exception as exc:  # noqa: BLE001 - skip a poison node, keep going
+                print(f"[reembed] node {node.id} failed: {exc}", flush=True)
+            if index % 25 == 0 or index == total:
+                print(f"[reembed] {index}/{total} nodes", flush=True)
 
     def store_vectors(self, node: Node) -> tuple[list[float], list[float] | None]:
         self.ensure_vec()
@@ -497,11 +649,13 @@ class GraphQuery:
         embedder: object,
         settings: Settings,
         runtime: GraphRuntime,
+        reranker: object | None = None,
     ) -> None:
         self.database = database
         self.embedder = embedder
         self.settings = settings
         self.runtime = runtime
+        self.reranker = reranker
 
         print("[GraphQuery.__init__] initialized", flush=True)
         print(f"[GraphQuery.__init__] database={database}", flush=True)
@@ -543,7 +697,9 @@ class GraphQuery:
         print(f"[GraphQuery.search] incoming limit={limit}", flush=True)
 
         limit = limit or self.settings.vector_query_k
-        pool = max(limit, 10)
+        # With a reranker, retrieve a wide pool first then let the cross-encoder
+        # pick the final `limit`; without one, the fused list is the result.
+        pool = max(limit, self.settings.search_candidate_pool) if self.reranker else max(limit, 10)
 
         print(f"[GraphQuery.search] resolved limit={limit}", flush=True)
         print(f"[GraphQuery.search] pool={pool}", flush=True)
@@ -633,9 +789,11 @@ class GraphQuery:
             else:
                 print(f"[GraphQuery.search] skipped inactive node id={node.id!r}", flush=True)
 
-            if len(nodes) >= limit:
-                print("[GraphQuery.search] reached limit; stopping", flush=True)
+            if len(nodes) >= pool:
+                print("[GraphQuery.search] reached pool size; stopping", flush=True)
                 break
+
+        nodes = self._rerank_nodes(text, nodes, limit)
 
         print(f"[GraphQuery.search] returning {len(nodes)} node(s)", flush=True)
         for i, node in enumerate(nodes, start=1):
@@ -650,6 +808,30 @@ class GraphQuery:
 
         print("=" * 80 + "\n", flush=True)
         return nodes
+
+    def _rerank_nodes(self, text: str, nodes: list[Node], limit: int) -> list[Node]:
+        """Cross-encoder rerank the fused pool down to the top `limit` nodes.
+
+        No reranker (or any failure) degrades gracefully to the fused order
+        truncated to `limit`, so retrieval never hard-depends on the reranker.
+        """
+        if not self.reranker or len(nodes) <= 1:
+            return nodes[:limit]
+        try:
+            items = [
+                (f"{node.title}\n{node.summary}\n{node.body}".strip(), node)
+                for node in nodes
+            ]
+            ranked = self.reranker.top_k(text, items, limit)
+            reranked = [node for node, _score in ranked]
+            print(
+                f"[GraphQuery.search] reranked {len(nodes)} -> {len(reranked)} node(s)",
+                flush=True,
+            )
+            return reranked
+        except Exception as exc:  # noqa: BLE001 - reranker down: keep fused order
+            print(f"[GraphQuery.search] rerank failed ({exc!r}); fused order", flush=True)
+            return nodes[:limit]
 
     def _rrf(self, ranked_lists: list[list[str]]) -> list[str]:
         """Reciprocal Rank Fusion: sum 1/(k + rank) of each id across lists."""

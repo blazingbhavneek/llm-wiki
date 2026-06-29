@@ -1,0 +1,98 @@
+{
+  "original_file_name": "sycl.md",
+  "inferred_file_name": "sycl-data-parallel-cpp-programming-guide.md",
+  "files": [
+    {
+      "name": "data-parallel-c.md",
+      "header": "Data Parallel C++"
+    },
+    {
+      "name": "about-the-authors.md",
+      "header": "About the Authors"
+    },
+    {
+      "name": "where-code-executes.md",
+      "header": "Where Code Executes"
+    },
+    {
+      "name": "where-is-the-device-code.md",
+      "header": "Where Is the Device Code?"
+    },
+    {
+      "name": "accessing-memory-through-pointers.md",
+      "header": "Accessing Memory Through Pointers"
+    },
+    {
+      "name": "expressing-parallelism.md",
+      "header": "Expressing Parallelism"
+    },
+    {
+      "name": "error-handling.md",
+      "header": "Error Handling"
+    },
+    {
+      "name": "data-management.md",
+      "header": "Data Management"
+    },
+    {
+      "name": "scheduling-kernels-and-data-movement.md",
+      "header": "Scheduling Kernels and Data Movement"
+    },
+    {
+      "name": "work-group-barriers-and-local-memory-in-nd-range-kernels.md",
+      "header": "Work-Group Barriers and Local Memory in ND-Range Kernels"
+    },
+    {
+      "name": "vectors-and-math-arrays.md",
+      "header": "Vectors and Math Arrays"
+    },
+    {
+      "name": "device-information-and-kernel-specialization.md",
+      "header": "Device Information and Kernel Specialization"
+    },
+    {
+      "name": "practical-tips.md",
+      "header": "Practical Tips"
+    },
+    {
+      "name": "chapter-13-practical-tips.md",
+      "header": "Practical Tips"
+    },
+    {
+      "name": "group-algorithms.md",
+      "header": "Group Algorithms"
+    },
+    {
+      "name": "programming-for-gpus.md",
+      "header": "Programming for GPUs"
+    },
+    {
+      "name": "programming-for-cpus.md",
+      "header": "Programming for CPUs"
+    },
+    {
+      "name": "programming-for-fpgas.md",
+      "header": "Programming for FPGAs"
+    },
+    {
+      "name": "libraries.md",
+      "header": "Libraries"
+    },
+    {
+      "name": "memory-model-and-atomics.md",
+      "header": "Memory Model and Atomics"
+    },
+    {
+      "name": "computing-a-histogram.md",
+      "header": "Computing a Histogram"
+    },
+    {
+      "name": "migrating-cuda-code.md",
+      "header": "Migrating CUDA Code"
+    },
+    {
+      "name": "b.md",
+      "header": "Migrating CUDA Code"
+    }
+  ]
+}

@@ -1,0 +1,342 @@
+{
+  "source_line_count": 20110,
+  "file_count": 42,
+  "files": [
+    {
+      "title": "oneAPI GPU Optimization Guide",
+      "filename": "oneapi-gpu-optimization-guide.md",
+      "source_start": 1,
+      "source_end": 367,
+      "summary": "",
+      "header": "oneAPI GPU Optimization Guide"
+    },
+    {
+      "title": "Thread Mapping and GPU Occupancy",
+      "filename": "thread-mapping-and-gpu-occupancy.md",
+      "source_start": 368,
+      "source_end": 872,
+      "summary": "",
+      "header": "Thread Mapping and GPU Occupancy"
+    },
+    {
+      "title": "Kernels",
+      "filename": "kernels.md",
+      "source_start": 873,
+      "source_end": 1319,
+      "summary": "",
+      "header": "Kernels"
+    },
+    {
+      "title": "Removing Conditional Checks",
+      "filename": "removing-conditional-checks.md",
+      "source_start": 1320,
+      "source_end": 1753,
+      "summary": "",
+      "header": "Removing Conditional Checks"
+    },
+    {
+      "title": "Optimizing Register Spills",
+      "filename": "optimizing-register-spills.md",
+      "source_start": 1754,
+      "source_end": 2074,
+      "summary": "",
+      "header": "Optimizing Register Spills"
+    },
+    {
+      "title": "Sub-group Has 256 Private Histogram Bins",
+      "filename": "sub-group-has-256-private-histogram-bins.md",
+      "source_start": 2075,
+      "source_end": 2643,
+      "summary": "",
+      "header": "Sub-group Has 256 Private Histogram Bins"
+    },
+    {
+      "title": "Bank Conflicts",
+      "filename": "bank-conflicts.md",
+      "source_start": 2644,
+      "source_end": 3278,
+      "summary": "",
+      "header": "Bank Conflicts"
+    },
+    {
+      "title": "Atomic Operations",
+      "filename": "atomic-operations.md",
+      "source_start": 3279,
+      "source_end": 3600,
+      "summary": "",
+      "header": "Atomic Operations"
+    },
+    {
+      "title": "Considerations for Selecting Work-Group Size",
+      "filename": "considerations-for-selecting-work-group-size.md",
+      "source_start": 3601,
+      "source_end": 4020,
+      "summary": "",
+      "header": "Considerations for Selecting Work-Group Size"
+    },
+    {
+      "title": "Reduction",
+      "filename": "reduction.md",
+      "source_start": 4021,
+      "source_end": 4572,
+      "summary": "",
+      "header": "Reduction"
+    },
+    {
+      "title": "Submitting Kernels to Multiple Queues",
+      "filename": "submitting-kernels-to-multiple-queues.md",
+      "source_start": 4573,
+      "source_end": 5242,
+      "summary": "",
+      "header": "Submitting Kernels to Multiple Queues"
+    },
+    {
+      "title": "Optimizing Explicit SIMD Kernels",
+      "filename": "optimizing-explicit-simd-kernels.md",
+      "source_start": 5243,
+      "source_end": 5734,
+      "summary": "",
+      "header": "Optimizing Explicit SIMD Kernels"
+    },
+    {
+      "title": "Using Libraries for GPU Offload",
+      "filename": "using-libraries-for-gpu-offload.md",
+      "source_start": 5735,
+      "source_end": 6337,
+      "summary": "",
+      "header": "Using Libraries for GPU Offload"
+    },
+    {
+      "title": "Boost Matrix Multiplication Performance with Intel® Xe Matrix Extensions",
+      "filename": "boost-matrix-multiplication-performance-with-intel-xe-matrix-extensions.md",
+      "source_start": 6338,
+      "source_end": 6749,
+      "summary": "",
+      "header": "Boost Matrix Multiplication Performance with Intel® Xe Matrix Extensions"
+    },
+    {
+      "title": "Performance Considerations",
+      "filename": "performance-considerations.md",
+      "source_start": 6750,
+      "source_end": 7285,
+      "summary": "",
+      "header": "Performance Considerations"
+    },
+    {
+      "title": "Optimizing Data Transfers in OpenMP",
+      "filename": "optimizing-data-transfers-in-openmp.md",
+      "source_start": 7286,
+      "source_end": 7658,
+      "summary": "",
+      "header": "Optimizing Data Transfers in OpenMP"
+    },
+    {
+      "title": "Host/Device Coordination",
+      "filename": "hostdevice-coordination.md",
+      "source_start": 7659,
+      "source_end": 8238,
+      "summary": "",
+      "header": "Host/Device Coordination"
+    },
+    {
+      "title": "Compilation",
+      "filename": "compilation.md",
+      "source_start": 8239,
+      "source_end": 8582,
+      "summary": "",
+      "header": "Compilation"
+    },
+    {
+      "title": "Simple Trip Count Use Case",
+      "filename": "simple-trip-count-use-case.md",
+      "source_start": 8583,
+      "source_end": 8908,
+      "summary": "",
+      "header": "Simple Trip Count Use Case"
+    },
+    {
+      "title": "Example: The log Function",
+      "filename": "example-the-log-function.md",
+      "source_start": 8909,
+      "source_end": 9468,
+      "summary": "",
+      "header": "Example: The log Function"
+    },
+    {
+      "title": "Ahead-Of-Time (AOT) Compilation",
+      "filename": "ahead-of-time-aot-compilation.md",
+      "source_start": 9469,
+      "source_end": 9854,
+      "summary": "",
+      "header": "Ahead-Of-Time (AOT) Compilation"
+    },
+    {
+      "title": "Speeding Up Independent, Consecutive GEMM Calls",
+      "filename": "speeding-up-independent-consecutive-gemm-calls.md",
+      "source_start": 9855,
+      "source_end": 10279,
+      "summary": "",
+      "header": "Speeding Up Independent, Consecutive GEMM Calls"
+    },
+    {
+      "title": "Tools for Analyzing Performance of OpenMP Applications",
+      "filename": "tools-for-analyzing-performance-of-openmp-applications.md",
+      "source_start": 10280,
+      "source_end": 10747,
+      "summary": "",
+      "header": "Tools for Analyzing Performance of OpenMP Applications"
+    },
+    {
+      "title": "Choose map-type Appropriately",
+      "filename": "choose-map-type-appropriately.md",
+      "source_start": 10748,
+      "source_end": 11004,
+      "summary": "",
+      "header": "Choose Map-Type Appropriately"
+    },
+    {
+      "title": "Compilation command:",
+      "filename": "compilation-command.md",
+      "source_start": 11005,
+      "source_end": 11575,
+      "summary": "",
+      "header": "Compilation Command"
+    },
+    {
+      "title": "Making Better Use of OpenMP Constructs",
+      "filename": "making-better-use-of-openmp-constructs.md",
+      "source_start": 11576,
+      "source_end": 12183,
+      "summary": "",
+      "header": "Making Better Use of OpenMP Constructs"
+    },
+    {
+      "title": "Note:",
+      "filename": "note.md",
+      "source_start": 12184,
+      "source_end": 12619,
+      "summary": "",
+      "header": "Note"
+    },
+    {
+      "title": "omp\\_target\\_memcpy",
+      "filename": "omp-target-memcpy.md",
+      "source_start": 12620,
+      "source_end": 13074,
+      "summary": "",
+      "header": "omp_target_memcpy"
+    },
+    {
+      "title": "Version 2",
+      "filename": "version-2.md",
+      "source_start": 13075,
+      "source_end": 13666,
+      "summary": "",
+      "header": "Version 2"
+    },
+    {
+      "title": "has\\_device\\_addr",
+      "filename": "has-device-addr.md",
+      "source_start": 13667,
+      "source_end": 14189,
+      "summary": "",
+      "header": "has_device_addr"
+    },
+    {
+      "title": "Atomics with SLM",
+      "filename": "atomics-with-slm.md",
+      "source_start": 14190,
+      "source_end": 14596,
+      "summary": "",
+      "header": "Atomics with SLM"
+    },
+    {
+      "title": "Compilation command:",
+      "filename": "compilation-command.md",
+      "source_start": 14597,
+      "source_end": 15210,
+      "summary": "",
+      "header": "Compilation Command"
+    },
+    {
+      "title": "Multi-GPU and Multi-Stack Architecture and Programming",
+      "filename": "multi-gpu-and-multi-stack-architecture-and-programming.md",
+      "source_start": 15211,
+      "source_end": 15791,
+      "summary": "",
+      "header": "Multi-GPU and Multi-Stack Architecture and Programming"
+    },
+    {
+      "title": "COMPOSITE Mode Programming",
+      "filename": "composite-mode-programming.md",
+      "source_start": 15792,
+      "source_end": 16157,
+      "summary": "",
+      "header": "COMPOSITE Mode Programming"
+    },
+    {
+      "title": "Explicit Scaling - OpenMP",
+      "filename": "explicit-scaling-openmp.md",
+      "source_start": 16158,
+      "source_end": 16797,
+      "summary": "",
+      "header": "Explicit Scaling - OpenMP"
+    },
+    {
+      "title": "Cross-Stack Traffic",
+      "filename": "cross-stack-traffic.md",
+      "source_start": 16798,
+      "source_end": 17540,
+      "summary": "",
+      "header": "Cross-Stack Traffic"
+    },
+    {
+      "title": "Using Intel® MPI Library",
+      "filename": "using-intel-mpi-library.md",
+      "source_start": 17541,
+      "source_end": 18010,
+      "summary": "",
+      "header": "Using Intel® MPI Library"
+    },
+    {
+      "title": "Intra-Device and Inter-Device Data Transfers for MPI+OpenMP Programs",
+      "filename": "intra-device-and-inter-device-data-transfers-for-mpiopenmp-programs.md",
+      "source_start": 18011,
+      "source_end": 18490,
+      "summary": "",
+      "header": "Intra-Device and Inter-Device Data Transfers for MPI+OpenMP Programs"
+    },
+    {
+      "title": "Using Multiple CCSs in OpenMP",
+      "filename": "using-multiple-ccss-in-openmp.md",
+      "source_start": 18491,
+      "source_end": 18940,
+      "summary": "",
+      "header": "Using Multiple CCSs in OpenMP"
+    },
+    {
+      "title": "Terminology",
+      "filename": "terminology.md",
+      "source_start": 18941,
+      "source_end": 19464,
+      "summary": "",
+      "header": "Terminology"
+    },
+    {
+      "title": "Optimizing Media Operations",
+      "filename": "optimizing-media-operations.md",
+      "source_start": 19465,
+      "source_end": 20053,
+      "summary": "",
+      "header": "Optimizing Media Operations"
+    },
+    {
+      "title": "Terms and Conditions",
+      "filename": "terms-and-conditions.md",
+      "source_start": 20054,
+      "source_end": 20110,
+      "summary": "",
+      "header": "Terms and Conditions"
+    }
+  ]
+}

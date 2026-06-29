@@ -21,18 +21,27 @@ def now_iso() -> str:
 class Settings:
     """All tunables for one engine instance."""
 
-    chat_base_url: str = "http://10.160.144.101:51021/v1"
+    chat_base_url: str = "http://194.14.47.19:23149/v1"
     chat_api_key: str = "local"
-    chat_model: str = "openai/gpt-oss-120b"
+    chat_model: str = "nvidia/Qwen3.6-35B-A3B-NVFP4"
     chat_temperature: float = 0.2
 
     embed_backend: str = "server"
     embed_base_url: str = "http://localhost:8080/v1"
     embed_api_key: str = "local"
-    embed_model: str = "cl-nagoya/ruri-v3-30m"
-    hf_embed_model: str = "cl-nagoya/ruri-v3-30m"
+    embed_model: str = "cl-nagoya/ruri-v3-310m"
+    hf_embed_model: str = "cl-nagoya/ruri-v3-310m"
     hf_device: str = "cuda:0"
     embed_dim: int = 768
+
+    # Reranker (cross-encoder). Same dual-backend shape as the embedder:
+    # probe the server first, fall back to a local HF CrossEncoder.
+    rerank_backend: str = "server"
+    rerank_base_url: str = "http://localhost:8080/v1"
+    rerank_api_key: str = "local"
+    rerank_model: str = "cl-nagoya/ruri-v3-reranker-310m"
+    hf_rerank_model: str = "cl-nagoya/ruri-v3-reranker-310m"
+    rerank_device: str = "cuda:0"
 
     database_path: str = ".wiki/moove_wiki.sqlite"
 
@@ -44,6 +53,34 @@ class Settings:
     agent_patience: int = 20
     search_rrf_k: int = 60
     entity_dedup: bool = True
+
+    # Reasoning-retrieval fan-out: search pulls a wide candidate pool, the
+    # reranker keeps the top rerank_top_k, the main agent assigns disjoint
+    # starting nodes to up to subagent_count subagents (subagent_concurrency
+    # running at once), each exploring with its own bounded tool budget.
+    search_candidate_pool: int = 50
+    rerank_top_k: int = 20
+    subagent_count: int = 3
+    subagent_concurrency: int = 3
+    subagent_max_steps: int = 20
+    # Per-explorer exploration budget, measured in DISTINCT nodes read: it cannot
+    # finish before subagent_min_reads, and new reads are blocked past
+    # subagent_max_reads (re-reads are always rejected). subagent_max_steps is the
+    # absolute iteration ceiling regardless.
+    subagent_min_reads: int = 5
+    subagent_max_reads: int = 10
+
+    # Mermaid diagrams in chat answers (off by default — needs mmdc + Chrome
+    # headless on the API host). When on: the compile prompt may emit a mermaid
+    # block, which is then render-validated + LLM-repaired in a loop before it is
+    # shown as a diagram artifact.
+    enable_mermaid: bool = True
+    mermaid_repair_attempts: int = 3
+    mermaid_cli_bin: str = "mmdc"
+    mermaid_puppeteer_config: str = (
+        "/run/media/blaze/Common/Code/llm-wiki/puppeteer-config.json"
+    )
+    mermaid_render_timeout: int = 30
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -63,6 +100,15 @@ class Settings:
             hf_embed_model=env("WIKI_HF_EMBED_MODEL", cls.hf_embed_model),
             hf_device=env("WIKI_HF_DEVICE", cls.hf_device),
             embed_dim=int(env("WIKI_EMBED_DIM", cls.embed_dim)),
+            rerank_backend=env("WIKI_RERANK_BACKEND", cls.rerank_backend),
+            rerank_base_url=env(
+                "WIKI_RERANK_BASE_URL",
+                env("WIKI_EMBED_BASE_URL", cls.rerank_base_url),
+            ),
+            rerank_api_key=env("WIKI_RERANK_API_KEY", cls.rerank_api_key),
+            rerank_model=env("WIKI_RERANK_MODEL", cls.rerank_model),
+            hf_rerank_model=env("WIKI_HF_RERANK_MODEL", cls.hf_rerank_model),
+            rerank_device=env("WIKI_RERANK_DEVICE", cls.rerank_device),
             database_path=env("WIKI_DB", cls.database_path),
             edge_candidate_k=int(env("WIKI_EDGE_K", cls.edge_candidate_k)),
             vector_query_k=int(env("WIKI_VECTOR_K", cls.vector_query_k)),
@@ -73,6 +119,35 @@ class Settings:
             search_rrf_k=int(env("WIKI_SEARCH_RRF_K", cls.search_rrf_k)),
             entity_dedup=env("WIKI_ENTITY_DEDUP", "1" if cls.entity_dedup else "0")
             not in {"0", "false", "False", ""},
+            search_candidate_pool=int(
+                env("WIKI_SEARCH_POOL", cls.search_candidate_pool)
+            ),
+            rerank_top_k=int(env("WIKI_RERANK_TOP_K", cls.rerank_top_k)),
+            subagent_count=int(env("WIKI_SUBAGENT_COUNT", cls.subagent_count)),
+            subagent_concurrency=int(
+                env("WIKI_SUBAGENT_CONCURRENCY", cls.subagent_concurrency)
+            ),
+            subagent_max_steps=int(
+                env("WIKI_SUBAGENT_MAX_STEPS", cls.subagent_max_steps)
+            ),
+            subagent_min_reads=int(
+                env("WIKI_SUBAGENT_MIN_READS", cls.subagent_min_reads)
+            ),
+            subagent_max_reads=int(
+                env("WIKI_SUBAGENT_MAX_READS", cls.subagent_max_reads)
+            ),
+            enable_mermaid=env("WIKI_ENABLE_MERMAID", "1" if cls.enable_mermaid else "0")
+            not in {"0", "false", "False", ""},
+            mermaid_repair_attempts=int(
+                env("WIKI_MERMAID_REPAIR_ATTEMPTS", cls.mermaid_repair_attempts)
+            ),
+            mermaid_cli_bin=env("WIKI_MERMAID_CLI_BIN", cls.mermaid_cli_bin),
+            mermaid_puppeteer_config=env(
+                "WIKI_MERMAID_PUPPETEER_CONFIG", cls.mermaid_puppeteer_config
+            ),
+            mermaid_render_timeout=int(
+                env("WIKI_MERMAID_RENDER_TIMEOUT", cls.mermaid_render_timeout)
+            ),
         )
 
 

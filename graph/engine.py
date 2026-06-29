@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from db import Database
-from embeddings import Embedder
+from embeddings import Embedder, Reranker
 from llm.agent import AgentClient
 
 from .agent import QueryAgent
@@ -28,10 +28,12 @@ class DomainEngine:
         settings: Settings | None = None,
         embedder: object | None = None,
         llm_client: object | None = None,
+        reranker: object | None = None,
     ) -> None:
         self.settings = settings or Settings.from_env()
         self.database = Database(self.settings.database_path)
         self.embedder = embedder or Embedder(self.settings)
+        self.reranker = reranker if reranker is not None else self._build_reranker()
         self.llm = llm_client or AgentClient(
             model=self.settings.chat_model,
             base_url=self.settings.chat_base_url,
@@ -52,6 +54,7 @@ class DomainEngine:
             self.embedder,
             self.settings,
             self.runtime,
+            reranker=self.reranker,
         )
         self.exogenous = GraphExogenous(
             self.database,
@@ -73,6 +76,23 @@ class DomainEngine:
             self.llm,
             self.settings,
         )
+
+        # Eagerly reconcile stored vectors with the current embedding model at
+        # startup (server start), so a model change or a half-finished re-embed
+        # is fully rebuilt here — never lazily mid-query.
+        self.runtime.prepare_embeddings()
+
+    def _build_reranker(self) -> object | None:
+        """Build the reranker, degrading to no-rerank if unavailable.
+
+        Retrieval still works without it (search falls back to fused order), so a
+        missing rerank server + missing local model must not abort the engine.
+        """
+        try:
+            return Reranker(self.settings)
+        except Exception as exc:  # noqa: BLE001 - rerank is an optional enhancement
+            print(f"[engine] reranker unavailable, continuing without it: {exc}", flush=True)
+            return None
 
     def close(self) -> None:
         self.database.close()
@@ -158,8 +178,8 @@ class DomainEngine:
     # endregion QUERY API
 
     # region AGENT API
-    def ask(self, question: str, persist: bool = True) -> AgentAnswer:
-        return self.agent.ask(question, persist)
+    def ask(self, question: str, persist: bool = True, on_event=None) -> AgentAnswer:
+        return self.agent.ask(question, persist, on_event=on_event)
 
     # endregion AGENT API
 

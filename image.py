@@ -29,9 +29,9 @@ OUTPUT_FILE = None
 # If OUTPUT_FILE is None, output will be:
 # input_filename.described.md
 
-OPENAI_BASE_URL = "http://localhost:8000/v1"
+OPENAI_BASE_URL = "http://194.14.47.19:23149/v1"
 OPENAI_API_KEY = "dummy"
-OPENAI_MODEL = "gemma4"
+OPENAI_MODEL = "nvidia/Qwen3.6-35B-A3B-NVFP4"
 
 CONCURRENCY = 5
 TEMPERATURE = 0.3

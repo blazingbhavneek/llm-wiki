@@ -165,6 +165,31 @@ class RawSqliteDatabase(BaseDatabase):
         self.connection.commit()
         self._dim = dim
 
+    def reset_vec_tables(self) -> None:
+        """Drop the vector tables and forget the stored dim.
+
+        Used when the embedding model changes: stored vectors are no longer
+        comparable, so they are wiped and rebuilt by re-embedding every node.
+        """
+        self.connection.execute("DROP TABLE IF EXISTS vec_body")
+        self.connection.execute("DROP TABLE IF EXISTS vec_summary")
+        self.connection.execute("DELETE FROM meta WHERE key = 'embed_dim'")
+        self.connection.commit()
+        self._dim = None
+
+    def get_meta(self, key: str) -> str | None:
+        row = self.connection.execute(
+            "SELECT value FROM meta WHERE key = ?", (key,)
+        ).fetchone()
+        return row["value"] if row else None
+
+    def set_meta(self, key: str, value: str) -> None:
+        with self.transaction() as conn:
+            conn.execute(
+                "INSERT OR REPLACE INTO meta(key, value) VALUES(?, ?)",
+                (key, value),
+            )
+
     @contextmanager
     def transaction(self) -> Iterator[sqlite3.Connection]:
         try:
@@ -403,6 +428,23 @@ class RawSqliteDatabase(BaseDatabase):
             f"INSERT INTO {table}(node_id, embedding) VALUES(?, ?)", (node_id, blob)
         )
         self.connection.commit()
+
+    def count_vectors(self, table: str = "vec_body") -> int:
+        """Number of stored vectors in a table (0 if vectors not set up yet).
+
+        Used at startup to detect a half-finished re-embed: when this is less
+        than the active node count, coverage is incomplete and all vectors are
+        rebuilt.
+        """
+        if self._dim is None:
+            return 0
+        try:
+            row = self.connection.execute(
+                f"SELECT COUNT(*) AS n FROM {table}"
+            ).fetchone()
+        except sqlite3.OperationalError:
+            return 0
+        return int(row["n"]) if row else 0
 
     def has_vector(self, node_id: str, table: str = "vec_body") -> bool:
         if self._dim is None:

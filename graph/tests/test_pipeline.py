@@ -13,13 +13,18 @@ from pathlib import Path
 from ..engine import DomainEngine
 from ..models import Edge, Node, NodeType, Settings, now_iso
 from ..utils import make_edge_id, make_node_id
-from .fakes import FakeEmbedder, FakeLlm
+from .fakes import FakeEmbedder, FakeLlm, FakeReranker
 
 
 def _engine() -> DomainEngine:
     tmp = Path(tempfile.mkdtemp()) / "wiki.sqlite"
     settings = Settings(database_path=str(tmp), edge_candidate_k=5, vector_query_k=10)
-    return DomainEngine(settings, embedder=FakeEmbedder(), llm_client=FakeLlm())
+    return DomainEngine(
+        settings,
+        embedder=FakeEmbedder(),
+        llm_client=FakeLlm(),
+        reranker=FakeReranker(),
+    )
 
 
 def _node(body: str, doc: str = "test.md") -> Node:
