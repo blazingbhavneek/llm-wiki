@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 export default function ChatPanel({ messages, health, onAsk, onSearch, onOpenNode, onAddWiki }) {
   const [question, setQuestion] = useState('')
@@ -11,6 +13,7 @@ export default function ChatPanel({ messages, health, onAsk, onSearch, onOpenNod
 
   const submit = () => {
     if (!question.trim()) return
+
     onAsk(question.trim())
     setQuestion('')
   }
@@ -21,21 +24,28 @@ export default function ChatPanel({ messages, health, onAsk, onSearch, onOpenNod
       <div className="border-b border-line bg-gradient-to-b from-white to-[#fbfdff] p-[20px]">
         <div className="flex items-center justify-between gap-[14px]">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="grid h-[42px] w-[42px] place-items-center border border-blue/15 bg-gradient-to-br from-blue/15 to-orange/15 font-extrabold text-[#244a9d]">
+            <div className="grid h-[42px] w-[42px] shrink-0 place-items-center border border-blue/15 bg-gradient-to-br from-blue/15 to-orange/15 font-extrabold text-[#244a9d]">
               LW
             </div>
-            <div>
-              <h1 className="m-0 text-[17px] tracking-tight">LLM-Wiki</h1>
-              <p className="mt-[3px] text-[12px] text-muted">Chat over a living knowledge graph</p>
+
+            <div className="min-w-0">
+              <h1 className="m-0 truncate text-[17px] tracking-tight">LLM-Wiki</h1>
+              <p className="mt-[3px] truncate text-[12px] text-muted">
+                Chat over a living knowledge graph
+              </p>
             </div>
           </div>
-          <div className="whitespace-nowrap border border-green/20 bg-green/10 px-[10px] py-[8px] text-[12px] text-[#08785a]">
+
+          <div className="shrink-0 whitespace-nowrap border border-green/20 bg-green/10 px-[10px] py-[8px] text-[12px] text-[#08785a]">
             Upload processed
           </div>
         </div>
 
         <div className="relative mt-[16px]">
-          <span className="pointer-events-none absolute left-[14px] top-[9px] text-[18px] text-muted2">⌕</span>
+          <span className="pointer-events-none absolute left-[14px] top-[9px] text-[18px] text-muted2">
+            ⌕
+          </span>
+
           <input
             className="w-full border border-line bg-white py-[12px] pl-[39px] pr-[12px] text-ink outline-none focus:border-blue/45 focus:shadow-[0_0_0_4px_rgba(57,119,246,.1)]"
             placeholder="Find a note or topic…"
@@ -60,27 +70,37 @@ export default function ChatPanel({ messages, health, onAsk, onSearch, onOpenNod
         {messages.map((m, i) =>
           m.role === 'user' ? (
             <div key={i} className="mb-[16px]">
-              <div className="ml-[42px] border border-[#cadcff] bg-[#f1f6ff] px-[15px] py-[14px] text-[14px] leading-[1.5] shadow-sm">
+              <div className="ml-[42px] whitespace-pre-wrap border border-[#cadcff] bg-[#f1f6ff] px-[15px] py-[14px] text-[14px] leading-[1.5] shadow-sm">
                 {m.text}
               </div>
             </div>
           ) : (
             <div key={i} className="mb-[16px]">
               <div className="mb-[8px] flex items-center gap-2 text-[12px] text-muted">
-                <span className="inline-grid h-[22px] w-[22px] place-items-center bg-blue/10 text-[11px] font-bold text-[#244a9d]">AI</span>
-                Answer completed · opened markdown tab on the right
+                <span className="inline-grid h-[22px] w-[22px] place-items-center bg-blue/10 text-[11px] font-bold text-[#244a9d]">
+                  AI
+                </span>
+                Answer completed
               </div>
+
               <div className="border border-line bg-white px-[15px] py-[14px] text-[14px] leading-[1.5] shadow-sm">
-                <div className="mb-[6px] font-bold">{m.title}</div>
-                <p className="m-0">{m.text}</p>
+                {m.title && <div className="mb-[8px] font-bold">{m.title}</div>}
+
+                <MarkdownMessage>{m.text}</MarkdownMessage>
 
                 {m.refs?.length > 0 && (
                   <div className="mt-[12px] border-t border-line pt-[12px]">
-                    <h3 className="m-0 mb-[8px] text-[12px] font-bold uppercase tracking-wider text-muted">References</h3>
+                    <h3 className="m-0 mb-[8px] text-[12px] font-bold uppercase tracking-wider text-muted">
+                      References
+                    </h3>
+
                     <ol className="m-0 list-decimal pl-[20px] text-[13px] text-muted">
                       {m.refs.map((r) => (
                         <li key={r.id} className="my-[6px] pl-[3px]">
-                          <button className="border-b border-dotted border-[#244a9d]/40 text-[#244a9d] hover:text-blue" onClick={() => onOpenNode(r.id)}>
+                          <button
+                            className="border-b border-dotted border-[#244a9d]/40 text-left text-[#244a9d] hover:text-blue"
+                            onClick={() => onOpenNode(r.id)}
+                          >
                             {r.label}
                           </button>{' '}
                           — {r.note}
@@ -92,16 +112,23 @@ export default function ChatPanel({ messages, health, onAsk, onSearch, onOpenNod
 
                 {m.canSave && (
                   <div className="mt-[13px] flex items-center gap-[10px]">
-                    <button className="border-0 bg-ink px-[13px] py-[10px] text-[13px] font-bold text-white shadow-md" onClick={onAddWiki}>
+                    <button
+                      className="border-0 bg-ink px-[13px] py-[10px] text-[13px] font-bold text-white shadow-md"
+                      onClick={onAddWiki}
+                    >
                       Add to wiki
                     </button>
-                    <span className="text-[12px] text-muted">Creates a clean markdown note from this answer.</span>
+
+                    <span className="text-[12px] text-muted">
+                      Creates a clean markdown note from this answer.
+                    </span>
                   </div>
                 )}
               </div>
             </div>
           ),
         )}
+
         <div ref={endRef} />
       </div>
 
@@ -115,11 +142,105 @@ export default function ChatPanel({ messages, health, onAsk, onSearch, onOpenNod
             onKeyDown={(e) => e.key === 'Enter' && submit()}
             placeholder="Ask the graph…"
           />
+
           <button className="border-0 bg-blue px-[14px] font-bold text-white" onClick={submit}>
             Ask
           </button>
         </div>
       </div>
     </aside>
+  )
+}
+
+function MarkdownMessage({ children }) {
+  return (
+    <div className="max-w-none overflow-hidden text-[14px] leading-[1.55] text-ink">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          h1: ({ node, ...props }) => (
+            <h1 className="mb-[10px] mt-[14px] text-[20px] font-extrabold leading-tight" {...props} />
+          ),
+          h2: ({ node, ...props }) => (
+            <h2 className="mb-[8px] mt-[14px] text-[17px] font-bold leading-tight" {...props} />
+          ),
+          h3: ({ node, ...props }) => (
+            <h3 className="mb-[7px] mt-[12px] text-[15px] font-bold leading-tight" {...props} />
+          ),
+          h4: ({ node, ...props }) => (
+            <h4 className="mb-[6px] mt-[10px] text-[14px] font-bold leading-tight" {...props} />
+          ),
+          p: ({ node, ...props }) => (
+            <p className="my-[8px] first:mt-0 last:mb-0" {...props} />
+          ),
+          ul: ({ node, ...props }) => (
+            <ul className="my-[8px] list-disc space-y-[4px] pl-[20px]" {...props} />
+          ),
+          ol: ({ node, ...props }) => (
+            <ol className="my-[8px] list-decimal space-y-[4px] pl-[20px]" {...props} />
+          ),
+          li: ({ node, ...props }) => (
+            <li className="pl-[2px]" {...props} />
+          ),
+          blockquote: ({ node, ...props }) => (
+            <blockquote
+              className="my-[10px] border-l-[3px] border-blue/30 bg-blue/5 px-[12px] py-[8px] text-muted"
+              {...props}
+            />
+          ),
+          a: ({ node, ...props }) => (
+            <a
+              className="border-b border-dotted border-[#244a9d]/40 text-[#244a9d] hover:text-blue"
+              target="_blank"
+              rel="noreferrer"
+              {...props}
+            />
+          ),
+          hr: ({ node, ...props }) => (
+            <hr className="my-[14px] border-0 border-t border-line" {...props} />
+          ),
+          strong: ({ node, ...props }) => (
+            <strong className="font-bold text-ink" {...props} />
+          ),
+          code: ({ node, inline, className, children, ...props }) => {
+            if (inline) {
+              return (
+                <code
+                  className="rounded bg-soft2 px-[4px] py-[1px] font-mono text-[12.5px] text-[#7c1230]"
+                  {...props}
+                >
+                  {children}
+                </code>
+              )
+            }
+
+            return (
+              <code className={`font-mono text-[12.5px] ${className || ''}`} {...props}>
+                {children}
+              </code>
+            )
+          },
+          pre: ({ node, ...props }) => (
+            <pre
+              className="my-[10px] max-w-full overflow-x-auto border border-line bg-[#0f172a] p-[12px] text-white"
+              {...props}
+            />
+          ),
+          table: ({ node, ...props }) => (
+            <div className="my-[10px] max-w-full overflow-x-auto">
+              <table className="w-full border-collapse text-[13px]" {...props} />
+            </div>
+          ),
+          th: ({ node, ...props }) => (
+            <th className="border border-line bg-soft px-[8px] py-[6px] text-left font-bold" {...props} />
+          ),
+          td: ({ node, ...props }) => (
+            <td className="border border-line px-[8px] py-[6px] align-top" {...props} />
+          ),
+        }}
+      >
+        {children || ''}
+      </ReactMarkdown>
+    </div>
   )
 }

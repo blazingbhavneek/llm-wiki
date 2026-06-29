@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ChatPanel from './components/ChatPanel'
 import GraphCanvas from './components/GraphCanvas'
 import MarkdownView from './components/MarkdownView'
@@ -6,7 +6,26 @@ import ErrorBoundary from './components/ErrorBoundary'
 import { api } from './api'
 import { layoutGraph, docFromNode } from './data/layout'
 
+const DEFAULT_LEFT_WIDTH = 410
+const MIN_LEFT_WIDTH = 300
+const MAX_LEFT_WIDTH = 760
+const MIN_RIGHT_WIDTH = 460
+const DIVIDER_WIDTH = 12
+const OUTER_PADDING_X = 32
+
 export default function App() {
+  const shellRef = useRef(null)
+  const isResizingRef = useRef(false)
+
+  const [leftWidth, setLeftWidth] = useState(() => {
+    if (typeof window === 'undefined') return DEFAULT_LEFT_WIDTH
+
+    const saved = Number(window.localStorage.getItem('leftPanelWidth'))
+    return Number.isFinite(saved) && saved > 0 ? saved : DEFAULT_LEFT_WIDTH
+  })
+
+  const [isResizing, setIsResizing] = useState(false)
+
   const [raw, setRaw] = useState({ nodes: [], edges: [] })
   const [health, setHealth] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -35,6 +54,75 @@ export default function App() {
   const editable = currentId && currentId !== '__draft__'
   const dirty = !!doc && (draft.title !== doc.title || draft.markdown !== doc.markdown)
 
+  const clampLeftWidth = useCallback((value) => {
+    const shell = shellRef.current
+    const availableWidth = shell
+      ? shell.clientWidth - OUTER_PADDING_X
+      : window.innerWidth - OUTER_PADDING_X
+
+    const maxAllowedByRightPanel = availableWidth - DIVIDER_WIDTH - MIN_RIGHT_WIDTH
+    const maxLeft = Math.max(MIN_LEFT_WIDTH, Math.min(MAX_LEFT_WIDTH, maxAllowedByRightPanel))
+
+    return Math.round(Math.min(Math.max(value, MIN_LEFT_WIDTH), maxLeft))
+  }, [])
+
+  useEffect(() => {
+    setLeftWidth((w) => clampLeftWidth(w))
+  }, [clampLeftWidth])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem('leftPanelWidth', String(leftWidth))
+  }, [leftWidth])
+
+  useEffect(() => {
+    const onPointerMove = (e) => {
+      if (!isResizingRef.current || !shellRef.current) return
+
+      const rect = shellRef.current.getBoundingClientRect()
+      const nextWidth = e.clientX - rect.left - 16
+
+      setLeftWidth(clampLeftWidth(nextWidth))
+    }
+
+    const onPointerUp = () => {
+      if (!isResizingRef.current) return
+
+      isResizingRef.current = false
+      setIsResizing(false)
+
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+
+    window.addEventListener('pointermove', onPointerMove)
+    window.addEventListener('pointerup', onPointerUp)
+    window.addEventListener('pointercancel', onPointerUp)
+
+    return () => {
+      window.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('pointerup', onPointerUp)
+      window.removeEventListener('pointercancel', onPointerUp)
+
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+  }, [clampLeftWidth])
+
+  const startResize = (e) => {
+    e.preventDefault()
+
+    isResizingRef.current = true
+    setIsResizing(true)
+
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+  }
+
+  const resetResize = () => {
+    setLeftWidth(clampLeftWidth(DEFAULT_LEFT_WIDTH))
+  }
+
   const fireToast = (text) => {
     setToast(text)
     setTimeout(() => setToast(null), 3600)
@@ -56,10 +144,12 @@ export default function App() {
   const openDoc = (id, d, { switchTab = true } = {}) => {
     const built = d || docs[id]
     if (!built) return
+
     setDocs((prev) => ({ ...prev, [id]: built }))
     setCurrentId(id)
     setDraft({ title: built.title, markdown: built.markdown })
     setEditing(false)
+
     if (switchTab) setTab('editor')
   }
 
@@ -76,11 +166,17 @@ export default function App() {
 
   const refLabel = (id) => {
     const n = rawById.get(id)
-    return { id, label: n?.title || n?.entity || id, note: n?.type === 'exogenous' ? 'agent note' : 'source note' }
+
+    return {
+      id,
+      label: n?.title || n?.entity || id,
+      note: n?.type === 'exogenous' ? 'agent note' : 'source note',
+    }
   }
 
   const ask = async (q) => {
     setMessages((prev) => [...prev, { role: 'user', text: q }])
+
     try {
       const ans = await api.ask(q)
       const cited = ans.cited_node_ids || []
@@ -90,21 +186,31 @@ export default function App() {
       setMessages((prev) => [
         ...prev,
         hasAnswer
-          ? { role: 'assistant', title: `Answer in ${ans.steps} step${ans.steps === 1 ? '' : 's'}.`, text: ans.answer, refs, canSave: true }
+          ? {
+              role: 'assistant',
+              title: `Answer in ${ans.steps} step${ans.steps === 1 ? '' : 's'}.`,
+              text: ans.answer,
+              refs,
+              canSave: true,
+            }
           : {
               role: 'assistant',
               title: 'Found sources, but no written answer.',
-              text: `The agent gathered ${cited.length} source${cited.length === 1 ? '' : 's'} in ${ans.steps} steps but did not produce a final answer (the current model is small). Sources are highlighted in the graph — open one, or try a stronger chat model.`,
+              text: `The agent gathered ${cited.length} source${
+                cited.length === 1 ? '' : 's'
+              } in ${ans.steps} steps but did not produce a final answer. Sources are highlighted in the graph — open one, or try a stronger chat model.`,
               refs,
               canSave: false,
             },
       ])
+
       setFocusIds(new Set(cited))
 
-      // Keep the user on whatever tab they're on (don't yank them to the note).
+      // Keep the user on whatever tab they're on.
       // The answer is in the chat; cited nodes light up in the graph.
       if (hasAnswer) {
         setPending({ answer: ans.answer, citedIds: cited, question: q })
+
         openDoc(
           '__draft__',
           {
@@ -117,21 +223,37 @@ export default function App() {
         )
       } else {
         setPending(null)
+
         if (cited[0]) openById(cited[0], { switchTab: false })
       }
     } catch (e) {
-      setMessages((prev) => [...prev, { role: 'assistant', title: 'Request failed', text: e.message }])
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          title: 'Request failed',
+          text: e.message,
+        },
+      ])
     }
   }
 
   const addWiki = async () => {
     if (!pending) return
+
     try {
-      const node = await api.createExogenous(pending.answer, pending.citedIds, `agent:${pending.question.slice(0, 60)}`)
+      const node = await api.createExogenous(
+        pending.answer,
+        pending.citedIds,
+        `agent:${pending.question.slice(0, 60)}`,
+      )
+
       await reload()
+
       setPending(null)
       openDoc(node.id, docFromNode(node))
       setFocusIds(new Set([node.id, ...pending.citedIds]))
+
       fireToast('Saved as a wiki note. It now lives in the graph, linked to its sources.')
     } catch (e) {
       fireToast(`Save failed: ${e.message}`)
@@ -140,9 +262,12 @@ export default function App() {
 
   const confirmEdit = async () => {
     if (!editable) return
+
     try {
       const node = await api.updateNode(currentId, draft.markdown)
+
       await reload()
+
       openDoc(node.id, docFromNode(node))
       fireToast('Saved. A new version supersedes the old one; derived notes refresh automatically.')
     } catch (e) {
@@ -152,12 +277,16 @@ export default function App() {
 
   const deleteNode = async () => {
     if (!editable) return
+
     const id = currentId
+
     try {
       await api.deleteNode(id)
       await reload()
+
       setCurrentId(null)
       setTab('graph')
+
       fireToast('Note deleted.')
     } catch (e) {
       fireToast(`Delete failed: ${e.message}`)
@@ -166,8 +295,10 @@ export default function App() {
 
   const onSearch = async (text) => {
     if (!text.trim()) return
+
     try {
       const results = await api.search(text, 8)
+
       if (results.length) openDoc(results[0].id, docFromNode(results[0]))
       else fireToast('No matching notes.')
     } catch (e) {
@@ -179,7 +310,9 @@ export default function App() {
     try {
       await api.recluster()
       await reload()
+
       setInsightsOpen(false)
+
       fireToast('Recomputed topic clusters.')
     } catch (e) {
       fireToast(`Recluster failed: ${e.message}`)
@@ -192,14 +325,51 @@ export default function App() {
   const insightTotal = conflictCount + staleCount + isolated
 
   const insights = [
-    { n: conflictCount, label: 'possible conflicts', action: 'Review', onClick: () => { setShowConflict(true); setTab('graph'); setInsightsOpen(false) } },
-    { n: staleCount, label: 'old / superseded notes', action: 'Show', onClick: () => { setShowStale(true); setTab('graph'); setInsightsOpen(false) } },
-    { n: isolated, label: 'isolated notes', action: 'View', onClick: () => { setTab('graph'); setInsightsOpen(false) } },
-    { n: health?.exogenous_nodes ?? 0, label: 'agent notes', action: 'Recluster', onClick: doRecluster },
+    {
+      n: conflictCount,
+      label: 'possible conflicts',
+      action: 'Review',
+      onClick: () => {
+        setShowConflict(true)
+        setTab('graph')
+        setInsightsOpen(false)
+      },
+    },
+    {
+      n: staleCount,
+      label: 'old / superseded notes',
+      action: 'Show',
+      onClick: () => {
+        setShowStale(true)
+        setTab('graph')
+        setInsightsOpen(false)
+      },
+    },
+    {
+      n: isolated,
+      label: 'isolated notes',
+      action: 'View',
+      onClick: () => {
+        setTab('graph')
+        setInsightsOpen(false)
+      },
+    },
+    {
+      n: health?.exogenous_nodes ?? 0,
+      label: 'agent notes',
+      action: 'Recluster',
+      onClick: doRecluster,
+    },
   ]
 
   return (
-    <div className="grid h-screen grid-cols-[410px_minmax(0,1fr)] grid-rows-[minmax(0,1fr)] gap-[16px] p-[16px]">
+    <div
+      ref={shellRef}
+      className="grid h-screen grid-rows-[minmax(0,1fr)] p-[16px]"
+      style={{
+        gridTemplateColumns: `${leftWidth}px ${DIVIDER_WIDTH}px minmax(0,1fr)`,
+      }}
+    >
       <ChatPanel
         messages={messages}
         health={health}
@@ -210,6 +380,24 @@ export default function App() {
         canSave={!!pending}
       />
 
+      <div
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize chat and workspace panels"
+        title="Drag to resize panels. Double-click to reset."
+        onPointerDown={startResize}
+        onDoubleClick={resetResize}
+        className={`group flex h-full cursor-col-resize items-stretch justify-center px-[4px] ${
+          isResizing ? 'bg-blue/5' : ''
+        }`}
+      >
+        <div
+          className={`my-[4px] w-[4px] rounded-full transition-colors ${
+            isResizing ? 'bg-blue/60' : 'bg-line group-hover:bg-blue/45'
+          }`}
+        />
+      </div>
+
       <main className="relative flex min-w-0 flex-col border border-line bg-white/95 shadow-lg">
         {/* tabs */}
         <div className="flex h-[56px] items-end justify-between gap-3 border-b border-line bg-gradient-to-b from-white to-[#fbfdff] px-[12px] pt-[10px]">
@@ -217,19 +405,23 @@ export default function App() {
             <TabBtn active={tab === 'graph'} onClick={() => setTab('graph')} dot="bg-blue">
               Graph{health ? ` · ${health.total_nodes} nodes · ${health.total_edges} links` : ''}
             </TabBtn>
+
             {doc && (
               <TabBtn active={tab === 'editor'} onClick={() => setTab('editor')} dot="bg-orange" unsaved={dirty}>
                 {(doc.title || 'Note').slice(0, 25)}.md
               </TabBtn>
             )}
           </div>
+
           <div className="flex items-center gap-2 pb-[9px]">
             <ToolBtn active={insightsOpen} tone="insights" onClick={() => setInsightsOpen((v) => !v)}>
               Insights {insightTotal}
             </ToolBtn>
+
             <ToolBtn active={showConflict} tone="conflict" onClick={() => setShowConflict((v) => !v)}>
               Conflicts
             </ToolBtn>
+
             <ToolBtn active={showStale} onClick={() => setShowStale((v) => !v)}>
               Stale
             </ToolBtn>
@@ -239,12 +431,18 @@ export default function App() {
         {/* content */}
         <div className="relative min-h-0 flex-1 overflow-hidden bg-white">
           {loading && <Centered>Loading graph…</Centered>}
+
           {error && !loading && (
             <Centered>
               <div className="max-w-[420px] text-center">
                 <p className="font-bold text-red">Backend not reachable</p>
                 <p className="mt-2 text-[13px] text-muted">{error}</p>
-                <p className="mt-2 text-[13px] text-muted">Start it: <code className="bg-soft2 px-1">uvicorn app:app --port 8787</code></p>
+                <p className="mt-2 text-[13px] text-muted">
+                  Start it:{' '}
+                  <code className="bg-soft2 px-1">
+                    uvicorn app:app --port 8787
+                  </code>
+                </p>
               </div>
             </Centered>
           )}
@@ -266,6 +464,7 @@ export default function App() {
                   onOpenNode={openNode}
                 />
               </div>
+
               <div className={`h-full ${tab === 'editor' ? 'block' : 'hidden'}`}>
                 <MarkdownView
                   doc={doc}
@@ -287,7 +486,11 @@ export default function App() {
           {insightsOpen && (
             <div className="absolute right-[18px] top-[12px] z-[9] w-[280px] border border-line bg-white p-[10px] shadow-xl">
               {insights.map((it) => (
-                <button key={it.label} className="flex w-full justify-between gap-[10px] p-[10px] text-[13px] text-muted hover:bg-soft" onClick={it.onClick}>
+                <button
+                  key={it.label}
+                  className="flex w-full justify-between gap-[10px] p-[10px] text-[13px] text-muted hover:bg-soft"
+                  onClick={it.onClick}
+                >
                   <span>
                     <strong className="text-ink">{it.n}</strong> {it.label}
                   </span>
@@ -337,6 +540,7 @@ function ToolBtn({ children, active, onClick, tone }) {
     : tone === 'insights'
       ? 'border-orange/25 bg-[#fff6df] text-[#724b00]'
       : 'border-line bg-white text-muted hover:border-line2 hover:text-ink'
+
   return (
     <button className={`border px-[11px] py-[8px] text-[12px] font-bold ${toneCls}`} onClick={onClick}>
       {children}

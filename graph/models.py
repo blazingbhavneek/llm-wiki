@@ -21,9 +21,9 @@ def now_iso() -> str:
 class Settings:
     """All tunables for one engine instance."""
 
-    chat_base_url: str = "http://localhost:8000/v1"
+    chat_base_url: str = "http://10.160.144.101:51021/v1"
     chat_api_key: str = "local"
-    chat_model: str = "gemma4"
+    chat_model: str = "openai/gpt-oss-120b"
     chat_temperature: float = 0.2
 
     embed_backend: str = "server"
@@ -34,14 +34,14 @@ class Settings:
     hf_device: str = "cuda:0"
     embed_dim: int = 768
 
-    database_path: str = ".wiki/wiki.sqlite"
+    database_path: str = ".wiki/moove_wiki.sqlite"
 
     edge_candidate_k: int = 12
-    vector_query_k: int = 1
+    vector_query_k: int = 5
     cascade_max_hops: int = 2
     cascade_max_nodes: int = 50
-    agent_max_steps: int = 6
-    agent_patience: int = 3
+    agent_max_steps: int = 40
+    agent_patience: int = 20
     search_rrf_k: int = 60
     entity_dedup: bool = True
 

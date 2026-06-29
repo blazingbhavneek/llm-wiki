@@ -1,7 +1,7 @@
 // Thin client over the FastAPI backend (app.py).
 // Base URL configurable via VITE_API_URL; defaults to the dev server port.
 
-const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8787'
+const BASE = import.meta.env.VITE_API_URL || 'http://10.160.144.101:51026'
 
 async function req(path, opts) {
   const res = await fetch(`${BASE}${path}`, {
