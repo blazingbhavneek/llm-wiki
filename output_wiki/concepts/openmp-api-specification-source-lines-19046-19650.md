@@ -1,0 +1,617 @@
+# OpenMP-API-Specification Source Lines 19046-19650
+
+Fallback page created to preserve source coverage.
+
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
+
+## Source OpenMP-API-Specification:L19046-L19650
+
+Citation: [OpenMP-API-Specification:L19046-L19650]
+
+````text
+## 17.9.6 transparent Clause
+
+<table><tr><td>Name: transparent</td><td>Properties: unique</td></tr></table>
+
+Modifiers  
+Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>impex-type</td><td>expression of impexOpenMP type</td><td>optional</td></tr></table>
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+target\_data, task, taskloop
+
+## Semantics
+
+The transparent clause controls the task dependence importing and exporting characteristics of any generated tasks of the construct on which it appears. If impex-type evaluates to omp\_not\_impex then the generated tasks are neither importing tasks nor exporting tasks and so are not transparent tasks. Otherwise the clause extends the set of dependence-compatible tasks of any child task of any of the generated tasks as follows. If impex-type evaluates to omp\_import then the generated tasks are importing tasks. If impex-type evaluates to omp\_export then the generated tasks are exporting tasks. If impex-type evaluates to omp\_impex then the generated tasks are both importing tasks and exporting tasks.
+
+The use of a variable in an impex-type expression causes an implicit reference to the variable in all enclosing constructs. The impex-type expression is evaluated in the context outside of the construct on which the clause appears. If impex-type is not specified, the efect is as if impex-type evaluates to omp\_impex.
+
+## Cross References
+
+• depend Clause, see Section 17.9.5
+
+• target\_data Construct, see Section 15.7
+
+• task Construct, see Section 14.1
+
+• taskloop Construct, see Section 14.2
+
+## 17.9.7 doacross Clause
+
+<table><tr><td>Name: doacross</td><td>Properties: required</td></tr></table>
+
+## Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>iteration-specifier</td><td>OpenMP iteration specifier</td><td>default</td></tr></table>
+
+Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>dependence-type</td><td>iteration-specifier</td><td>Keyword: sink, source</td><td>required</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+ordered
+
+## Semantics
+
+The doacross clause identifies doacross dependences that imply additional constraints on the scheduling of doacross logical iterations of a doacross loop nest. These constraints establish dependences only between doacross iterations. The iteration-specifier specifies a doacross iteration and is either a loop-iteration vector or uses the omp\_cur\_iteration keyword (see Section 6.4.3).
+
+The source dependence-type specifies that the current doacross iteration is a source iteration and, thus, satisfies doacross dependences that arise from the current doacross iteration. If the source dependence-type is specified then the iteration-specifier argument is optional; if iteration-specifier is omitted, it is assumed to be omp\_cur\_iteration.
+
+The sink dependence-type specifies the current doacross iteration is a sink iteration and, thus, has a doacross dependence, where iteration-specifier indicates the doacross iteration that satisfies the dependence. If iteration-specifier indicates a doacross iteration that does not occur in the doacross iteration space, the doacross clause is ignored. If all doacross clauses on an ordered construct are ignored then the construct is ignored.
+
+Note – If the sink dependence-type is specified for an iteration-specifier that does not indicate an earlier iteration of the doacross iteration space, deadlock may occur.
+
+## Restrictions
+
+Restrictions to the doacross clause are as follows:
+
+• If iteration-specifier is a loop-iteration vector that has n elements, the innermost loop-nest-associated construct that encloses the construct on which the clause appears must specify an ordered clause for which the parameter value equals n.
+
+• If iteration-specifier is specified with the omp\_cur\_iteration keyword and with sink as the dependence-type then it must be omp\_cur\_iteration - 1.
+
+• If iteration-specifier is specified with source as the dependence-type then it must be omp\_cur\_iteration.
+
+• If iteration-specifier is a loop-iteration vector and the sink dependence-type is specified then for each element, if the loop-iteration variable var<sub>i</sub> has an integral or pointer type, the i<sup>th</sup> expression of vector must be computable without overflow in that type for any value of var<sub>i</sub> that can encounter the construct on which the doacross clause appears.
+
+C++
+
+• If iteration-specifier is a loop-iteration vector and the sink dependence-type is specified then for each element, if the loop-iteration variable var<sub>i</sub> is of a random access iterator type other than pointer type, the i<sup>th</sup> expression of vector must be computable without overflow in the type that would be used by std::distance applied to variables of the type of var<sub>i</sub> for any value of var<sub>i</sub> that can encounter the construct on which the doacross clause appears.
+
+## Cross References
+
+• OpenMP Loop-Iteration Spaces and Vectors, see Section 6.4.3
+
+• ordered Clause, see Section 6.4.6
+
+• Stand-alone ordered Construct, see Section 17.10.1
+
+## 17.10 ordered Construct
+
+This section describes two forms for the ordered construct, the stand-alone ordered construct and the block-associated ordered construct. Both forms include the execution model events, too callbacks, and restrictions listed in this section.
+
+## Execution Model Events
+
+The ordered-acquiring event occurs in the task that encounters the ordered construct on entry to the ordered region before it initiates synchronization for the region. The ordered-released event occurs in the task that encounters the ordered construct after it completes any synchronization on exit from the region.
+
+## Tool Callbacks
+
+A thread dispatches a registered mutex\_acquire callback for each occurrence of an ordered-acquiring event in that thread. A thread dispatches a registered mutex\_released callback with ompt\_mutex\_ordered as the kind argument if practical, although a less specific kind may be used, for each occurrence of an ordered-released event in that thread. These callback occur in the task that encounters the construct.
+
+## Restrictions
+
+• The construct that corresponds to the binding region of an ordered region must specify an ordered clause.
+
+• The construct that corresponds to the binding region of an ordered region must not specify a reduction clause with the inscan modifier.
+
+• The region of a block-associated ordered construct must not have a binding region that corresponds to a construct in which a stand-alone ordered construct is closely nested.
+
+• An ordered region that corresponds to an ordered construct with the threads or doacross clause may not be closely nested inside a critical, ordered, loop, task, or taskloop region (see Section 17.10).
+
+• The doacross-afected loops of a doacross loop nest must be perfectly nested loops.
+
+• The construct that corresponds to the binding region of an ordered region must not specify a linear clause.
+
+![](images/c29111664804fd659b9e1774d41d7fc80a8895ed26f06795443dd89e7691a2b5.jpg)
+
+• The doacross-afected loops of a doacross loop nest must not be range-based for loops.
+
+![](images/7845d0fa9ef29560ecab0e2ebdd36b683e0a0df010743d23b627a03907e6275d.jpg)
+
+## Cross References
+
+• OMPT mutex Type, see Section 33.20
+
+• mutex\_acquire Callback, see Section 34.7.8
+
+• mutex\_released Callback, see Section 34.7.13
+
+## 17.10.1 Stand-alone ordered Construct
+
+<table><tr><td>Name: orderedCategory: executable</td><td>Association: unassociatedProperties: mutual-exclusion</td></tr></table>
+
+## Clauses
+
+doacross
+
+## Binding
+
+The binding thread set for a stand-alone ordered region is the current team. A stand-alone ordered region binds to the innermost enclosing worksharing-loop region.
+
+## Semantics
+
+The innermost enclosing worksharing-loop construct of a stand-alone ordered construct is associated with a doacross loop nest of the n doacross-afected loops. The stand-alone ordered construct specifies that execution must not violate doacross dependences as specified in the doacross clauses that appear on the construct. When a thread that is executing a doacross iteration encounters an ordered construct with one or more doacross clauses for which the sink dependence-type is specified, the thread waits until its dependences on all valid doacross iterations specified by the doacross clauses are satisfied before it continues execution. A specific dependence is satisfied when a thread that is executing the corresponding doacross iteration encounters an ordered construct with a doacross clause for which the source dependence-type is specified.
+
+## Execution Model Events
+
+The doacross-sink event occurs in the task that encounters an ordered construct for each doacross clause for which the sink dependence-type is specified after the dependence is fulfilled. The doacross-source event occurs in the task that encounters an ordered construct with a doacross clause for which the source dependence-type is specified before signaling that the dependence has been fulfilled.
+
+## Tool Callbacks
+
+A thread dispatches a registered dependences callback with all vector entries listed as ompt\_dependence\_type\_sink in the deps argument for each occurrence of a doacross-sink event in that thread. A thread dispatches a registered dependences callback with all vector entries listed as ompt\_dependence\_type\_source in the deps argument for each occurrence of a doacross-source event in that thread.
+
+## Restrictions
+
+Additional restrictions to the stand-alone ordered construct are as follows:
+
+• At most one doacross clause may appear on the construct with source as the dependence-type.
+
+• All doacross clauses that appear on the construct must specify the same dependence-type.
+
+• The construct must not be an orphaned construct.
+
+• The construct must be closely nested inside a worksharing-loop construct.
+
+## Cross References
+
+• OMPT dependence\_type Type, see Section 33.10
+
+• dependences Callback, see Section 34.7.1
+
+• doacross Clause, see Section 17.9.7
+
+• Worksharing-Loop Constructs, see Section 13.6
+
+## 17.10.2 Block-associated ordered Construct
+
+<table><tr><td>Name: orderedCategory:executable</td><td>Association: blockProperties: mutual-exclusion, simdizable, thread-limiting, thread-exclusive</td></tr></table>
+
+## Clause groups
+
+parallelization-level
+
+## Binding
+
+The binding thread set for a block-associated ordered region is the current team. A block-associated ordered region binds to the innermost enclosing region that corresponds to a construct for which a worksharing-loop construct or simd construct is a constituent construct.
+
+## Semantics
+
+If no clauses are specified, the efect is as if the threads parallelization-level clause was specified. If the threads clause is specified, the threads in the team that is executing the worksharing-loop region execute ordered regions sequentially in the order of the collapsed iterations. If the simd parallelization-level clause is specified, the ordered regions encountered by any thread will execute one at a time in the order of the collapsed iterations. With either parallelization-level, execution of code outside the region for diferent collapsed iterations can run in parallel; execution of that code within the same collapsed iteration must observe any constraints imposed by the base language semantics.
+
+When the thread that is executing the first collapsed iteration of the loop encounters a block-associated ordered construct, it can enter the ordered region without waiting. When a thread that is executing any subsequent collapsed iteration encounters a block-associated ordered construct, it waits at the beginning of the ordered region until execution of all ordered regions that belong to all previous collapsed iterations has completed. ordered regions that bind to diferent regions execute independently of each other.
+
+## Execution Model Events
+
+The ordered-acquired event occurs in the task that encounters the ordered construct after it enters the region, but before it executes the associated structured block.
+
+## Tool Callbacks
+
+A thread dispatches a registered mutex\_acquired callback for each occurrence of an ordered-acquired event in that thread. This callback occurs in the task that encounters the construct.
+
+## Restrictions
+
+Additional restrictions to the block-associated ordered construct are as follows:
+
+• The construct is SIMDizable only if the simd parallelization-level clause is specified.
+
+• If the simd parallelization-level clause is specified, the binding region must correspond to a construct for which the simd construct is a leaf construct.
+
+• If the threads parallelization-level clause is specified, the binding region must correspond to a construct for which a worksharing-loop construct is a leaf construct.
+
+• If the threads parallelization-level clause is specified and the binding region corresponds to a compound construct then the simd construct must not be a leaf construct unless the simd parallelization-level clause is also specified.
+
+• During execution of the collapsed iteration associated with a loop-nest-associated directive, a thread must not execute more than one block-associated ordered region that binds to the corresponding region of the loop-nest-associated directive.
+
+• An ordered clause with an argument value equal to the number of collapsed loops must appear on the construct that corresponds to the binding region, if the binding region is not a simd region.
+
+## Cross References
+
+• parallelization-level Clauses, see Section 17.10.3
+
+• Worksharing-Loop Constructs, see Section 13.6
+
+• mutex\_acquired Callback, see Section 34.7.12
+
+• ordered Clause, see Section 6.4.6
+
+• simd Construct, see Section 12.4
+
+## 17.10.3 parallelization-level Clauses
+
+Clause groups
+
+<table><tr><td>Properties: unique</td><td>Members:Clausessimd, threads</td></tr></table>
+
+## Directives
+
+ordered
+
+## Semantics
+
+The parallelization-level clause group defines a set of clauses that indicate the level of parallelization with which to associate a construct.
+
+## Cross References
+
+• Block-associated ordered Construct, see Section 17.10.2
+
+## 17.10.3.1 threads Clause
+
+<table><tr><td>Name: threads</td><td>Properties: innermost-leaf, unique</td></tr></table>
+
+Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>apply-to-threads</td><td>expression of OpenMP logical type</td><td>constant, optional</td></tr></table>
+
+Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+ordered
+
+## Semantics
+
+If apply\_to\_threads evaluates to true, the efect is as if the threads parallelization-level clause is specified. If apply\_to\_threads evaluates to false, the efect is as if the threads clause is not specified. If apply\_to\_threads is not specified, the efect is as if apply\_to\_threads evaluates to true.
+
+## Cross References
+
+• Block-associated ordered Construct, see Section 17.10.2
+
+## 17.10.3.2 simd Clause
+
+Arguments
+
+<table><tr><td>Name: simd</td><td>Properties: innermost-leaf, unique</td></tr></table>
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>apply-to-simd</td><td>expression of OpenMP logical type</td><td>constant, optional</td></tr></table>
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+ordered
+
+## Semantics
+
+If apply\_to\_simd evaluates to true, the efect is as if the simd parallelization-level clause is specified. If apply\_to\_simd evaluates to false, the efect is as if the simd clause is not specified. If apply\_to\_simd is not specified, the efect is as if apply\_to\_simd evaluates to true.
+
+## Cross References
+
+• Block-associated ordered Construct, see Section 17.10.2
+
+# 18 Cancellation Constructs
+
+This chapter defines constructs related to cancellation of OpenMP regions.
+
+## 18.1 cancel-directive-name Clauses
+
+## Clause groups
+
+Modifiers
+
+<table><tr><td>Properties: exclusive, required, unique</td><td>Members:Clausesdo, for, parallel, sections, taskgroup</td></tr></table>
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+cancel, cancellation\_point
+
+## Semantics
+
+For each directive that has the cancellable property (i.e., the directive may subject to cancellation and is a cancellable construct), a corresponding clause for which clause-name is the directive-name of that directive is a member of the cancel-directive-name clause group. Each member of the cancel-directive-name clause group takes an optional argument, apply-to-directive, that must be a constant expression of logical OpenMP type. For each member of the clause group, if apply\_to\_directive evaluates to true then the semantics of the construct on which the clause appears are applied for the directive with the directive-name specified by the clause. If apply\_to\_directive evaluates to false, the efect is equivalent to specifying an if clause for which if-expression evaluates to false. If apply\_to\_directive is not specified, the efect is as if apply\_to\_directive evaluates to true.
+
+## Restrictions
+
+Restrictions to any clauses in the cancel-directive-name clause group are as follows:
+
+• If apply\_to\_directive evaluates to false and an if clause is specified for the same constituent construct, if-expression must evaluate to false.
+
+## Cross References
+
+• cancel Construct, see Section 18.2
+
+• cancellation\_point Construct, see Section 18.3
+
+• do Construct, see Section 13.6.2
+
+• for Construct, see Section 13.6.1
+
+• parallel Construct, see Section 12.1
+
+• sections Construct, see Section 13.3
+
+• taskgroup Construct, see Section 17.4
+
+## 18.2 cancel Construct
+
+<table><tr><td>Name: cancelCategory: executable</td><td>Association: unassociatedProperties: default</td></tr></table>
+
+## Clause groups
+
+cancel-directive-name
+
+## Clauses
+
+## Binding
+
+The binding thread set of the cancel region is the current team. The binding region of the cancel region is the innermost enclosing region of the type that corresponds to cancel-directive-name.
+
+## Semantics
+
+The cancel construct activates cancellation of the innermost enclosing region of the type specified by cancel-directive-name, which must be the directive-name of a cancellable construct. Cancellation of the binding region is activated only if the cancel-var ICV is true, in which case the cancel construct causes the encountering task to continue execution at the end of the binding region if cancel-directive-name is not taskgroup. If the cancel-var ICV is true and cancel-directive-name is taskgroup, the encountering task continues execution at the end of the current task region. If the cancel-var ICV is false, the cancel construct is ignored.
+
+Threads check for active cancellation only at cancellation points that are implied at the following locations:
+
+• cancel regions;
+
+• cancellation\_point regions;
+
+• barrier regions;
+
+• at the end of a worksharing-loop construct with a nowait clause and for which the same list item appears in both firstprivate and lastprivate clauses; and
+
+• implicit barrier regions.
+
+When a thread reaches one of the above cancellation points and if the cancel-var ICV is true, then:
+
+• If the thread is at a cancel or cancellation\_point region and cancel-directive-name is not taskgroup, the thread continues execution at the end of the canceled region if cancellation has been activated for the innermost enclosing region of the type specified.
+
+• If the thread is at a cancel or cancellation\_point region and cancel-directive-name is taskgroup, the encountering task checks for active cancellation of all of the taskgroup sets to which the encountering task belongs, and continues execution at the end of the current task region if cancellation has been activated for any of the taskgroup sets.
+
+• If the encountering task is at a barrier region or at the end of a worksharing-loop construct with a nowait clause and for which the same list item appears in both firstprivate and lastprivate clauses, the encountering task checks for active cancellation of the innermost enclosing parallel region. If cancellation has been activated, then the encountering task continues execution at the end of the canceled region.
+
+When cancellation of tasks is activated through a cancel construct with taskgroup for cancel-directive-name, the tasks that belong to the taskgroup set of the innermost enclosing taskgroup region will be canceled; that taskgroup set is then the canceled taskgroup set corresponding to that cancel region. The task that encountered that construct continues execution at the end of its task region, which implies completion of that task. Any task that belongs to the canceled taskgroup set and has already begun execution must run to completion or until a cancellation point is reached. Upon reaching a cancellation point and if cancellation is active, the task continues execution at the end of its task region, which implies the completion of the task. Any task that belongs to the canceled taskgroup set and that has not begun execution or that has not yet been fulfilled through an event variable may be discarded, which implies its completion.
+
+When cancellation of tasks is activated through a cancel construct with cancel-directive-name other than taskgroup, each thread of the binding thread set resumes execution at the end of the canceled region if a cancellation point is encountered. If the canceled region is a parallel region, any tasks that have been created by a task or a taskloop construct and their descendent tasks are canceled according to the above taskgroup cancellation semantics. If the canceled region is not a parallel region, no task cancellation occurs.
+
+C++
+
+The usual C++ rules for object destruction are followed when cancellation is performed.
+
+C++
+
+Fortran
+
+All private objects or subobjects with the ALLOCATABLE attribute that are allocated inside the canceled construct are deallocated.
+
+Fortran
+
+If the canceled construct specifies an original list-item updating clause, the final values of the list items that appear in those clauses are undefined.
+
+When an if clause is present on a cancel construct and if-expression evaluates to false, the cancel construct does not activate cancellation. The cancellation point associated with the cancel construct is always encountered regardless of the value of if-expression.
+
+Note – The programmer is responsible for releasing locks and other synchronization data structures that might cause a deadlock when a cancel construct is encountered and blocked threads cannot be canceled. The programmer is also responsible for ensuring proper synchronizations to avoid deadlocks that might arise from cancellation of regions that contain synchronization constructs.
+
+## Execution Model Events
+
+If a task encounters a cancel construct that will activate cancellation then a cancel event occurs. A discarded-task event occurs for any discarded tasks.
+
+## Tool Callbacks
+
+A thread dispatches a registered cancel callback for each occurrence of a cancel event in the context of the encountering task. (flags & ompt\_cancel\_activated) always evaluates to true in the dispatched callback; (flags & ompt\_cancel\_parallel) evaluates to true in the dispatched callback if cancel-directive-name is parallel;
+
+(flags & ompt\_cancel\_sections) evaluates to true in the dispatched callback if cancel-directive-name is sections; (flags & ompt\_cancel\_loop) evaluates to true in the dispatched callback if cancel-directive-name is for or do; and
+
+(flags & ompt\_cancel\_taskgroup) evaluates to true in the dispatched callback if cancel-directive-name is taskgroup.
+
+A thread dispatches a registered cancel callback with its task\_data argument pointing to the data object associated with the discarded task and with ompt\_cancel\_discarded\_task as its flags argument for each occurrence of a discarded-task event. The callback occurs in the context of the task that discards the task.
+
+## Restrictions
+
+Restrictions to the cancel construct are as follows:
+
+• The behavior for concurrent cancellation of a region and a region nested within it is unspecified.
+
+• If cancel-directive-name is taskgroup, the cancel construct must be a closely nested construct of a task or a taskloop construct and the cancel region must be a closely nested region of a taskgroup region.
+
+• If cancel-directive-name is not taskgroup, the cancel construct must be a closely nested construct of a construct that matches cancel-directive-name.
+
+• A worksharing construct that is canceled must not have a nowait clause or a reduction clause with a user-defined reduction that uses omp\_orig in the initializer-expr of the corresponding declare\_reduction directive.
+
+• A worksharing-loop construct that is canceled must not have an ordered clause or a reduction clause with the inscan reduction-modifier.
+
+• When cancellation is active for a parallel region, a thread in the team that binds to that region must not be executing or encounter a worksharing construct with an ordered clause, a reduction clause with the inscan reduction-modifier or a reduction clause with a user-defined reduction that uses omp\_orig in the initializer-expr of the corresponding declare\_reduction directive.
+
+• During execution of a construct that may be subject to cancellation, a thread must not encounter an orphaned cancellation point. That is, a cancellation point must only be encountered within that construct and must not be encountered elsewhere in its region.
+
+## Cross References
+
+• barrier Construct, see Section 17.3.1
+
+• cancel Callback, see Section 34.6
+
+• OMPT cancel\_flag Type, see Section 33.7
+
+• cancellation\_point Construct, see Section 18.3
+
+• OMPT data Type, see Section 33.8
+
+• declare\_reduction Directive, see Section 7.6.14
+
+• firstprivate Clause, see Section 7.5.4
+
+• cancel-var ICV, see Table 3.1
+
+• if Clause, see Section 5.5
+
+• nowait Clause, see Section 17.6
+
+• omp\_get\_cancellation Routine, see Section 30.1
+
+• ordered Clause, see Section 6.4.6
+
+• private Clause, see Section 7.5.3
+
+• reduction Clause, see Section 7.6.10
+
+• task Construct, see Section 14.1
+
+## 18.3 cancellation\_point Construct
+
+<table><tr><td>Name: cancellation_pointCategory: executable</td><td>Association: unassociatedProperties: default</td></tr></table>
+
+## Clause groups
+
+cancel-directive-name
+
+## Additional information
+
+The cancellation\_point directive may alternatively be specified with cancellation point as the directive-name.
+
+## Binding
+
+The binding thread set of the cancellation\_point construct is the current team. The binding region of the cancellation\_point region is the innermost enclosing region of the type that corresponds to cancel-directive-name.
+
+## Semantics
+
+The cancellation\_point construct introduces a user-defined cancellation point at which an implicit task or explicit task must check if cancellation of the innermost enclosing region of the type specified by cancel-directive-name, which must be the directive-name of a cancellable construct, has been activated. This construct does not implement any synchronization between threads or tasks. The semantics, including the execution model events and tool callbacks, for when an implicit task or explicit task reaches a user-defined cancellation point are identical to those of any other cancellation point and are defined in Section 18.2.
+
+## Restrictions
+
+Restrictions to the cancellation point construct are as follows:
+
+• A cancellation\_point construct for which cancel-directive-name is taskgroup must be a closely nested construct of a task or taskloop construct, and the cancellation\_point region must be a closely nested region of a taskgroup region.
+
+• A cancellation\_point construct for which cancel-directive-name is not taskgroup must be a closely nested construct inside a construct that matches cancel-directive-name.
+
+## Cross References
+
+• cancel-var ICV, see Table 3.1
+
+• omp\_get\_cancellation Routine, see Section 30.1
+
+# 19 Composition of Constructs
+
+This chapter defines rules and mechanisms for nesting regions and for combining constructs.
+
+## 19.1 Compound Directive Names
+
+Unless explicitly specified otherwise, the directive-name of a compound directive concatenates two or more directive names, with an intervening separating character, the directive-name separator between each of them. Each directive name, as well as any concatenation of consecutive directive names and their directive-name separator, is a constituent-directive name. Any constituent-directive name that is not itself a compound-directive name is a leaf-directive name.
+
+Let directive-name-A refer to the first leaf-directive name that appears in a compound-directive name, and let directive-name-B refer to the constituent-directive name that forms the remainder of the compound-directive name. If the construct named by directive-name-B can be immediately nested inside the construct named by directive-name-A, the compound-directive name is a combined-directive name, the name of combined directive. Otherwise, the compound-directive name is a composite-directive name. Unless explicitly specified otherwise, the syntax for a compound-directive name is <compound-directive-name>, as described in the following grammar:
+
+<compound-directive-name>:
+
+<combined-directive-name>
+
+<composite-directive-name>
+
+<combined-directive-name>:
+
+<directive-name-A><separator><directive-name-B>
+
+<directive-name-A>:
+
+<parallelism-generating-directive-name>
+
+<thread-selecting-directive-name>
+
+<directive-name-B>:
+
+<composite-directive-name>
+
+<parallelism-generating-directive-name>
+
+<combined-parallelism-generating-directive-name>
+
+<partitioned-directive-name>
+
+<combined-partitioned-directive-name>
+
+<thread-selecting-directive-name>
+
+<combined-thread-selecting-directive-name>
+
+<composite-directive-name>: <loop-distributed-composite-construct-name> <simd-partitioned-composite-construct-name>
+
+<loop-distributed-composite-construct-name>: <distribute-directive-name><separator><parallel-loop-directive-name>
+
+<simd-partitioned-composite-construct-name>: <simd-partitionable-directive-name><separator><simd-directive-name>
+
+## where:
+
+• <composite-directive-name> is a composite-directive name;
+
+• <parallelism-generating-directive-name> is the name of a parallelism-generating construct;
+
+• <combined-parallelism-generating-directive-name> is a <combined-directive-name> for which <directive-name-A> is a <parallelism-generating-directive-name>.
+
+• <thread-selecting-directive-name> is the name of a thread-selecting construct;
+
+• <combined-thread-selecting-directive-name> is a <combined-directive-name> for which <directive-name-A> is a <thread-selecting-directive-name>.
+
+• <partitioned-directive-name> is the name of a partitioned construct;
+
+• <combined-partitioned-directive-name> is a <combined-directive-name> for which <directive-name-A> is a <partitioned-directive-name>;
+
+• <distribute-directive-name> is distribute;
+
+• <parallel-loop-directive-name> is the name of a combined construct for which <directive-name-A> is parallel and <directive-name-B> is the name of a worksharing-loop construct or a composite directive for which <directive-name-A> is the name of a worksharing-loop construct;
+
+• <simd-partitionable-directive-name> is the name of a SIMD-partitionable construct;
+
+• <simd-directive-name> is simd.
+
+C / C++
+
+• <separator>, the directive-name separator, is white space.
+
+C / C++
+
+Fortran
+
+• <separator>, the directive-name separator, is white space or a plus sign (i.e., ’+’).
+
+Fortran
+
+The section that defines any composite directive for which its composite-directive name is not composed from its leaf-directive names in the fashion described above, such as those that combine a series of directives into one directive, also specifies the composite-directive name and its leaf directives. Unless otherwise specified, those leaf directives may be specified by their leaf-directive names in a directive-name-modifier.
+
+## Restrictions
+
+Restrictions to compound-directive names are as follows:
+
+• Any given instance of a compound-directive name must use the same character for all instances of <separator>.
+
+• Leaf-directive names that include spaces are not permitted in a compound-directive name; they must instead be specified with an underscore replacing each space in the directive name.
+
+• The leaf-directive names of a given compound-directive name must be unique.
+
+• The construct corresponding to <directive-name-B> must be permitted to be immediately nested inside the construct corresponding to <directive-name-A>.
+
+• If the first leaf-directive name of <directive-name-B> is the name of a worksharing construct or a thread-selecting construct then <directive-name-A> must be parallel.
+
+• If <directive-name-A> and the first leaf-directive name of <directive-name-B> are the names of task-generating constructs then their respective explicit task regions must not bind to the same parallel region.
+
+• The compound construct named by a given compound-directive name must have at most one constituent construct that is a map-entering construct.
+
+• The compound construct named by a given compound-directive name must have at most one constituent construct that is a map-exiting construct.
+
+## Fortran
+
+• If a directive name is ambiguous due to the use of optional intervening spaces between leaf-directive names, the directive-name separator must be a plus sign.
+
+## Cross References
+
+• distribute Construct, see Section 13.7
+
+• parallel Construct, see Section 12.1
+
+• simd Construct, see Section 12.4
+````

@@ -1,21 +1,33 @@
-# System-Allocated Memory: In-depth Examples
+# System-Allocated Memory Examples
 
-Systems with full CUDA Unified Memory support allow the device to access any memory owned by the host process interacting with the device [CUDA_C_Programming_Guide:L21411-L21545]. This section illustrates advanced use-cases for system-allocated memory, demonstrating how various memory allocation strategies and variable scopes can be accessed from CUDA kernels [CUDA_C_Programming_Guide:L21411-L21545].
+Demonstrates advanced use-cases for System-Allocated Memory on devices with full Unified Memory support. Includes examples for malloc, cudaMallocManaged, stack variables, file-scope/static variables, global-scope variables, extern variables, and file-backed memory (mmap).
 
-The following examples utilize a simple kernel that prints the first 8 characters of an input character array to the standard output stream [CUDA_C_Programming_Guide:L21411-L21545]:
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
+
+## Source CUDA_C_Programming_Guide:L21408-L21584
+
+Citation: [CUDA_C_Programming_Guide:L21408-L21584]
+
+````text
+# 24.2. Unified memory on devices with full CUDA Unified Memory support
+
+## 24.2.1. System-Allocated Memory: in-depth examples
+
+Systems with full CUDA Unified Memory support allow the device to access any memory owned by the host process interacting with the device. This section shows a few advanced use-cases, using a kernel that simply prints the first 8 characters of an input character array to the standard output stream:
 
 ```c
 __global__ void kernel(const char* type, const char* data) {
     static const int n_char = 8;
-    printf("%s - first %d characters: ", type, n_char);
+    printf("%s - first %d characters: '', type, n_char);
     for (int i = 0; i < n_char; ++i) printf("%c", data[i]);
     printf("\n");
 }
 ```
 
-## Malloc
+The following tabs show various ways of how this kernel may be called:
 
-Memory allocated via standard host `malloc` can be accessed directly by the device [CUDA_C_Programming_Guide:L21411-L21545]. The host copies data into the allocated heap memory and passes the pointer to the kernel [CUDA_C_Programming_Guide:L21411-L21545]:
+## Malloc
 
 ```cpp
 void test_malloc() {
@@ -29,9 +41,7 @@ void test_malloc() {
 }
 ```
 
-## Managed Memory
-
-Using `cudaMallocManaged` allocates memory that is automatically managed by the CUDA runtime, allowing seamless access from both host and device [CUDA_C_Programming_Guide:L21411-L21545]:
+## Managed
 
 ```cpp
 void test_managed() {
@@ -46,9 +56,7 @@ void test_managed() {
 }
 ```
 
-## Stack Variables
-
-Stack variables defined within a host function can be passed to the device kernel, provided they are accessed via a pointer [CUDA_C_Programming_Guide:L21411-L21545]:
+## Stack variable
 
 ```c
 void test_stack() {
@@ -59,11 +67,9 @@ void test_stack() {
 }
 ```
 
-## File-Scope Static Variables
+## File-scope static variable
 
-Variables declared with `static` at file scope are accessible by the device when passed as arguments [CUDA_C_Programming_Guide:L21411-L21545]:
-
-```c
+```txt
 void test_static() {
     static const char test_string[] = "Hello World";
     kernel<<<1, 1>>>("static", test_string);
@@ -72,52 +78,21 @@ void test_static() {
 }
 ```
 
-## Global-Scope Variables
+## Global-scope variable
 
-Global-scope variables can also be accessed by the device, but with specific constraints regarding direct access [CUDA_C_Programming_Guide:L21411-L21545].
+```txt
+const char global_string[] = "Hello World";
 
-### Direct Access Limitation
-
-Global variables without the `__managed__` specifier are declared as `__host__`-only by default. Consequently, most compilers will not allow these variables to be accessed directly in device code (`__device__` or `__global__`) [CUDA_C_Programming_Guide:L21411-L21545].
-
-For example, the following kernel will cause a compilation error:
-
-```cpp
-// this variable is declared at global scope
-int global_variable;
-
-__global__ void kernel_uncompilable() {
-    // this causes a compilation error: global (__host__) variables must not
-    // be accessed from __device__ / __global__ code
-    printf("%d\n", global_variable);
+void test_global() {
+    kernel<<<1, 1>>>("global", global_string);
+    ASSERT(cudaDeviceSynchronize() == cudaSuccess,
+        "CUDA failed with '%s'", cudaGetErrorString(cudaGetLastError()));
 }
 ```
 
-### Indirect Access via Pointer
+Global-scope extern variable
 
-On systems where `pageableMemoryAccess` is set to 1, the address of a global variable can be passed to the kernel, allowing the device to dereference it [CUDA_C_Programming_Guide:L21411-L21545]. The correct approach is to pass the address of the global variable as an argument:
-
-```cpp
-// On systems with pageableMemoryAccess set to 1, we can access the address
-// of a global variable. The below kernel takes that address as an argument
-__global__ void kernel(int* global_variable_addr) {
-    printf("%d\n", *global_variable_addr);
-}
-
-int main() {
-    kernel<<<1, 1>>>(&global_variable);
-    ...
-    return 0;
-}
-```
-
-## Global-Scope Extern Variables
-
-Global-scope `extern` variables can be accessed by the device, even if the memory is owned and managed by a third-party library that does not interact with CUDA [CUDA_C_Programming_Guide:L21411-L21545].
-
-The `extern` variable is declared in the current translation unit and defined in a separate file (potentially a non-CUDA file) [CUDA_C_Programming_Guide:L21411-L21545]:
-
-```c
+```txt
 // declared in separate file, see below
 extern char* ext_data;
 
@@ -127,8 +102,6 @@ void test_extern() {
         "CUDA failed with '%s'", cudaGetErrorString(cudaGetLastError()));
 }
 ```
-
-The separate file manages the memory lifecycle using constructor and destructor attributes:
 
 ```c
 /** This may be a non-CUDA file */
@@ -145,11 +118,72 @@ void __attribute__ ((destructor)) tear_down(void) {
 }
 ```
 
-## Summary of Access Patterns
+The first three tabs above show the example as already detailed in the Programming Model section. The next three tabs show various ways a file-scope or global-scope variable can be accessed from the device.
 
-*   **Stack, File-Scope Static, and Global-Scope Variables**: These can only be accessed by the GPU through a pointer [CUDA_C_Programming_Guide:L21411-L21545]. Direct access in device code is restricted for non-managed global variables [CUDA_C_Programming_Guide:L21411-L21545].
-*   **Extern Variables**: Can be accessed by the device even if the underlying memory is managed by external libraries unrelated to CUDA [CUDA_C_Programming_Guide:L21411-L21545].
-*   **Managed Memory**: Provides the most seamless integration, handled automatically by the CUDA runtime [CUDA_C_Programming_Guide:L21411-L21545].
-*   **Host Malloc**: Standard host-allocated memory is accessible to the device under full Unified Memory support [CUDA_C_Programming_Guide:L21411-L21545].
+Note that for the extern variable, it could be declared and its memory owned and managed by a thirdparty library, which does not interact with CUDA at all.
 
-All examples require synchronization (`cudaDeviceSynchronize`) to ensure the kernel completes before proceeding or freeing memory [CUDA_C_Programming_Guide:L21411-L21545].
+Also note that stack variables as well as file-scope and global-scope variables can only be accessed through a pointer by the GPU. In this specific example, this is convenient because the character array is already declared as a pointer: const char\*. However, consider the following example with a globalscope integer:
+
+```cpp
+// this variable is declared at global scope
+int global_variable;
+
+__global__ void kernel_uncompilable() {
+    // this causes a compilation error: global (__host__) variables must not
+    // be accessed from __device__ / __global__ code
+    printf("%d\n", global_variable);
+}
+
+// On systems with pageableMemoryAccess set to 1, we can access the address
+// of a global variable. The below kernel takes that address as an argument
+__global__ void kernel(int* global_variable_addr) {
+    printf("%d\n", *global_variable_addr);
+}
+int main() {
+    kernel<<<1, 1>>>(&global_variable);
+    ...
+    return 0;
+}
+```
+
+In the example above, we need to ensure to pass a pointer to the global variable to the kernel instead of directly accessing the global variable in the kernel. This is because global variables without the \_\_managed\_\_ specifier are declared as \_\_host\_\_-only by default, thus most compilers won’t allow using these variables directly in device code as of now.
+
+## 24.2.1.1 File-backed Unified Memory
+
+Since systems with full CUDA Unified Memory support allow the device to access any memory owned by the host process, they can directly access file-backed memory.
+
+Here, we show a modified version of the initial example shown in the previous section to use filebacked memory in order to print a string from the GPU, read directly from an input file. In the following example, the memory is backed by a physical file, but the example applies to memory-backed files, too, as detailed in the section on Inter-Process Communication (IPC) with Unified Memory.
+
+```c
+__global__ void kernel(const char* type, const char* data) {
+    static const int n_char = 8;
+    printf("%s - first %d characters: '', type, n_char);
+    for (int i = 0; i < n_char; ++i) printf("%c", data[i]);
+    printf("\n");
+}
+```
+
+```c
+void test_file_backed() {
+    int fd = open(INPUT_FILE_NAME, O_RDONLY);
+```
+
+(continues on next page)
+
+```txt
+ASSERT(fd >= 0, "Invalid file handle");
+struct stat file_stat;
+int status = fstat(fd, &file_stat);
+ASSERT(status >= 0, "Invalid file stats");
+char* mapped = (char*)mmap(0, file_stat.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+ASSERT(mapped != MAP_FAILED, "Cannot map file into memory");
+kernel<<<1, 1>>>(file-backed", mapped);
+ASSERT(cudaDeviceSynchronize() == cudaSuccess,
+    "CUDA failed with '%s'", cudaGetErrorString(cudaGetLastError()));
+ASSERT(munmap(mapped, file_stat.st_size) == 0, "Cannot unmap file");
+ASSERT(close(fd) == 0, "Cannot close file");
+}
+```
+
+Note that on systems without the hostNativeAtomicSupported property, including systems with Linux HMM enabled, atomic accesses to file-backed memory are not supported.
+````

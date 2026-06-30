@@ -88,11 +88,15 @@ def cmd_query(args) -> None:
     result = qs.query(args.text)
     print(f"# Query: {args.text}\n")
     for rn in result.nodes:
-        print(f"- [{rn.score:6.2f}] hop{rn.hop} {rn.node.node_class}/{rn.node.node_subtype} "
-              f"{rn.node.title}  ({rn.node.id})")
+        print(
+            f"- [{rn.score:6.2f}] hop{rn.hop} {rn.node.node_class}/{rn.node.node_subtype} "
+            f"{rn.node.title}  ({rn.node.id})"
+        )
     print("\n## Citations")
     for c in result.citations:
-        print(f"- {c.title}: {c.document_id} {c.source_version_id} lines {c.source_ranges}")
+        print(
+            f"- {c.title}: {c.document_id} {c.source_version_id} lines {c.source_ranges}"
+        )
 
     # An explicit request synthesizes immediately. Otherwise repeated query
     # intent is persisted and creates the planned self-growing cache node once
@@ -120,7 +124,9 @@ def cmd_maintain(args) -> None:
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="graph", description=__doc__)
     p.add_argument("--wiki", default=".wiki", help="state directory (default .wiki)")
-    p.add_argument("--llm", action="store_true", help="enable LLM for synthesis/extraction")
+    p.add_argument(
+        "--llm", action="store_true", help="enable LLM for synthesis/extraction"
+    )
     sub = p.add_subparsers(dest="cmd", required=True)
 
     b = sub.add_parser("bootstrap", help="ingest every output/<source>/ tree")
@@ -139,8 +145,11 @@ def build_parser() -> argparse.ArgumentParser:
     q = sub.add_parser("query", help="search + traverse + optional synthesize")
     q.add_argument("text")
     q.add_argument("--synthesize", action="store_true")
-    q.add_argument("--kind", default="discovery",
-                   choices=["howto", "discovery", "case", "comparison", "investigation"])
+    q.add_argument(
+        "--kind",
+        default="discovery",
+        choices=["howto", "discovery", "case", "comparison", "investigation"],
+    )
     q.set_defaults(func=cmd_query)
 
     m = sub.add_parser("maintain", help="reindex, refresh stale, health report")

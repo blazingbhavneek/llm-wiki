@@ -1,0 +1,360 @@
+# OpenMP-API-Specification Source Lines 7941-8288
+
+Fallback page created to preserve source coverage.
+
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
+
+## Source OpenMP-API-Specification:L7941-L8288
+
+Citation: [OpenMP-API-Specification:L7941-L8288]
+
+````text
+## 6.4 Loop Concepts
+
+OpenMP semantics frequently involve loops that occur in the base language code. As detailed in this section, OpenMP defines several concepts that facilitate the specification of those semantics and their associated syntax.
+
+## 6.4.1 Canonical Loop Nest Form
+
+A loop nest has canonical loop nest form if it conforms to loop-nest in the following grammar:
+
+loop-nest
+
+One of the following:
+
+for (init-expr; test-expr; incr-expr) loop-body
+
+loop-nest
+
+C / C++
+
+or
+
+for (range-decl: range-expr) loop-body
+
+![](images/db996f652c14096ad7ecb313b54c5b77e5663093c7814b8a9aa78bfd0a91f0eb.jpg)
+
+A range-based for loop is equivalent to a regular for loop using iterators, as defined in the base language. A range-based for loop has no loop-iteration variable.
+
+C++
+
+or
+
+Fortran
+
+DO [ label ] var = lb , ub [ , incr ]
+
+[intervening-code]
+
+loop-body
+
+[intervening-code]
+
+[ label ] END DO
+
+If the loop-nest is a nonblock-do-construct, it is treated as a block-do-construct for each DO construct.
+
+The value of incr is the increment of the loop. If not specified, its value is assumed to be 1.
+
+or
+
+BLOCK
+
+loop-nest
+
+END BLOCK
+
+Fortran
+
+![](images/a81ef4472cdc70c2ad371679a0928f599fadaa514cfe0f0b313e471f78e5bdd4.jpg)
+
+loop-nest-generating-construct A loop-transforming construct that generates a canonical loop nest, which may be a canonical loop sequence that contains exactly one canonical loop nest.
+
+25 generated-canonical-loop 26 A generated loop from a loop-transforming construct that has canonical loop nest 27 form and for which the loop body matches loop-body.
+
+intervening-code
+
+C / C++
+
+A non-empty sequence of structured blocks or declarations, referred to as intervening code. It must not contain iteration statements, continue statements or break statements that apply to the enclosing loop.
+
+C / C++
+
+Fortran
+
+A non-empty structured block sequence, referred to as intervening code. It must not contain:
+
+• loops;
+
+• CYCLE statements;
+
+• EXIT statements;
+
+• array expressions;
+
+• array references with a vector subscript;
+
+• assignment statements where the target is an array object;
+
+• references to elemental procedures with an array actual argument;
+
+• references to procedures where the actual argument is an array that is not simply contiguous and the corresponding dummy argument has the CONTIGUOUS attribute or is an explicit-shape array or assumed-size array.
+
+Fortran
+
+Additionally, intervening code must not contain executable directives or calls to the OpenMP runtime API in its corresponding region. If intervening code is present, then a loop at the same depth within the loop nest is not a perfectly nested loop.
+
+## final-loop-body
+
+A structured block that terminates the scope of loops in the loop nest. If the loop nest is associated with a loop-nest-associated directive, loops in this structured block cannot be associated with that directive.
+
+![](images/bd32187051eb396b61ab57b42b1e94c6511d5148c3de93338600ea7f5b2cd362.jpg)
+
+## init-expr
+
+One of the following:
+
+var = lb
+
+integer-type var = lb
+
+pointer-type var = lb
+
+C++
+
+random-access-iterator-type var = lb
+
+C++
+
+test-expr
+
+One of the following:
+
+var relational-op ub
+
+ub relational-op var
+
+relational-op
+
+One of the following:
+
+<=
+
+>
+
+>=
+
+!=
+
+incr-expr
+
+One of the following:
+
+++var
+
+var++
+
+\- - var
+
+var - -
+
+var += incr
+
+var - = incr
+
+var = var + incr
+
+var = incr + var
+
+var = var - incr
+
+The value of incr, respectively 1 and -1 for the increment and decrement operators, is the increment of the loop.
+
+C / C++
+
+var
+
+One of the following:
+
+C / C++
+
+A variable of a signed or unsigned integer type.
+
+C / C++
+
+C
+
+A variable of a pointer type.
+
+C++
+
+A variable of a random access iterator type.
+
+C++
+
+Fortran
+
+A scalar variable of integer type.
+
+Fortran
+
+The loop-iteration variable var must not be modified during the execution of intervening-code or loop-body in the loop.
+
+lb, ub One of the following:
+
+Expressions of a type compatible with the type of var that are loop invariant with respect to the outermost loop.
+
+One of the following:
+
+$$
+\text{var - outer}
+$$
+
+$$
+v a r - o u t e r + a 2
+$$
+
+$$
+a 2 + v a r - o u t e r
+$$
+
+$$
+v a r - o u t e r - a 2
+$$
+
+where var-outer is of a type compatible with the type of var.
+
+If var is of an integer type, one of the following:
+
+$$
+a 2 - v a r - o u t e r
+$$
+
+$$
+a 1 * \text {var - outer}
+$$
+
+$$
+a 1 * v a r - o u t e r + a 2
+$$
+
+$$
+a 2 + a 1 * v a r - o u t e r
+$$
+
+$$
+a 1 * v a r - o u t e r - a 2
+$$
+
+$$
+a 2 - a 1 * \text {var - outer}
+$$
+
+$$
+v a r - o u t e r * a 1
+$$
+
+$$
+v a r - o u t e r * a 1 + a 2
+$$
+
+$$
+a 2 + v a r - o u t e r * a 1
+$$
+
+$$
+v a r - o u t e r * a 1 - a 2
+$$
+
+$$
+a 2 - v a r - o u t e r * a 1
+$$
+
+where var-outer is of an integer type.
+
+lb and ub are loop bounds. A loop for which lb or ub refers to var-outer is a non-rectangular loop. If var is of an integer type, var-outer must be of an integer type with the same signedness and bit precision as the type of var.
+
+The coeficient in a loop bound is 0 if the bound does not refer to var-outer. If a loop bound matches a form in which a1 appears, the coeficient is $_ { - a I }$ if the product of var-outer and a1 is subtracted from $^ { a 2 , }$ and otherwise the coeficient is $_ { a l . }$ . For other matched forms where a1 does not appear, the coeficient is −1 if var-outer is subtracted from $^ { a 2 , }$ and otherwise the coeficient is 1.
+
+a1, a2, incr Integer expressions that are loop invariant with respect to the outermost loop of the loop nest.
+
+If the loop is associated with a directive, the expressions are evaluated before the construct formed from that directive.
+
+var-outer
+
+The loop-iteration variable of a surrounding loop in the loop nest.
+
+C++
+
+range-decl A declaration of a variable as defined by the base language for range-based for loops.
+
+range-expr An expression that is valid as defined by the base language for range-based for loops. It must be invariant with respect to the outermost loop of the loop nest and the iterator derived from it must be a random access iterator.
+
+C++
+
+## Restrictions
+
+Restrictions to canonical loop nests are as follows:
+
+C / C++
+
+• If test-expr is of the form var relational-op b and relational-op is < or <= then incr-expr must cause var to increase on each iteration of the loop. If test-expr is of the form var relational-op b and relational-op is > or >= then incr-expr must cause var to decrease on each iteration of the loop. Increase and decrease are using the order induced by relational-op.
+
+• If test-expr is of the form ub relational-op var and relational-op is < or <= then incr-expr must cause var to decrease on each iteration of the loop. If test-expr is of the form ub relational-op var and relational-op is > or >= then incr-expr must cause var to increase on each iteration of the loop. Increase and decrease are using the order induced by relational-op.
+
+• If relational-op is != then incr-expr must cause var to always increase by 1 or always decrease by 1 and the increment must be a constant expression.
+
+• final-loop-body must not contain any break statement that would cause the termination of the innermost loop.
+
+C / C++ Fortran
+
+• final-loop-body must not contain any EXIT statement that would cause the termination of the innermost loop.
+
+Fortran
+
+• A loop-nest must also be a structured block.
+
+• For a non-rectangular loop, if var-outer is referenced in lb and ub then they must both refer to the same loop-iteration variable.
+
+• For a non-rectangular loop, let $a _ { \mathrm { l b } }$ and $a _ { \mathrm { u b } }$ be the respective coeficients in lb and $u b ,$ $i n c r _ { \mathrm { i n n e r } }$ the increment of the non-rectangular loop and $i n c r _ { \mathrm { o u t e r } }$ the increment of the loop referenced by var-outer. $i n c r _ { \mathrm { i n n e r } } ( a _ { \mathrm { u b } } - a _ { \mathrm { l b } } )$ must be a multiple of incr<sub>outer</sub>.
+
+• The loop-iteration variable may not appear in a threadprivate directive.
+
+## Cross References
+
+• Canonical Loop Sequence Form, see Section 6.4.2
+
+• Loop-Transforming Constructs, see Chapter 11
+
+• threadprivate Directive, see Section 7.3
+
+## 6.4.2 Canonical Loop Sequence Form
+
+A structured block has canonical loop sequence form if it conforms to canonical-loop-sequence in the following grammar:
+
+canonical-loop-sequence
+
+loop-sequence
+
+![](images/668317e6925a0caf0bc90d70ca9e97ac0302fbe55695f102750eda984ede8621.jpg)
+
+BLOCK loop-sequence END BLOCK
+
+loop-sequence A structured block sequence with executable statements that match canonical-loop-sequence, loop-sequence-generating-construct, or loop-nest (a canonical loop nest as defined in Section 6.4.1). The loops must be bounds-independent loops with respect to canonical-loop-sequence.
+
+![](images/657e8134a060a41a623f7d74d4eff89b5425b4ef8f195295405eeb95305c06b4.jpg)
+
+loop-sequence-generating-construct
+
+A loop-transforming construct that generates a canonical loop sequence or canonical loop nest.
+
+The loop sequence length and consecutive order of canonical loop nests matched by loop-nest ignore how they are nested in canonical-loop-sequence or loop-sequence.
+
+## Cross References
+
+• looprange Clause, see Section 6.4.7
+
+• Canonical Loop Nest Form, see Section 6.4.1
+
+• Loop-Transforming Constructs, see Chapter 11
+````

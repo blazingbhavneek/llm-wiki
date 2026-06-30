@@ -9,12 +9,14 @@ from pathlib import Path
 from .engine import DomainEngine
 from .models import Settings
 
+
 # region OUTPUT
 def _print(value: object) -> None:
     print(json.dumps(value, indent=2, ensure_ascii=False, default=str))
 
 
 # endregion OUTPUT
+
 
 # region ENGINE BOOTSTRAP
 def _engine(args: argparse.Namespace) -> DomainEngine:
@@ -25,6 +27,7 @@ def _engine(args: argparse.Namespace) -> DomainEngine:
 
 
 # endregion ENGINE BOOTSTRAP
+
 
 # region COMMANDS
 def cmd_init(args: argparse.Namespace) -> None:
@@ -130,13 +133,16 @@ def cmd_update(args: argparse.Namespace) -> None:
 
 # endregion COMMANDS
 
+
 # region PARSER
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="graph2", description="LLM wiki graph")
     parser.add_argument("--database", help="SQLite path (overrides WIKI_GRAPH2_DB)")
     subcommands = parser.add_subparsers(dest="command", required=True)
 
-    subcommands.add_parser("init", help="create the database").set_defaults(func=cmd_init)
+    subcommands.add_parser("init", help="create the database").set_defaults(
+        func=cmd_init
+    )
 
     add = subcommands.add_parser("add", help="ingest an md.py output directory")
     add.add_argument("md_output_dir")
@@ -154,20 +160,28 @@ def build_parser() -> argparse.ArgumentParser:
     query.add_argument("value")
     query.set_defaults(func=cmd_query)
 
-    ask = subcommands.add_parser("ask", help="answer a question via the reasoning agent")
+    ask = subcommands.add_parser(
+        "ask", help="answer a question via the reasoning agent"
+    )
     ask.add_argument("question")
-    ask.add_argument("--no-persist", action="store_true", help="do not save the answer node")
+    ask.add_argument(
+        "--no-persist", action="store_true", help="do not save the answer node"
+    )
     ask.set_defaults(func=cmd_ask)
 
     recon = subcommands.add_parser("recon", help="check if a source doc is new/changed")
     recon.add_argument("source_file")
     recon.set_defaults(func=cmd_recon)
 
-    cascade = subcommands.add_parser("cascade", help="apply a revised md.py output directory")
+    cascade = subcommands.add_parser(
+        "cascade", help="apply a revised md.py output directory"
+    )
     cascade.add_argument("md_output_dir")
     cascade.set_defaults(func=cmd_cascade)
 
-    subcommands.add_parser("get", help="dump all nodes and edges").set_defaults(func=cmd_get)
+    subcommands.add_parser("get", help="dump all nodes and edges").set_defaults(
+        func=cmd_get
+    )
 
     health = subcommands.add_parser("health", help="graph health metrics")
     health.add_argument("node_id", nargs="?")
@@ -177,7 +191,9 @@ def build_parser() -> argparse.ArgumentParser:
     delete.add_argument("node_id")
     delete.set_defaults(func=cmd_delete)
 
-    update = subcommands.add_parser("update", help="replace a node body from a markdown file")
+    update = subcommands.add_parser(
+        "update", help="replace a node body from a markdown file"
+    )
     update.add_argument("node_id")
     update.add_argument("markdown_path")
     update.set_defaults(func=cmd_update)

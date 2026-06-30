@@ -1,47 +1,43 @@
 # atomicExch()
 
-The `atomicExch()` function performs an atomic exchange operation on a memory location. It reads the current value from the specified address, stores a new value at that address, and returns the original value read. These read and write operations are performed as a single atomic transaction, ensuring that no other thread can modify the memory location between the read and the write.
+Performs an atomic exchange operation on 16-bit, 32-bit, 64-bit, and 128-bit types in global or shared memory. Stores a new value and returns the old value.
 
-## 32-bit and 64-bit Variants
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-Standard variants of `atomicExch()` support 32-bit and 64-bit data types. These functions operate on global or shared memory.
+## Source CUDA_C_Programming_Guide:L7834-L7863
 
-### Signatures
+Citation: [CUDA_C_Programming_Guide:L7834-L7863]
 
-```cpp
+````text
+## 10.14.1.3 atomicExch()
+
+```txt
 int atomicExch(int* address, int val);
-unsigned int atomicExch(unsigned int* address, unsigned int val);
-unsigned long long int atomicExch(unsigned long long int* address, unsigned long long int val);
+unsigned int atomicExch(unsigned int* address,
+                    unsigned int val);
+unsigned long long int atomicExch(unsigned long long int* address,
+                    unsigned long long int val);
 float atomicExch(float* address, float val);
 ```
 
-### Behavior
+reads the 32-bit or 64-bit word old located at the address address in global or shared memory and stores val back to memory at the same address. These two operations are performed in one atomic transaction. The function returns old.
 
-For these types, `atomicExch()` reads the 32-bit or 64-bit word `old` located at the `address` in global or shared memory and stores `val` back to memory at the same address. The function returns `old`.
-
-## 128-bit Variant (Template)
-
-A template-based variant exists for 128-bit atomic operations.
-
-### Signature
-
-```cpp
+```txt
 template<typename T> T atomicExch(T* address, T val);
 ```
 
-### Requirements
+reads the 128-bit word old located at the address address in global or shared memory and stores val back to memory at the same address. These two operations are performed in one atomic transaction. The function returns old. The type T must meet the following requirements:
 
-The type `T` must meet the following requirements:
+```cpp
+sizeof(T) == 16
+alignof(T) >= 16
+std::is_trivially_copyable<T>::value == true
+// for C++03 and older
+std::is_default_constructible<T>::value == true
+```
 
-*   `sizeof(T) == 16` (128-bit size)
-*   `alignof(T) >= 16` (16-byte alignment)
-*   `std::is_trivially_copyable<T>::value == true` (trivially copyable)
-*   For C++03 and older: `std::is_default_constructible<T>::value == true` (default constructible)
+So, T must be 128-bit and properly aligned, be trivially copyable, and on C++03 or older, it must also be default constructible.
 
-### Hardware Support
-
-The 128-bit `atomicExch()` is only supported by devices with compute capability 9.x and higher.
-
-## References
-
-*   CUDA C Programming Guide: [CUDA_C_Programming_Guide:L7834-L7863]
+The 128-bit atomicExch() is only supported by devices of compute capability 9.x and higher.
+````

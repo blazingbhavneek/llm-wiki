@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator
 
-from graph.models import Edge, Node, NodeStatus, now_iso
+from graph_big.models import Edge, Node, NodeStatus, now_iso
 
 from .base import BaseDatabase
 
@@ -26,6 +26,13 @@ class RawSqliteDatabase(BaseDatabase):
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.connection = sqlite3.connect(str(self.path))
         self.connection.row_factory = sqlite3.Row
+        # WAL: readers (HTTP + MCP processes) never block the single ingest
+        # writer, and it never blocks them. busy_timeout waits on a lock instead
+        # of raising "database is locked". journal_mode is persisted on the file;
+        # busy_timeout/synchronous are per-connection.
+        self.connection.execute("PRAGMA journal_mode=WAL")
+        self.connection.execute("PRAGMA busy_timeout=5000")
+        self.connection.execute("PRAGMA synchronous=NORMAL")
         self._load_vec_extension()
         self._dim: int | None = None
         self._create_core_tables()
@@ -39,8 +46,7 @@ class RawSqliteDatabase(BaseDatabase):
         self.connection.enable_load_extension(False)
 
     def _create_core_tables(self) -> None:
-        self.connection.executescript(
-            """
+        self.connection.executescript("""
             CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT);
 
             CREATE TABLE IF NOT EXISTS nodes (
@@ -93,8 +99,7 @@ class RawSqliteDatabase(BaseDatabase):
             CREATE VIRTUAL TABLE IF NOT EXISTS nodes_fts USING fts5(
                 node_id UNINDEXED, text
             );
-            """
-        )
+            """)
         self._ensure_node_columns()
         self._ensure_edge_columns()
         self.connection.commit()
@@ -113,13 +118,11 @@ class RawSqliteDatabase(BaseDatabase):
         for column, ddl in additions.items():
             if column not in existing:
                 self.connection.execute(f"ALTER TABLE nodes ADD COLUMN {column} {ddl}")
-        self.connection.executescript(
-            """
+        self.connection.executescript("""
             CREATE INDEX IF NOT EXISTS idx_nodes_source_version ON nodes(source_version);
             CREATE INDEX IF NOT EXISTS idx_nodes_source_material_hash ON nodes(source_material_hash);
             CREATE INDEX IF NOT EXISTS idx_nodes_entity ON nodes(entity);
-            """
-        )
+            """)
 
     def _ensure_edge_columns(self) -> None:
         existing = {
@@ -292,7 +295,9 @@ class RawSqliteDatabase(BaseDatabase):
         if active_only:
             sql += " AND status='active'"
         sql += " ORDER BY updated_at DESC"
-        return [_row_to_node(r) for r in self.connection.execute(sql, params).fetchall()]
+        return [
+            _row_to_node(r) for r in self.connection.execute(sql, params).fetchall()
+        ]
 
     def upsert_edge(self, edge: Edge) -> None:
         import json
@@ -343,7 +348,9 @@ class RawSqliteDatabase(BaseDatabase):
             sql += " AND label=?"
             params.append(label)
         sql += " ORDER BY created_at DESC"
-        return [_row_to_edge(r) for r in self.connection.execute(sql, params).fetchall()]
+        return [
+            _row_to_edge(r) for r in self.connection.execute(sql, params).fetchall()
+        ]
 
     def get_incoming_edges(self, node_id: str, label: str | None = None) -> list[Edge]:
         sql = "SELECT * FROM edges WHERE target_node_id=?"
@@ -352,7 +359,9 @@ class RawSqliteDatabase(BaseDatabase):
             sql += " AND label=?"
             params.append(label)
         sql += " ORDER BY created_at DESC"
-        return [_row_to_edge(r) for r in self.connection.execute(sql, params).fetchall()]
+        return [
+            _row_to_edge(r) for r in self.connection.execute(sql, params).fetchall()
+        ]
 
     def delete_edges_by_label_for_nodes(self, label: str, node_ids: set[str]) -> None:
         if not node_ids:
@@ -506,7 +515,9 @@ def _row_to_edge(row: sqlite3.Row) -> Edge:
     import json
 
     keys = row.keys()
-    episodes_raw = row["source_episode_ids_json"] if "source_episode_ids_json" in keys else "[]"
+    episodes_raw = (
+        row["source_episode_ids_json"] if "source_episode_ids_json" in keys else "[]"
+    )
     return Edge(
         id=row["id"],
         source_node_id=row["source_node_id"],

@@ -1,0 +1,535 @@
+# OpenMP-API-Specification Source Lines 19651-20173
+
+Fallback page created to preserve source coverage.
+
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
+
+## Source OpenMP-API-Specification:L19651-L20173
+
+Citation: [OpenMP-API-Specification:L19651-L20173]
+
+````text
+## 19.2 Clauses on Compound Constructs
+
+This section specifies the handling of clauses on compound constructs and the handling of implicit clauses that arise from any variable with predetermined data-sharing attributes on more than one leaf construct. For any clause for which a directive-name-modifier is specified, the efect of the modifier is applied prior to any of the rules that are specified in this section. Some clauses are permitted only on a single leaf construct of the compound construct, in which case the efect is as if the clause is applied to that specific construct. Other clauses that are permitted on more than one leaf construct have the efect as if they are applied to a subset of those constructs, as detailed in this section. Unless otherwise specified, the efect of a clause on a compound directive is as if it is applied to all leaf constructs that permit it (i.e., it has the default all-constituents property).
+
+Unless otherwise specified, certain clause properties determine how each clause with those properties applies to any constituent directives of a compound directive on which it appears. Regardless of any specified directive-name-modifier, the efect of any clause with the once-for-all-constituents property on a compound construct is as if it is applied once to the compound construct regardless of how many constituent constructs to which they may apply.
+
+The efect of any clause with the all-privatizing property on a compound directive is as if it is applied to all leaf constructs that permit the clause and to which a data-sharing attribute clause that may create a private copy of the same list item is applied. Unless otherwise specified, the efect of any clause with the innermost-leaf property on a compound construct is as if it is applied only to the innermost leaf construct that permits it. Unless otherwise specified, the efect of any clause with the outermost-leaf property on a compound construct is as if it is applied only to the outermost leaf construct that permits it.
+
+The efect of the firstprivate clause is as if it is applied to one or more leaf constructs as follows:
+
+• To the distribute construct if it is among the constituent constructs;
+
+• To the teams construct if it is among the constituent constructs and the distribute construct is not;
+
+• To a worksharing construct that accepts the clause if one is among the constituent constructs;
+
+• To the taskloop construct if it is among the constituent constructs;
+
+• To the parallel construct if it is among the constituent construct and neither a taskloop construct nor a worksharing construct that accepts the clause is among them;
+
+• To the target construct if it is among the constituent constructs and the same list item neither appears in a lastprivate clause nor is the base variable or base pointer of a list item that appears in a map clause.
+
+If the parallel construct is among the constituent constructs and the efect is not as if the firstprivate clause is applied to it by the above rules, then the efect is as if the shared clause with the same list item is applied to the parallel construct. If the teams construct is among the constituent constructs and the efect is not as if the firstprivate clause is applied to it by the above rules, then the efect is as if the shared clause with the same list item is applied to the teams construct.
+
+The efect of the lastprivate clause is as if it is applied to all leaf constructs that permit the clause. If the parallel construct is among the constituent constructs and the list item is not also specified in the firstprivate clause, then the efect of the lastprivate clause is as if the shared clause with the same list item is applied to the parallel construct. If the teams construct is among the constituent constructs and the list item is not also specified in the firstprivate clause, then the efect of the lastprivate clause is as if the shared clause with the same list item is applied to the teams construct. If the target construct is among the constituent constructs and the list item is not the base variable or base pointer of a list item that appears in a map clause, the efect of the lastprivate clause is as if the same list item appears in a map clause with a map-type of tofrom.
+
+The efect of the reduction clause is as if it is applied to all leaf constructs that permit the clause, except for the following constructs:
+
+• The parallel construct, when combined with the sections, worksharing-loop, loop, or taskloop construct; and
+
+• The teams construct, when combined with the loop construct.
+
+For the parallel and teams constructs above, the efect of the reduction clause instead is as if each list item or, for any list item that is an array item, its corresponding base array or corresponding base pointer appears in a shared clause for the construct. If the task reduction-modifier is specified, the efect is as if it only modifies the behavior of the reduction clause on the innermost leaf construct that accepts the modifier (see Section 7.6.10). If the inscan reduction-modifier is specified, the efect is as if it modifies the behavior of the reduction clause on all constructs of the compound construct to which the clause is applied and that accept the modifier. If a list item in a reduction clause on a compound target construct does not have the same base variable or base pointer as a list item in a map clause on the construct, then the efect is as if the list item in the reduction clause appears as a list item in a map clause with a map-type of tofrom.
+
+The efect of the linear clause is as if it is applied to the innermost leaf construct. Additionally, if the list item is not the loop-iteration variable of a construct for which simd is a constituent construct, the efect on the outer leaf constructs is as if the list item was specified in firstprivate and lastprivate clauses on the compound construct, with the rules specified above applied. If a list item of the linear clause is the loop-iteration variable of a construct for which the simd construct is a leaf construct and the variable is not declared in the construct, the efect on the outer leaf constructs is as if the list item was specified in a lastprivate clause on the compound construct with the rules specified above applied.
+
+If the clauses have expressions on them, such as for various clauses where the argument of the clause is an expression, or lower-bound, length, or stride expressions inside array sections (or subscript and stride expressions in subscript-triplet for Fortran), or linear-step or alignment
+
+expressions, the expressions are evaluated immediately before the construct to which the clause has been split or duplicated per the above rules (therefore inside of the outer leaf constructs). However, the expressions inside the num\_teams and thread\_limit clauses are always evaluated before the outermost leaf construct.
+
+The restriction that a list item may not appear in more than one data-sharing attribute clause with the exception of specifying a variable in both firstprivate and lastprivate clauses applies after the clauses are split or duplicated per the above rules.
+
+## Restrictions
+
+Restrictions to clauses on compound constructs are as follows:
+
+• A clause that appears on a compound construct must apply to at least one of the leaf constructs per the rules defined in this section.
+
+## Cross References
+
+• distribute Construct, see Section 13.7
+
+• firstprivate Clause, see Section 7.5.4
+
+• lastprivate Clause, see Section 7.5.5
+
+• linear Clause, see Section 7.5.6
+
+• loop Construct, see Section 13.8
+
+• map Clause, see Section 7.9.6
+
+• num\_teams Clause, see Section 12.2.1
+
+• parallel Construct, see Section 12.1
+
+• reduction Clause, see Section 7.6.10
+
+• sections Construct, see Section 13.3
+
+• shared Clause, see Section 7.5.2
+
+• simd Construct, see Section 12.4
+
+• target Construct, see Section 15.8
+
+• taskloop Construct, see Section 14.2
+
+• teams Construct, see Section 12.2
+
+• thread\_limit Clause, see Section 15.3
+
+## 19.3 Compound Construct Semantics
+
+The semantics of combined constructs are identical to that of explicitly specifying the first construct containing one instance of the second construct and no other statements.
+
+Most composite constructs compose constructs that otherwise cannot be immediately nested to apply multiple loop-nest-associated constructs to the same canonical loop nest. The semantics of each of these composite constructs first apply the semantics of the enclosing construct as specified by directive-name-A and any clauses that apply to it. For each task as appropriate for the semantics of directive-name-A, the application of its semantics yields a nested loop of depth two in which the outer loop iterates over the chunks assigned to that task and the inner loop iterates over the collapsed iteration of each chunk. The semantics of directive-name-B and any clauses that apply to it are then applied to that inner loop. If directive-name-A is taskloop and directive-name-B is simd then for the application of the simd construct, the efect of any in\_reduction clause is as if a reduction clause with the same reduction operator and list items is present.
+
+For all compound constructs, tool callbacks are invoked as if the leaf constructs were explicitly nested. All compound constructs for which a loop-nest-associated construct is a leaf construct are themselves loop-nest-associated constructs.
+
+## Restrictions
+
+Restrictions to compound construct are as follows:
+
+• The restrictions of all constituent directives apply.
+
+• If distribute is a constituent-directive name, the linear clause may only be specified for loop-iteration variables of loops that are associated with the construct and the ordered clause must not be specified.
+
+## Cross References
+
+• distribute Construct, see Section 13.7
+
+• in\_reduction Clause, see Section 7.6.12
+
+• linear Clause, see Section 7.5.6
+
+• ordered Clause, see Section 6.4.6
+
+• parallel Construct, see Section 12.1
+
+• reduction Clause, see Section 7.6.10
+
+• simd Construct, see Section 12.4
+
+• taskloop Construct, see Section 14.2
+
+Part III
+
+Runtime Library Routines
+
+# 20 Runtime Library Definitions
+
+This chapter defines the naming convention for the OpenMP API routines. It also defines several OpenMP types. The names of OpenMP API routines have an omp\_ prefix. Names that begin with the ompx\_ prefix are reserved for routines that are implementation defined extensions.
+
+For each base language, a compliant implementation must supply a set of definitions for the OpenMP API routines and the OpenMP types that are used for their arguments and return values. The C/C++ header file (omp.h) and the Fortran module file (omp\_lib) or the deprecated Fortran include file (omp\_lib.h) provide these definitions and must contain a declaration for each routine and predefined identifier as well as a definition of each OpenMP type. In addition, each set of definitions may specify other implementation defined values.
+
+C / C++
+
+The routines are external functions with “C” linkage. C/C++ prototypes for the routines shall be provided in the omp.h header file.
+
+C / C++
+
+Fortran
+
+The Fortran OpenMP API routines are external procedures. The return values of these routines are of default kind, unless otherwise specified. Interface declarations for the Fortran routines shall be provided in the form of a Fortran module named omp\_lib or the deprecated Fortran include file named omp\_lib.h. Whether the omp\_lib.h file provides derived-type definitions or those routines that require an explicit interface is implementation defined. Whether the include file or the module file (or both) is provided is also implementation defined. Whether any of the routines that take an argument are extended with a generic interface so arguments of diferent KIND type can be accommodated is implementation defined.
+
+Fortran
+
+## Restrictions
+
+The following restrictions apply to all routines and OpenMP types:
+
+C++
+
+• Enumeration OpenMP types provided in the omp.h header file shall not be scoped enumeration types unless explicitly allowed.
+
+C++
+
+Predefined Identifiers
+
+Fortran
+
+• Routines may not be called from PURE or ELEMENTAL procedures.
+
+• Routines may not be called in DO CONCURRENT constructs.
+
+Fortran
+
+## 20.1 Predefined Identifiers
+
+<table><tr><td>Name</td><td>Value</td><td>Properties</td></tr><tr><td>omp_curr_progress_width</td><td>see below</td><td>default</td></tr><tr><td>omp_fill</td><td>see below</td><td>default</td></tr><tr><td>omp_initial_device</td><td>-1</td><td>constant</td></tr><tr><td>omp_invalid_device</td><td>&lt; -1</td><td>constant</td></tr><tr><td>omp_num_args</td><td>see below</td><td>default</td></tr><tr><td>omp_unassigned_thread</td><td>&lt; -1</td><td>constant</td></tr><tr><td>openmp_version</td><td>see below</td><td>constant, Fortran-only</td></tr></table>
+
+In addition to the predefined identifiers of OpenMP types that are defined with their corresponding OpenMP type, the OpenMP API includes the predefined identifiers shown above. The predefined identifiers omp\_invalid\_device and omp\_unassigned\_thread have implementation defined values less than -1. The predefined identifier omp\_num\_args can only be used in parameter list items and is a context-specific value that evaluates to the number of parameters of the associated declaration plus any variadic arguments that were passed, if any, at a given procedure call site. The predefined identifier omp\_curr\_progress\_width is a context-specific value that represents the maximum size, in terms of hardware threads, of a progress unit that is available to threads that are executing tasks in the current contention group.
+
+The predefined identifier omp\_fill is a context-specific value that can only be used as a list item of the counts clause. It represents the number of logical iterations of a logical iteration space that remain after removing those specified by the other list items.
+
+Fortran
+
+The predefined identifiers are represented as default integer named constants. The predefined identifier openmp\_version has a value yyyymm where yyyy and mm are the year and month designations of the version of the OpenMP API that the implementation supports. This value matches that of the C preprocessor macro \_OPENMP, when a macro preprocessor is supported (see Section 5.3).
+
+Fortran
+
+## 20.2 Routine Bindings
+
+Unless otherwise specified, the binding task set of any routine region is its encountering task and the binding thread set of any routine region is the encountering thread. That is, the default binding properties for routines are the encountering-task binding property and the encountering-thread binding property. However, the binding task set for all lock routine regions is all tasks in the contention group so all of those routines have the all-contention-group-tasks binding property. Further, the binding region of any routine that has a binding region for any type of region that is relevant to that routine region is the innermost enclosing region of that type. The binding thread set of several routines is all threads or all threads on the current device. Those routine have the all-threads binding property or the all-device-threads binding property.
+
+## 20.3 Routine Argument Properties
+
+Similarly to directive and clause arguments, routine arguments have properties that often specify constraints on their values. For all routines, if an argument is specified that does not conform to the constraints implied by its properties then the behavior is implementation defined. Routine properties include the properties that apply to the arguments of directives and clauses with the same meanings. The default property for all routine arguments is the required property. Routine arguments that have the optional property may be omitted in base languages for which a default value is defined. In addition, routine argument properties include ones that correspond to aspects of their base language prototypes, as shown in Table 20.1.
+
+TABLE 20.1: Routine Argument Properties
+
+<table><tr><td>Property</td><td>Property Description</td></tr><tr><td>C/C++ pointer propertyintent(in) property</td><td>A pointer type in C/C++, an array in FortranAn intent (in) argument in Fortran and, if type corresponds to a pointer type but not pointer to char, a const argument in C/C++</td></tr><tr><td>intent(out) property</td><td>An intent (out) argument in Fortran</td></tr><tr><td>ISO C propertypointer property</td><td>Binds to an ISO C type in FortranA pointer type in C/C++ and an assumed-size array in Fortran</td></tr><tr><td>pointer-to-pointer propertyprocedure property</td><td>A pointer-to-pointer type in C/C++A function pointer type in C/C++ and a procedure type in Fortran</td></tr><tr><td>value property</td><td>A value argument in Fortran</td></tr></table>
+
+# 20.4 General OpenMP Types
+
+This section describes general OpenMP types.
+
+## 20.4.1 OpenMP intptr Type
+
+<table><tr><td>Name: intptrProperties: omp</td><td>Base Type: c_intptr_t</td></tr><tr><td colspan="2">Type DefinitionC / C++typedef intptr_t omp_intptr_t;C / C++Fortraninteger (kind=omp_c_intptr_t_kind)Fortran</td></tr></table>
+
+The intptr OpenMP type is a signed integer type that is capable of holding a pointer on any device, and is equivalent to intptr\_t on platforms that provide it.
+
+20.4.2 OpenMP uintptr Type
+
+<table><tr><td>Name: uintptrProperties: C/C++-only, omp</td><td>Base Type: c_uintptr_t</td></tr></table>
+
+Type Definition
+
+C / C++
+
+typedef uintptr\_t omp\_uintptr\_t;
+
+C / C++
+
+The uintptr OpenMP type is an unsigned integer type that is capable of holding a pointer on any device, and is equivalent to uintptr\_t on platforms that provide it.
+
+## 20.5 OpenMP Parallel Region Support Types
+
+This section describes OpenMP types that support parallel regions.
+
+20.5.1 OpenMP sched Type
+
+<table><tr><td>Name: schedProperties: omp</td><td>Base Type: enumeration</td></tr></table>
+
+<table><tr><td colspan="3">Values</td></tr><tr><td>Name</td><td>Value</td><td>Properties</td></tr><tr><td>omp_sched_static</td><td>0x1</td><td>omp</td></tr><tr><td>omp_sched_dynamic</td><td>0x2</td><td>omp</td></tr><tr><td>omp_sched_guided</td><td>0x3</td><td>omp</td></tr><tr><td>omp_sched_auto</td><td>0x4</td><td>omp</td></tr><tr><td>omp_sched_monotonic</td><td>0x80000000u</td><td>omp</td></tr></table>
+
+## Type Definition
+
+```txt
+typedef enum omp_sched_t {
+    omp_sched_static      = 0x1,
+    omp_sched_dynamic     = 0x2,
+    omp_sched_guided       = 0x3,
+    omp_sched_auto         = 0x4,
+    omp_sched_monotonic  = 0x80000000u
+} omp_sched_t;
+```
+
+## C / C++
+
+C / C++
+
+Fortran
+
+```fortran
+integer (kind=omp_sched_kind), &
+  parameter :: omp_sched_static = &
+    int(Z'1', kind=omp_sched_kind)
+integer (kind=omp_sched_kind), &
+  parameter :: omp_sched_dynamic = &
+    int(Z'2', kind=omp_sched_kind)
+integer (kind=omp_sched_kind), &
+  parameter :: omp_sched_guided = &
+    int(Z'3', kind=omp_sched_kind)
+integer (kind=omp_sched_kind), &
+  parameter :: omp_sched_auto = int(Z'4', kind=omp_sched_kind)
+integer (kind=omp_sched_kind), &
+  parameter :: omp_sched_monotonic = &
+    int(Z'80000000', kind=omp_sched_kind)
+```
+
+## Fortran
+
+The sched type is used in routines that modify or retrieve the value of the run-sched-var ICV. Each of omp\_sched\_static, omp\_sched\_dynamic, omp\_sched\_guided, and omp\_sched\_auto can be combined with omp\_sched\_monotonic by using the + or | operator in C/C++ or the + operator in Fortran. If the schedule type is combined with the omp\_sched\_monotonic, the value corresponds to a schedule that is modified with the monotonic ordering-modifier. Otherwise, the value corresponds to a schedule that is modified with the nonmonotonic ordering-modifier.
+
+Cross References
+
+• run-sched-var ICV, see Table 3.1
+
+## 20.6 OpenMP Tasking Support Types
+
+This section describes OpenMP types that support tasking mechanisms.
+
+## 20.6.1 OpenMP event\_handle Type
+
+<table><tr><td>Name: event_handleProperties: named-handle, omp, opaque</td><td>Base Type:implementation-defined-int</td></tr></table>
+
+Type Definition
+
+C / C++
+
+typedef <implementation-defined-integral> omp\_event\_handle\_t;
+
+C / C++
+
+Fortran
+
+integer (kind=omp\_event\_handle\_kind)
+
+Fortran
+
+The event\_handle OpenMP type is an opaque type that represents events related to detachable tasks.
+
+## 20.7 OpenMP Interoperability Support Types
+
+This section describes OpenMP types that support interoperability mechanisms.
+
+## 20.7.1 OpenMP interop Type
+
+<table><tr><td>Name: interopProperties: named-handle, omp, opaque</td><td>Base Type:implementation-defined-int</td></tr></table>
+
+<table><tr><td colspan="3">Predefined Identifiers</td></tr><tr><td>Name</td><td>Value</td><td>Properties</td></tr><tr><td>omp_interop_none</td><td>0</td><td>default</td></tr></table>
+
+Type Definition
+
+C / C++
+
+typedef <implementation-defined-integral> omp\_interop\_t;
+
+C / C++
+
+Fortran
+
+integer (kind=omp\_interop\_kind)
+
+Fortran
+
+The interop OpenMP type is an opaque type that represents OpenMP interoperability objects, which thus have the opaque property. Interoperability objects may be initialized, destroyed or otherwise used by an interop construct and may be initialized to omp\_interop\_none.
+
+Cross References
+
+• interop Construct, see Section 16.1
+
+## 20.7.2 OpenMP interop\_fr Type
+
+<table><tr><td>Name: interop_frProperties: omp</td><td colspan="2">Base Type: enumeration</td></tr><tr><td colspan="3">Values</td></tr><tr><td>Name</td><td>Value</td><td>Properties</td></tr><tr><td>omp_ifr_last</td><td>N</td><td>omp</td></tr><tr><td colspan="3">Type DefinitionC / C++typedef enum omp_interop_fr_t {omp_ifr_last = N} omp_interop_fr_t;C / C++Fortraninteger (kind=omp_interop_fr_kind), &amp; parameter :: omp_ifr_last = NFortran</td></tr></table>
+
+The interop\_fr OpenMP type represents supported foreign runtime environments. Each value of the interop\_fr OpenMP type that an implementation provides will be available as omp\_ifr\_name, where name is the name of the foreign runtime environment. Available names include those that are listed in the OpenMP Additional Definitions document; implementation defined names may also be supported. The value of omp\_ifr\_last is defined as one greater than the value of the highest value of the supported foreign runtime environments that are listed in the aforementioned document or are implementation defined.
+
+## Cross References
+
+• OpenMP Contexts, see Section 9.1
+
+• omp\_get\_num\_devices Routine, see Section 24.3
+
+20.7.3 OpenMP interop\_property Type
+
+<table><tr><td>Name: interop_propertyProperties: omp</td><td colspan="2">Base Type: enumeration</td></tr><tr><td colspan="3">Values</td></tr><tr><td>Name</td><td>Value</td><td>Properties</td></tr><tr><td>omp_ipr_fr_id</td><td>-1</td><td>omp</td></tr><tr><td>omp_ipr_fr_name</td><td>-2</td><td>omp</td></tr><tr><td>omp_ipr_vendor</td><td>-3</td><td>omp</td></tr><tr><td>omp_ipr_vendor_name</td><td>-4</td><td>omp</td></tr><tr><td>omp_ipr_device_num</td><td>-5</td><td>omp</td></tr><tr><td>omp_ipr_platform</td><td>-6</td><td>omp</td></tr><tr><td>omp_ipr_device</td><td>-7</td><td>omp</td></tr><tr><td>omp_ipr_device_context</td><td>-8</td><td>omp</td></tr><tr><td>omp_ipr_targetsync</td><td>-9</td><td>omp</td></tr><tr><td>omp_ipr_first</td><td>-9</td><td>omp</td></tr></table>
+
+```txt
+integer (kind=omp_interop_property_kind), &
+  parameter :: omp_ipr_fr_id = -1
+integer (kind=omp_interop_property_kind), &
+  parameter :: omp_ipr_fr_name = -2
+integer (kind=omp_interop_property_kind), &
+  parameter :: omp_ipr_vendor = -3
+integer (kind=omp_interop_property_kind), &
+  parameter :: omp_ipr_vendor_name = -4
+integer (kind=omp_interop_property_kind), &
+  parameter :: omp_ipr_device_num = -5
+integer (kind=omp_interop_property_kind), &
+  parameter :: omp_ipr_platform = -6
+integer (kind=omp_interop_property_kind), &
+  parameter :: omp_ipr_device = -7
+integer (kind=omp_interop_property_kind), &
+  parameter :: omp_ipr_device_context = -8
+integer (kind=omp_interop_property_kind), &
+  parameter :: omp_ipr_targetsync = -9
+integer (kind=omp_interop_property_kind), &
+  parameter :: omp_ipr_first = -9
+```
+
+## Fortran
+
+The interop\_property OpenMP type is used in interoperability routines to represent interoperability properties. OpenMP reserves all negative values for interoperability properties, as listed in Table 20.2; implementation defined interoperability properties may use non-negative values. The special interoperability property, omp\_ipr\_first, will always have the lowest interop\_property value, which may change in future versions of this specification. Valid values and types for the properties that Table 20.2 lists are specified in the OpenMP Additional Definitions document or are implementation defined unless otherwise specified. The Contexts column of Table 20.2 lists the OpenMP context that is relevant to the value.
+
+## Cross References
+
+• OpenMP Contexts, see Section 9.1
+
+• omp\_get\_num\_devices Routine, see Section 24.3
+
+## 20.7.4 OpenMP interop\_rc Type
+
+<table><tr><td>Name: interop_rcProperties: omp</td><td>Base Type: enumeration</td></tr></table>
+
+```txt
+typedef enum omp_interop_rc_t {
+    omp_irc_no_value      = 1,
+    omp_irc_success       = 0,
+    omp_irc_empty        = -1,
+    omp_irc_out_of_range  = -2,
+    omp_irc_type_int     = -3,
+```
+
+TABLE 20.2: Required Values of the interop\_property OpenMP Type
+
+<table><tr><td>Enum Name</td><td>Contexts</td><td>Name</td><td>Property</td></tr><tr><td>omp_ipr_fr_id</td><td>all</td><td>fr_id</td><td>An intptr_t value that represents the foreign runtime environment ID of context</td></tr><tr><td>omp_ipr_fr_name</td><td>all</td><td>fr_name</td><td>C string value that represents the name of the foreign runtime environment of context</td></tr><tr><td>omp_ipr_vendor</td><td>all</td><td>vendor</td><td>An intptr_t that represents the vendor of context</td></tr><tr><td>omp_ipr_vendor_name</td><td>all</td><td>vendor_name</td><td>C string value that represents the vendor of context</td></tr><tr><td>omp_ipr_device_num</td><td>all</td><td>device_num</td><td>The OpenMP device number for the device in the range 0 to omp_get_num_devices inclusive</td></tr><tr><td>omp_ipr_platform</td><td>target</td><td>platform</td><td>A foreign platform handle usually spanning multiple devices</td></tr><tr><td>omp_ipr_device</td><td>target</td><td>device</td><td>A foreign device handle</td></tr><tr><td>omp_ipr_device_context</td><td>target</td><td>device_context</td><td>A handle to an instance of a foreign device context</td></tr><tr><td>omp_ipr_targetsync</td><td>targetsync</td><td>targetsync</td><td>A handle to a synchronization object of a foreign execution context</td></tr></table>
+
+<table><tr><td colspan="3">Values</td></tr><tr><td>Name</td><td>Value</td><td>Properties</td></tr><tr><td>omp_irc_no_value</td><td>1</td><td>omp</td></tr><tr><td>omp_irc_success</td><td>0</td><td>omp</td></tr><tr><td>omp_irc_empty</td><td>-1</td><td>omp</td></tr><tr><td>omp_irc_out_of_range</td><td>-2</td><td>omp</td></tr><tr><td>omp_irc_type_int</td><td>-3</td><td>omp</td></tr><tr><td>omp_irc_type_ptr</td><td>-4</td><td>omp</td></tr><tr><td>omp_irc_type_str</td><td>-5</td><td>omp</td></tr><tr><td>omp_irc_other</td><td>-6</td><td>omp</td></tr></table>
+
+TABLE 20.3: Required Values for the interop\_rc OpenMP Type  
+```txt
+Enum Name
+omp_irc_no_value
+omp_irc_success
+omp_irc_empty
+omp_irc_out_of_range
+omp_irc_type_int
+omp_irc_type_ptr
+omp_irc_type_str
+omp_irc_other
+
+Description
+Valid but no meaningful value available
+Successful, value is usable
+The provided interoperability object is equal to
+omp_interop_none
+Property ID is out of range, see Table 20.2
+Property type is int; use omp_get_interop_int
+Property type is pointer; use omp_get_interop_ptr
+Property type is string; use omp_get_interop_str
+Other error; use omp_get_interop_rc_desc
+
+omp_irc_type_ptr = -4,
+omp_irc_type_str = -5,
+omp_irc_other = -6
+} omp_interop_rc_t;
+
+C / C++
+Fortran
+integer (kind=omp_interop_rc_kind), &
+parameter :: omp_irc_no_value = 1
+integer (kind=omp_interop_rc_kind), &
+parameter :: omp_irc_success = 0
+integer (kind=omp_interop_rc_kind), &
+parameter :: omp_irc_empty = -1
+integer (kind=omp_interop_rc_kind), &
+parameter :: omp_irc_out_of_range = -2
+integer (kind=omp_interop_rc_kind), &
+parameter :: omp_irc_type_int = -3
+integer (kind=omp_interop_rc_kind), &
+parameter :: omp_irc_type_ptr = -4
+integer (kind=omp_interop_rc_kind), &
+parameter :: omp_irc_type_str = -5
+integer (kind=omp_interop_rc_kind), &
+parameter :: omp_irc_other = -6
+
+Fortran
+The interop_rc OpenMP type is used in several interoperability routines to specify their results. Table 20.3 describes the values that this type must include.
+```
+
+## Cross References
+
+• OpenMP interop Type, see Section 20.7.1
+
+• OpenMP interop\_property Type, see Section 20.7.3
+
+• omp\_get\_interop\_int Routine, see Section 26.2
+
+• omp\_get\_interop\_ptr Routine, see Section 26.3
+
+• omp\_get\_interop\_rc\_desc Routine, see Section 26.7
+
+• omp\_get\_interop\_str Routine, see Section 26.4
+
+## 20.8 OpenMP Memory Management Types
+
+This section describes OpenMP types that support memory management.
+
+## 20.8.1 OpenMP allocator\_handle Type
+
+<table><tr><td>Name: allocator_handleProperties: omp</td><td>Base Type: enumeration</td></tr></table>
+
+<table><tr><td colspan="3">Values</td></tr><tr><td>Name</td><td>Value</td><td>Properties</td></tr><tr><td>omp_null_allocator</td><td>0</td><td>omp</td></tr><tr><td>omp_default_mem_alloc</td><td>1</td><td>omp</td></tr><tr><td>omp_large_cap_mem_alloc</td><td>2</td><td>omp</td></tr><tr><td>omp_const_mem_alloc</td><td>3</td><td>omp</td></tr><tr><td>omp_high_bw_mem_alloc</td><td>4</td><td>omp</td></tr><tr><td>omp_low_lat_mem_alloc</td><td>5</td><td>omp</td></tr><tr><td>omp_cgroup_mem_alloc</td><td>6</td><td>omp</td></tr><tr><td>omp_pteam_mem_alloc</td><td>7</td><td>omp</td></tr><tr><td>omp_thread_mem_alloc</td><td>8</td><td>omp</td></tr></table>
+
+```txt
+typedef enum omp_allocator_handle_t {
+    omp_null_allocator      = 0,
+    omp_default_mem_alloc   = 1,
+    omp_large_cap_mem_alloc  = 2,
+    omp_const_mem_alloc     = 3,
+    omp_high_bw_mem_alloc   = 4,
+    omp_low_lat_mem_alloc   = 5,
+    omp_cgroup_mem_alloc    = 6,
+```
+
+```cpp
+omp_pteam_mem_alloc      = 7,
+    omp_thread_mem_alloc     = 8
+} omp_allocator_handle_t;
+
+C / C++
+Fortran
+
+integer (kind=omp_allocator_handle_kind), &
+    parameter :: omp_null_allocator = 0
+integer (kind=omp_allocator_handle_kind), &
+    parameter :: omp_default_mem_alloc = 1
+integer (kind=omp_allocator_handle_kind), &
+    parameter :: omp_large_cap_mem_alloc = 2
+integer (kind=omp_allocator_handle_kind), &
+    parameter :: omp_const_mem_alloc = 3
+integer (kind=omp_allocator_handle_kind), &
+    parameter :: omp_high_bw_mem_alloc = 4
+integer (kind=omp_allocator_handle_kind), &
+    parameter :: omp_low_lat_mem_alloc = 5
+integer (kind=omp_allocator_handle_kind), &
+    parameter :: omp_cgroup_mem_alloc = 6
+integer (kind=omp_allocator_handle_kind), &
+    parameter :: omp_pteam_mem_alloc = 7
+integer (kind=omp_allocator_handle_kind), &
+    parameter :: omp_thread_mem_alloc = 8
+```
+
+The allocator\_handle OpenMP type represents an allocator as described in Table 8.3. This OpenMP type must be an implementation defined (for C++ possibly scoped) enum type and its valid constants must include those shown above.
+
+20.8.2 OpenMP alloctrait Type
+
+<table><tr><td>Name: alloctraitProperties: omp</td><td>Base Type: structure</td></tr></table>
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>key</td><td>alloctrait_key</td><td>omp</td></tr><tr><td>value</td><td>alloctrait_val</td><td>omp</td></tr></table>
+
+![](images/54c1b56ad77bcf3e959c33e480f98ba91cad0ce397f87817c0b651e6eb285157.jpg)
+
+TABLE 20.4: Allowed Key-Values for alloctrait OpenMP Type
+
+<table><tr><td>Trait</td><td>Key</td><td>Allowed Values</td></tr><tr><td>sync_hint</td><td>omp_atk_sync_hint</td><td>omp_atv_contended, omp_atv_uncontended, omp_atv_serialized, omp_atv_private</td></tr><tr><td>alignment</td><td>omp_atk_alignment</td><td>Positive property integer powers of 2</td></tr><tr><td>access</td><td>omp_atk_access</td><td>omp_atv_all, omp_atv_memspace, omp_atv_device, omp_atv_cgroup, omp_atv_pteam, omp_atv_thread</td></tr><tr><td>pool_size</td><td>omp_atk_pool_size</td><td>Any positive property integer</td></tr><tr><td>fallback</td><td>omp_atk_fallback</td><td>omp_atv_default_mem_fb, omp_atv_null_fb, omp_atv_abort_fb, omp_atv_allocator_fb</td></tr></table>
+
+table continued on next page
+
+table continued from previous page
+
+<table><tr><td>Trait</td><td>Key</td><td>Allowed Values</td></tr><tr><td>fb_data</td><td>omp_atk_fb_data</td><td>An allocator handle</td></tr><tr><td>pinned</td><td>omp_atk_pinned</td><td>omp_atv_true, omp_atv_false</td></tr><tr><td>partition</td><td>omp_atk_partition</td><td>omp_atv_environment, omp_atv_nearest, omp_atv_blocked, omp_atv_interleaved, omp_atv_partitioner</td></tr><tr><td>pin_device</td><td>omp_atk_pin_device</td><td>Any conforming device number</td></tr><tr><td>preferred_device</td><td>omp_atk_preferred_device</td><td>Any conforming device number</td></tr><tr><td>target_access</td><td>omp_atk_target_access</td><td>omp_atv_single, omp_atv_multiple</td></tr><tr><td>atomic_scope</td><td>omp_atk_atomic_scope</td><td>omp_atv_all, omp_atv_device</td></tr><tr><td>part_size</td><td>omp_atk_part_size</td><td>Any positive property integer value</td></tr><tr><td>partitioner</td><td>omp_atk_partitioner</td><td>A memory partitioner handle</td></tr><tr><td>partitioner_arg</td><td>omp_atk_partitioner_arg</td><td>Any integer value</td></tr></table>
+
+The alloctrait OpenMP type is a key-value pair that represents the name of an allocator trait, as the key, and its value (see Table 20.4).
+
+## Cross References
+
+• Memory Allocators, see Section 8.2
+````

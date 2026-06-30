@@ -1,5 +1,5 @@
 """
-LLM access layer. make_llm builds the ChatOpenAI client from config; 
+LLM access layer. make_llm builds the ChatOpenAI client from config;
 structured_ainvoke runs a structured-output call and falls back to JSON-only
 prompting + manual validation.
 Imports from utils: extract_json_from_text (parses the fallback JSON).
@@ -46,6 +46,7 @@ Package `wiki/` — lossless Markdown wiki generator. Module layout
 
 Entrypoint: ../md.py is a thin shim that calls wiki.phases.main.
 """
+
 from __future__ import annotations
 
 import json
@@ -56,7 +57,6 @@ from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 
 from wiki.utils import extract_json_from_text
-
 
 # ---------------------------------------------------------------------
 # LLM helpers
@@ -80,6 +80,7 @@ def make_llm(
         # model_kwargs={"extra_body": {"chat_template_kwargs": {"enable_thinking": False}}},
     )
 
+
 async def structured_ainvoke(
     llm: ChatOpenAI,
     schema_cls: type[BaseModel],
@@ -87,9 +88,7 @@ async def structured_ainvoke(
     max_output_tokens: int | None = None,
 ) -> BaseModel:
     call_llm = (
-        llm.bind(max_tokens=max_output_tokens)
-        if max_output_tokens is not None
-        else llm
+        llm.bind(max_tokens=max_output_tokens) if max_output_tokens is not None else llm
     )
 
     try:

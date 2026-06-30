@@ -45,6 +45,7 @@ Package `wiki/` — lossless Markdown wiki generator. Module layout
 
 Entrypoint: ../md.py is a thin shim that calls wiki.phases.main.
 """
+
 from __future__ import annotations
 
 import json
@@ -245,8 +246,7 @@ If the current file line count is 500 or more, you MUST NOT use 'append'.
 You MUST use 'new' and name the file '[Current Title] - Part X'.
 """
 
-    human = HumanMessage(
-        content=f"""
+    human = HumanMessage(content=f"""
 Process the next numbered source block.
 
 Each source line is prefixed as:
@@ -302,10 +302,10 @@ New source lines:
 ```text
 {source_block}
 ```
-"""
-    )
+""")
 
     return [system, human]
+
 
 def build_verification_prompt(
     source_block: str,
@@ -323,8 +323,7 @@ def build_verification_prompt(
         )
     )
 
-    human = HumanMessage(
-        content=f"""
+    human = HumanMessage(content=f"""
 Here are 25 source lines from the original document.
 
 ```text
@@ -348,10 +347,10 @@ Reply using structured JSON:
 - missing_facts: list missing facts, if any.
 - hallucinations: list unsupported generated claims, if any.
 - reason: brief explanation.
-"""
-    )
+""")
 
     return [system, human]
+
 
 def build_repair_prompt(
     source_block: str,
@@ -371,8 +370,7 @@ def build_repair_prompt(
         )
     )
 
-    human = HumanMessage(
-        content=f"""
+    human = HumanMessage(content=f"""
 Repair this wiki page by producing Markdown that can be appended to the file.
 
 Target file: {target_filename}
@@ -401,7 +399,6 @@ The patch should:
 1. Add missing facts, steps, rules, commands, warnings, numeric values, and table data.
 2. Avoid duplicating content already present.
 3. Be ready to append directly to the Markdown file.
-"""
-    )
+""")
 
     return [system, human]

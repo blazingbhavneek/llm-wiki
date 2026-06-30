@@ -1,25 +1,47 @@
-# Nanosleep Function (__nanosleep)
+# Nanosleep Function
 
-The `__nanosleep` function is used to suspend the execution of a thread for a specified duration. It is part of the CUDA C++ programming interface for device code.
+Verbatim source-backed fallback page for Nanosleep Function.
 
-## Syntax
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-```cpp
+## Source CUDA_C_Programming_Guide:L8814-L8847
+
+Citation: [CUDA_C_Programming_Guide:L8814-L8847]
+
+````text
+
+## 10.23. Nanosleep Function
+
+## 10.23.1. Synopsis
+
+```txt
 void __nanosleep(unsigned ns);
 ```
 
-## Description
+## 10.23.2. Description
 
-Calling `__nanosleep(ns)` suspends the thread for a sleep duration of approximately `ns` nanoseconds [CUDA_C_Programming_Guide:L8825-L8825]. The maximum sleep duration supported by this function is approximately 1 millisecond [CUDA_C_Programming_Guide:L8825-L8825].
+\_\_nanosleep(ns) suspends the thread for a sleep duration of approximately ns nanoseconds. The maximum sleep duration is approximately 1 millisecond.
 
-## Requirements
+It is supported with compute capability 7.0 or higher.
 
-The `__nanosleep` function is supported on devices with compute capability 7.0 or higher [CUDA_C_Programming_Guide:L8827-L8827].
+## 10.23.3. Example
 
-## Example Usage
+The following code implements a mutex with exponential back-of.
 
-The function can be used in synchronization primitives, such as implementing a mutex with exponential back-off [CUDA_C_Programming_Guide:L8831-L8831].
+```txt
+__device__ void mutex_lock(unsigned int *mutex) {
+    unsigned int ns = 8;
+    while (atomicCAS(mutex, 0, 1) == 1) {
+        __nanosleep(ns);
+        if (ns < 256) {
+            ns *= 2;
+        }
+    }
+}
 
-## See Also
-
-- CUDA C++ Programming Guide, Section 10.23
+__device__ void mutex_unlock(unsigned int *mutex) {
+    atomicExch(mutex, 0);
+}
+```
+````

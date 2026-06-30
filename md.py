@@ -10,7 +10,7 @@ Designed for a local OpenAI-compatible LLM server.
 
 Example:
 
-python wiki_maker.py 
+python wiki_maker.py
 """
 
 from wiki_new.phases import main

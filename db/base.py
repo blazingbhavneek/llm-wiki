@@ -5,7 +5,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from graph.models import Edge, Node, NodeStatus
+from graph_big.models import Edge, Node, NodeStatus
 
 
 class BaseDatabase(ABC):

@@ -1,54 +1,45 @@
 # Peer-to-Peer Memory Copy
 
-Peer-to-Peer (P2P) memory copy enables memory transfers directly between the memories of two different devices, bypassing the need to stage data through the host CPU memory when peer access is enabled.
+Memory can be copied directly between devices using cudaMemcpyPeer() or similar functions. Copies in the implicit NULL stream synchronize with all previous commands. Asynchronous copies can overlap with other operations. P2P access via cudaDeviceEnablePeerAccess() avoids staging through host memory, improving performance.
 
-## Implementation Methods
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-The method used for P2P copying depends on whether a Unified Virtual Address Space (UVA) is configured:
+## Source CUDA_C_Programming_Guide:L3565-L3597
 
-*   **Unified Virtual Address Space (UVA):** If a unified address space is used for both devices, standard memory copy functions (such as `cudaMemcpy`) can be used to copy between devices [CUDA_C_Programming_Guide:L3565-L3597].
-*   **Non-UVA Environments:** If UVA is not used, specific P2P functions must be employed:
-    *   `cudaMemcpyPeer()`
-    *   `cudaMemcpyPeerAsync()`
-    *   `cudaMemcpy3DPeer()`
-    *   `cudaMemcpy3DPeerAsync()` [CUDA_C_Programming_Guide:L3565-L3597]
+Citation: [CUDA_C_Programming_Guide:L3565-L3597]
 
-## Synchronization Guarantees
+````text
+## 6.2.9.5 Peer-to-Peer Memory Copy
 
-P2P copies have strict synchronization behaviors, particularly when using the implicit NULL stream:
+Memory copies can be performed between the memories of two diferent devices.
 
-*   **Blocking Previous Commands:** A copy between memories of two different devices does not start until all commands previously issued to either device have completed [CUDA_C_Programming_Guide:L3565-L3597].
-*   **Blocking Subsequent Commands:** The copy runs to completion before any commands issued after the copy to either device can start [CUDA_C_Programming_Guide:L3565-L3597].
+When a unified address space is used for both devices (see Unified Virtual Address Space), this is done using the regular memory copy functions mentioned in Device Memory.
 
-For asynchronous copies (using `*Async` functions or non-NULL streams), the copy may overlap with other copies or kernels in different streams, consistent with normal stream behavior [CUDA_C_Programming_Guide:L3565-L3597].
-
-## Performance Optimization
-
-To achieve faster P2P memory copies, peer-to-peer access must be explicitly enabled between the two devices using `cudaDeviceEnablePeerAccess()` [CUDA_C_Programming_Guide:L3565-L3597].
-
-*   **Without Peer Access:** Copies may need to be staged through the host memory, which incurs additional latency and bandwidth overhead [CUDA_C_Programming_Guide:L3565-L3597].
-*   **With Peer Access:** The copy occurs directly between device memories, eliminating the staging step and improving performance [CUDA_C_Programming_Guide:L3565-L3597].
-
-## Example Usage
-
-The following code snippet illustrates a P2P copy using `cudaMemcpyPeer` between two devices:
+Otherwise, this is done using cudaMemcpyPeer(), cudaMemcpyPeerAsync(), cudaMemcpy3DPeer(), or cudaMemcpy3DPeerAsync() as illustrated in the following code sample.
 
 ```cpp
 cudaSetDevice(0);                      // Set device 0 as current
 float* p0;
 size_t size = 1024 * sizeof(float);
 cudaMalloc(&p0, size);                 // Allocate memory on device 0
-
 cudaSetDevice(1);                          // Set device 1 as current
 float* p1;
 cudaMalloc(&p1, size);                 // Allocate memory on device 1
-
 cudaSetDevice(0);                          // Set device 0 as current
 MyKernel<<<1000, 128>>>(p0);      // Launch kernel on device 0
-
 cudaSetDevice(1);                          // Set device 1 as current
 cudaMemcpyPeer(p1, 1, p0, 0, size); // Copy p0 to p1
 MyKernel<<<1000, 128>>>(p1);       // Launch kernel on device 1
 ```
 
-In this example, `cudaMemcpyPeer` copies `size` bytes from device 0 (`p0`) to device 1 (`p1`) [CUDA_C_Programming_Guide:L3565-L3597].
+A copy (in the implicit NULL stream) between the memories of two diferent devices:
+
+does not start until all commands previously issued to either device have completed and
+
+runs to completion before any commands (see Asynchronous Concurrent Execution) issued after the copy to either device can start.
+
+Consistent with the normal behavior of streams, an asynchronous copy between the memories of two devices may overlap with copies or kernels in another stream.
+
+Note that if peer-to-peer access is enabled between two devices via cudaDeviceEnablePeerAccess() as described in Peer-to-Peer Memory Access, peer-to-peer memory copy between these two devices no longer needs to be staged through the host and is therefore faster.
+````

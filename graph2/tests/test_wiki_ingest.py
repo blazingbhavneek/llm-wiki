@@ -38,8 +38,7 @@ def test_load_output_wiki_layout(tmp_path: Path) -> None:
         encoding="utf-8",
     )
     (indexes / "home.md").write_text(
-        "# Global Wiki\n\n"
-        "- [CUDA Memory](../concepts/cuda-memory.md)\n",
+        "# Global Wiki\n\n" "- [CUDA Memory](../concepts/cuda-memory.md)\n",
         encoding="utf-8",
     )
     (planning / "page_metadata.json").write_text(

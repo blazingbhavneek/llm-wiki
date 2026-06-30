@@ -74,7 +74,9 @@ def compile_and_ingest(
     target = output_parent / source.stem
     staging_parent = output_parent / ".staging"
     staging_parent.mkdir(parents=True, exist_ok=True)
-    staging = staging_parent / f"{source.stem}-{_source_hash(source)}-{uuid.uuid4().hex[:8]}"
+    staging = (
+        staging_parent / f"{source.stem}-{_source_hash(source)}-{uuid.uuid4().hex[:8]}"
+    )
 
     try:
         import md as source_compiler

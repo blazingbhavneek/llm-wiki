@@ -1,41 +1,32 @@
-# Hardware Multithreading and Resources
+# Hardware Multithreading
 
-Hardware multithreading in CUDA is managed at the level of warps and thread blocks within a multiprocessor (SM). The architecture is designed to hide latency by maintaining multiple execution contexts simultaneously, allowing the processor to switch between them without performance penalty.
+Explains on-chip context maintenance for warps, enabling zero-cost context switching. Details partitioning of registers and shared memory among warps/blocks, limits on resident blocks/warps, and the formula for calculating total warps per block. Notes that insufficient resources cause kernel launch failures.
 
-## Context Switching and Warp Scheduling
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-The execution context for each warp—including program counters, registers, and other state—is maintained on-chip for the entire lifetime of the warp [CUDA_C_Programming_Guide:L6158-L6176]. Because these contexts reside in fast on-chip memory, switching from one execution context to another incurs no cost [CUDA_C_Programming_Guide:L6158-L6176].
+## Source CUDA_C_Programming_Guide:L6157-L6176
 
-At every instruction issue time, a warp scheduler selects a warp that has threads ready to execute its next instruction (i.e., the active threads of the warp) and issues the instruction to those threads [CUDA_C_Programming_Guide:L6158-L6176]. This mechanism ensures that the multiprocessor remains busy as long as there are warps with ready threads.
+Citation: [CUDA_C_Programming_Guide:L6157-L6176]
 
-## Resource Partitioning
+````text
+## 7.2. Hardware Multithreading
 
-Multiprocessors have finite resources that are partitioned among the active execution units:
+The execution context (program counters, registers, and so on) for each warp processed by a multiprocessor is maintained on-chip during the entire lifetime of the warp. Therefore, switching from one execution context to another has no cost, and at every instruction issue time, a warp scheduler selects a warp that has threads ready to execute its next instruction (the active threads of the warp) and issues the instruction to those threads.
 
-*   **Registers**: Each multiprocessor has a set of 32-bit registers that are partitioned among the warps [CUDA_C_Programming_Guide:L6158-L6176].
-*   **Shared Memory**: A parallel data cache or shared memory is partitioned among the thread blocks [CUDA_C_Programming_Guide:L6158-L6176].
+In particular, each multiprocessor has a set of 32-bit registers that are partitioned among the warps, and a parallel data cache or shared memory that is partitioned among the thread blocks.
 
-The number of blocks and warps that can reside and be processed together on a multiprocessor for a given kernel depends on:
-1.  The amount of registers and shared memory used by the kernel.
-2.  The amount of registers and shared memory available on the multiprocessor [CUDA_C_Programming_Guide:L6158-L6176].
+The number of blocks and warps that can reside and be processed together on the multiprocessor for a given kernel depends on the amount of registers and shared memory used by the kernel and the amount of registers and shared memory available on the multiprocessor. There are also a maximum number of resident blocks and a maximum number of resident warps per multiprocessor. These limits as well the amount of registers and shared memory available on the multiprocessor are a function of the compute capability of the device and are given in Compute Capabilities. If there are not enough registers or shared memory available per multiprocessor to process at least one block, the kernel will fail to launch.
 
-## Limits on Resident Blocks and Warps
+The total number of warps in a block is as follows:
 
-There are maximum limits on the number of resident blocks and the number of resident warps per multiprocessor [CUDA_C_Programming_Guide:L6158-L6176]. These limits, along with the total amount of registers and shared memory available, are functions of the device's compute capability [CUDA_C_Programming_Guide:L6158-L6176].
+ceil $\left( \frac { T } { W _ { s i z e } } , 1 \right)$
 
-If there are not enough registers or shared memory available per multiprocessor to process at least one block, the kernel will fail to launch [CUDA_C_Programming_Guide:L6158-L6176].
+▶ T is the number of threads per block,
 
-## Warp Size Formula
+▶ Wsize is the warp size, which is equal to 32,
 
-The total number of warps in a block is calculated using the following formula:
+▶ ceil(x, y) is equal to x rounded up to the nearest multiple of y.
 
-$$ \text{Total Warps} = \text{ceil} \left( \frac { T } { W _ { s i z e } } , 1 \right) $$
-
-Where:
-*   $T$ is the number of threads per block.
-*   $W_{size}$ is the warp size, which is equal to 32.
-*   $\text{ceil}(x, y)$ is equal to $x$ rounded up to the nearest multiple of $y$ [CUDA_C_Programming_Guide:L6158-L6176].
-
-## Occupancy Calculation
-
-The total number of registers and total amount of shared memory allocated for a block are documented in the CUDA Occupancy Calculator provided in the CUDA Toolkit [CUDA_C_Programming_Guide:L6158-L6176]. Developers should use this tool to determine optimal block configurations that maximize occupancy without exceeding hardware limits.
+The total number of registers and total amount of shared memory allocated for a block are documented in the CUDA Occupancy Calculator provided in the CUDA Toolkit.
+````

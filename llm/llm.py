@@ -91,7 +91,9 @@ class LlmClient(BaseLlmClient):
         output_model: type[Any],
     ) -> Any:
         return self._run_with_retries(
-            lambda: self._llm.with_structured_output(output_model).invoke(messages)
+            lambda: self._llm.with_structured_output(
+                output_model, method="json_schema"
+            ).invoke(messages)
         )
 
     def complete(self, system_prompt: str, user_content: str) -> str:

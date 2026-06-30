@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Pattern
 if TYPE_CHECKING:
     from .models import Node
 
+
 # region HASHING
 def short_hash(text: str, length: int = 12) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()[:length]
@@ -45,6 +46,7 @@ def make_edge_id(source_id: str, target_id: str, label: str) -> str:
 
 
 # endregion IDENTIFIERS
+
 
 # region TEXT MATCHING
 def normalize_token(token: str) -> str:

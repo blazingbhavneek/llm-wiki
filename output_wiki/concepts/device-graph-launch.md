@@ -1,29 +1,22 @@
 # Device Graph Launch Overview
 
-Device graph launch provides a mechanism to perform dynamic control flow directly from the device, avoiding the latency of offloading decision-making to the host. This capability allows for workflows that require data-dependent decisions at runtime, such as simple loops or complex device-side work schedulers, to be executed without round-trips between the device and host.
+Covers the concept of device graphs, which allow dynamic control flow and decision-making directly on the GPU without host round-trips. Requires unified addressing. Distinguishes between device graphs (launchable from host/device) and host graphs (host-only). Notes concurrency restrictions: device graphs cannot be launched twice from the device simultaneously, and simultaneous host/device launches cause undefined behavior.
 
-## Terminology
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-CUDA distinguishes between two types of graphs based on their launch capabilities:
+## Source CUDA_C_Programming_Guide:L2854-L2863
 
-*   **Device graphs**: Graphs that can be launched from both the host and the device.
-*   **Host graphs**: Graphs that can only be launched from the host.
+Citation: [CUDA_C_Programming_Guide:L2854-L2863]
 
-## Prerequisites
+````text
+## 6.2.8.7.7 Device Graph Launch
 
-Device graph launch functionality is only available on systems that support **unified addressing** [CUDA_C_Programming_Guide:L2854-L2863].
+There are many workflows which need to make data-dependent decisions during runtime and execute diferent operations depending on those decisions. Rather than ofloading this decision-making process to the host, which may require a round-trip from the device, users may prefer to perform it on the device. To that end, CUDA provides a mechanism to launch graphs from the device.
 
-## Launch Constraints
+Device graph launch provides a convenient way to perform dynamic control flow from the device, be it something as simple as a loop or as complex as a device-side work scheduler. This functionality is only available on systems which support unified addressing.
 
-When launching device graphs, specific constraints apply to ensure deterministic behavior:
+Graphs which can be launched from the device will henceforth be referred to as device graphs, and graphs which cannot be launched from the device will be referred to as host graphs.
 
-1.  **Concurrent Device Launches**: Launching a device graph from the device while a previous launch of that same graph is still running will result in an error, returning `cudaErrorInvalidValue`. Therefore, a device graph cannot be launched twice from the device simultaneously [CUDA_C_Programming_Guide:L2854-L2863].
-2.  **Mixed Host/Device Launches**: Launching a device graph from both the host and the device at the same time results in **undefined behavior** [CUDA_C_Programming_Guide:L2854-L2863].
-
-## Use Cases
-
-Device graph launch is designed for scenarios where:
-
-*   Data-dependent decisions must be made during runtime.
-*   Different operations need to be executed based on those decisions.
-*   Users prefer to perform control flow logic on the device rather than offloading it to the host [CUDA_C_Programming_Guide:L2854-L2863].
+Device graphs can be launched from both the host and device, whereas host graphs can only be launched from the host. Unlike host launches, launching a device graph from the device while a previous launch of the graph is running will result in an error, returning cudaErrorInvalidValue; therefore, a device graph cannot be launched twice from the device at the same time. Launching a device graph from the host and device simultaneously will result in undefined behavior.
+````

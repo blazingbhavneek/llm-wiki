@@ -46,6 +46,7 @@ Package `wiki/` — lossless Markdown wiki generator. Module layout
 
 Entrypoint: ../md.py is a thin shim that calls wiki.phases.main.
 """
+
 from __future__ import annotations
 
 import os
@@ -53,7 +54,6 @@ from dataclasses import dataclass
 from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, Field
-
 
 # ---------------------------------------------------------------------
 # Runtime config
@@ -114,6 +114,7 @@ class GenerationDecision(BaseModel):
     new_source_range: Optional[list[int]] = None
 
     reason: str = ""
+
 
 class VerificationResult(BaseModel):
     answer: Literal["YES", "NO"]

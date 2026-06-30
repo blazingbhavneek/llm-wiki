@@ -1,59 +1,63 @@
 # Grid Synchronization
 
-Grid synchronization allows for inter-thread block synchronization within a single kernel execution, a capability introduced with Cooperative Groups. Prior to this feature, the CUDA programming model only permitted synchronization between thread blocks at the kernel completion boundary [CUDA_C_Programming_Guide:L13206-L13220].
+Covers grid-level synchronization in CUDA, including the grid.sync() function, cooperative kernel launch requirements, occupancy calculation for maximizing parallelism, and device/platform compatibility constraints.
 
-## Motivation and Use Cases
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-Synchronizing at the kernel boundary carries implicit state invalidation and potential performance implications [CUDA_C_Programming_Guide:L13206-L13220]. In applications structured as a processing pipeline with many small kernels, each stage typically requires the previous stage to complete before the next begins [CUDA_C_Programming_Guide:L13206-L13220]. Grid synchronization allows such applications to be restructured into persistent thread blocks that synchronize on the device when a specific stage is complete, rather than launching separate kernels [CUDA_C_Programming_Guide:L13206-L13220].
+## Source CUDA_C_Programming_Guide:L13205-L13268
 
-## Implementation
+Citation: [CUDA_C_Programming_Guide:L13205-L13268]
 
-To synchronize across the grid from within a kernel, the `grid.sync()` function is used within a grid group [CUDA_C_Programming_Guide:L13206-L13220].
+````text
+## 11.7. Grid Synchronization
+
+Prior to the introduction of Cooperative Groups, the CUDA programming model only allowed synchronization between thread blocks at a kernel completion boundary. The kernel boundary carries with it an implicit invalidation of state, and with it, potential performance implications.
+
+For example, in certain use cases, applications have a large number of small kernels, with each kernel representing a stage in a processing pipeline. The presence of these kernels is required by the current CUDA programming model to ensure that the thread blocks operating on one pipeline stage have produced data before the thread block operating on the next pipeline stage is ready to consume it. In such cases, the ability to provide global inter thread block synchronization would allow the application to be restructured to have persistent thread blocks, which are able to synchronize on the device when a given stage is complete.
+
+To synchronize across the grid, from within a kernel, you would simply use the grid.sync() function:
 
 ```javascript
 grid_group grid = this_grid();
 grid.sync();
 ```
 
-### Launch Requirements
+And when launching the kernel it is necessary to use, instead of the <<<...>>> execution configuration syntax, the cudaLaunchCooperativeKernel CUDA runtime launch API or the CUDA driver equivalent.
 
-Grid synchronization requires the use of the `cudaLaunchCooperativeKernel` CUDA runtime launch API or the equivalent CUDA driver API, rather than the standard `<<<...>>>` execution configuration syntax [CUDA_C_Programming_Guide:L13206-L13220].
+## Example:
 
-To guarantee co-residency of the thread blocks on the GPU, the number of blocks launched must be carefully considered [CUDA_C_Programming_Guide:L13221-L13231]. Two common strategies include:
+To guarantee co-residency of the thread blocks on the GPU, the number of blocks launched needs to be carefully considered. For example, as many blocks as there are SMs can be launched as follows:
 
-1.  **Launching one block per SM:**
-    ```javascript
-    int dev = 0;
-    cudaDeviceProp deviceProp;
-    cudaGetDeviceProperties(&deviceProp, dev);
-    // initialize, then launch
-    cudaLaunchCooperativeKernel((void*)my_kernel, deviceProp.multiProcessorCount,
-      → numThreads, args);
-    ```
-    [CUDA_C_Programming_Guide:L13221-L13231]
+```javascript
+int dev = 0;
+cudaDeviceProp deviceProp;
+cudaGetDeviceProperties(&deviceProp, dev);
+// initialize, then launch
+cudaLaunchCooperativeKernel((void*)my_kernel, deviceProp.multiProcessorCount,
+→ numThreads, args);
+```
 
-2.  **Maximizing parallelism using the occupancy calculator:**
-    ```c
-    /// This will launch a grid that can maximally fill the GPU, on the default stream with
-    kernel arguments
-    int numBlocksPerSm = 0;
-    // Number of threads my_kernel will be launched with
-    int numThreads = 128;
-    cudaDeviceProp deviceProp;
-    cudaGetDeviceProperties(&deviceProp, dev);
-    cudaOccupancyMaxActiveBlocksPerMultiprocessor(&numBlocksPerSm, my_kernel, numThreads,
-      →0);
-    // launch
-    void *kernelArgs[] = { /* add kernel args */ };
-    dim3 dimBlock(numThreads, 1, 1);
-    dim3 dimGrid(deviceProp.multiProcessorCount*numBlocksPerSm, 1, 1);
-    cudaLaunchCooperativeKernel((void*)my_kernel, dimGrid, dimBlock, kernels);
-    ```
-    [CUDA_C_Programming_Guide:L13232-L13250]
+Alternatively, you can maximize the exposed parallelism by calculating how many blocks can fit simultaneously per-SM using the occupancy calculator as follows:
 
-## Device Support and Prerequisites
+```c
+/// This will launch a grid that can maximally fill the GPU, on the default stream with
+kernel arguments
+int numBlocksPerSm = 0;
+// Number of threads my_kernel will be launched with
+int numThreads = 128;
+cudaDeviceProp deviceProp;
+cudaGetDeviceProperties(&deviceProp, dev);
+cudaOccupancyMaxActiveBlocksPerMultiprocessor(&numBlocksPerSm, my_kernel, numThreads,
+→0);
+// launch
+void *kernelArgs[] = { /* add kernel args */ };
+dim3 dimBlock(numThreads, 1, 1);
+dim3 dimGrid(deviceProp.multiProcessorCount*numBlocksPerSm, 1, 1);
+cudaLaunchCooperativeKernel((void*)my_kernel, dimGrid, dimBlock, kernels);
+```
 
-It is good practice to verify that the device supports cooperative launches by querying the `cudaDevAttrCooperativeLaunch` attribute [CUDA_C_Programming_Guide:L13251-L13267].
+It is good practice to first ensure the device supports cooperative launches by querying the device attribute cudaDevAttrCooperativeLaunch:
 
 ```javascript
 int dev = 0;
@@ -61,14 +65,13 @@ int supportsCoopLaunch = 0;
 cudaDeviceGetAttribute(&supportsCoopLaunch, cudaDevAttrCooperativeLaunch, dev);
 ```
 
-This attribute returns 1 if the property is supported on the specified device [CUDA_C_Programming_Guide:L13251-L13267].
+which will set supportsCoopLaunch to 1 if the property is supported on device 0. Only devices with compute capability of 6.0 and higher are supported. In addition, you need to be running on either of these:
 
-### Hardware and Software Requirements
+▶ The Linux platform without MPS
 
-*   **Compute Capability:** Only devices with compute capability 6.0 and higher are supported [CUDA_C_Programming_Guide:L13251-L13267].
-*   **Operating System Constraints:**
-    *   **Linux without MPS:** Supported for devices with compute capability 6.0 or higher [CUDA_C_Programming_Guide:L13251-L13267].
-    *   **Linux with MPS:** Supported only for devices with compute capability 7.0 or higher [CUDA_C_Programming_Guide:L13251-L13267].
-    *   **Windows:** Supported on the latest Windows platform [CUDA_C_Programming_Guide:L13251-L13267].
+▶ The Linux platform with MPS and on a device with compute capability 7.0 or higher
 
-[ CUDA_C_Programming_Guide:L13251-L13267]
+The latest Windows platform
+
+# Chapter 12. Cluster Launch Control
+````

@@ -1,29 +1,29 @@
 # atomicMax()
 
-The `atomicMax()` function performs an atomic maximum operation. It reads the 32-bit or 64-bit word `old` located at the specified `address` in global or shared memory, computes the maximum of `old` and the input value `val`, and stores the result back to memory at the same address. These three operations (read, compute, write) are performed in one atomic transaction. The function returns the value of `old` that was previously stored at the address.
+Performs an atomic maximum operation on 32-bit and 64-bit signed/unsigned integers in global or shared memory. Returns the old value.
 
-## Syntax
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-```cpp
+## Source CUDA_C_Programming_Guide:L7880-L7895
+
+Citation: [CUDA_C_Programming_Guide:L7880-L7895]
+
+````text
+
+## 10.14.1.5 atomicMax()
+
+```txt
 int atomicMax(int* address, int val);
-unsigned int atomicMax(unsigned int* address, unsigned int val);
-unsigned long long int atomicMax(unsigned long long int* address, unsigned long long int val);
-long long int atomicMax(long long int* address, long long int val);
+unsigned int atomicMax(unsigned int* address,
+                    unsigned int val);
+unsigned long long int atomicMax(unsigned long long int* address,
+                    unsigned long long int val);
+long long int atomicMax(long long int* address,
+                    long long int val);
 ```
 
-## Parameters
+reads the 32-bit or 64-bit word old located at the address address in global or shared memory, computes the maximum of old and val, and stores the result back to memory at the same address. These three operations are performed in one atomic transaction. The function returns old.
 
-- **address**: Pointer to the location in global or shared memory where the value is read from and written to.
-- **val**: The value to compare against the existing value at `address`.
-
-## Return Value
-
-Returns the value previously stored at `address`.
-
-## 64-bit Support
-
-The 64-bit versions of `atomicMax()` (taking `unsigned long long int` or `long long int` arguments) are only supported by devices with compute capability 5.0 and higher.
-
-## References
-
-- CUDA C Programming Guide [CUDA_C_Programming_Guide:L7880-L7895]
+The 64-bit version of atomicMax() is only supported by devices of compute capability 5.0 and higher.
+````

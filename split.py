@@ -17,8 +17,8 @@ from wiki_new.models import (
     CLEAN_OUTPUT,
     GEN_MODEL,
     GENERATION_LINES,
-    SOURCE_PATH,
     OUTPUT_ROOT,
+    SOURCE_PATH,
     TEMPERATURE,
     TIMEOUT,
     ChunkSummary,
@@ -29,8 +29,8 @@ from wiki_new.planning import (
     join_original_source_lines,
     manifest_add_chunk_record,
     manifest_add_file_record,
-    numbered_output_filename,
     normalize_filename,
+    numbered_output_filename,
     write_concept_markdown_file,
     write_concept_plan_document,
     write_coverage_json,
@@ -41,8 +41,8 @@ from wiki_new.utils import (
     init_manifest,
     is_fence_line,
     is_tableish_line,
-    numbered_source_lines,
     load_json,
+    numbered_source_lines,
     read_lines,
     slugify,
     write_json,
@@ -140,8 +140,8 @@ def build_boundary_safety_map(source_lines: list[str]) -> BoundarySafetyMap:
     for split_line in range(2, line_count + 1):
         previous_line = source_lines[split_line - 2]
         current_line = source_lines[split_line - 1]
-        cuts_table[split_line] = (
-            is_tableish_line(previous_line) and is_tableish_line(current_line)
+        cuts_table[split_line] = is_tableish_line(previous_line) and is_tableish_line(
+            current_line
         )
 
     return BoundarySafetyMap(
@@ -152,7 +152,9 @@ def build_boundary_safety_map(source_lines: list[str]) -> BoundarySafetyMap:
     )
 
 
-def find_h2_sections(source_lines: list[str], source_path: Path) -> tuple[str, list[SectionRange]]:
+def find_h2_sections(
+    source_lines: list[str], source_path: Path
+) -> tuple[str, list[SectionRange]]:
     if not source_lines:
         return title_from_path(source_path), []
 
@@ -196,7 +198,11 @@ def find_h2_sections(source_lines: list[str], source_path: Path) -> tuple[str, l
         )
 
     for index, (line_number, heading_text) in enumerate(headings):
-        next_line = headings[index + 1][0] if index + 1 < len(headings) else len(source_lines) + 1
+        next_line = (
+            headings[index + 1][0]
+            if index + 1 < len(headings)
+            else len(source_lines) + 1
+        )
         sections.append(
             SectionRange(
                 title=heading_text,
@@ -501,7 +507,10 @@ async def annotate_summaries(
         write_concept_markdown_file(path=output_path, source_body=source_body)
 
         relative_filename = output_path.relative_to(output_root).as_posix()
-        summary_text = summary or f"Source lines {updated_plan.source_start}-{updated_plan.source_end}."
+        summary_text = (
+            summary
+            or f"Source lines {updated_plan.source_start}-{updated_plan.source_end}."
+        )
 
         manifest_add_file_record(
             manifest=manifest,
@@ -536,7 +545,9 @@ async def annotate_summaries(
             path=planning_dir / "coverage.json",
             source_line_count=len(source_lines),
             files=[
-                planned_sections[i].plan.model_copy(update={"summary": summaries_by_index[i]})
+                planned_sections[i].plan.model_copy(
+                    update={"summary": summaries_by_index[i]}
+                )
                 for i in sorted(summaries_by_index)
             ],
             headers=[planned_sections[i].header for i in sorted(summaries_by_index)],
@@ -546,7 +557,9 @@ async def annotate_summaries(
             original_file_name=source_file.name,
             inferred_file_name=inferred_filename_for_document(document_title),
             files=[
-                planned_sections[i].plan.model_copy(update={"summary": summaries_by_index[i]})
+                planned_sections[i].plan.model_copy(
+                    update={"summary": summaries_by_index[i]}
+                )
                 for i in sorted(summaries_by_index)
             ],
             headers=[planned_sections[i].header for i in sorted(summaries_by_index)],
@@ -640,12 +653,24 @@ async def process_source_file(
     coverage = []
     for index, item in enumerate(planned_sections, start=1):
         normalized = item.plan
-        relative_filename = (docs_dir / numbered_output_filename(
-            index=index,
-            total=len(planned_sections),
-            filename=normalize_filename(filename=normalized.filename, title=normalized.title),
-        )).relative_to(out_dir).as_posix()
-        summary = normalized.summary or f"Source lines {normalized.source_start}-{normalized.source_end}."
+        relative_filename = (
+            (
+                docs_dir
+                / numbered_output_filename(
+                    index=index,
+                    total=len(planned_sections),
+                    filename=normalize_filename(
+                        filename=normalized.filename, title=normalized.title
+                    ),
+                )
+            )
+            .relative_to(out_dir)
+            .as_posix()
+        )
+        summary = (
+            normalized.summary
+            or f"Source lines {normalized.source_start}-{normalized.source_end}."
+        )
         manifest_add_file_record(
             manifest=manifest,
             filename=relative_filename,

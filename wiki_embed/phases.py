@@ -17,18 +17,6 @@ import shutil
 from pathlib import Path
 from types import SimpleNamespace
 
-from wiki_new.planning import (
-    assert_concept_coverage,
-    enrich_concept_plan,
-    render_concept_files,
-    write_concept_plan_document,
-    write_coverage_json,
-    write_metadata_json,
-)
-from wiki_new.utils import init_manifest, read_lines, utc_now_iso
-
-from wiki_new.llm import make_llm
-
 from wiki_embed.chunking import segment_source
 from wiki_embed.models import (
     API_KEY,
@@ -48,6 +36,16 @@ from wiki_embed.models import (
     VERIFY_MODEL,
     build_embedder,
 )
+from wiki_new.llm import make_llm
+from wiki_new.planning import (
+    assert_concept_coverage,
+    enrich_concept_plan,
+    render_concept_files,
+    write_concept_plan_document,
+    write_coverage_json,
+    write_metadata_json,
+)
+from wiki_new.utils import init_manifest, read_lines, utc_now_iso
 
 
 async def phase_generate(args: argparse.Namespace, embedder) -> None:

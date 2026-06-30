@@ -13,7 +13,7 @@ from pathlib import Path
 
 from graph.ingest import Ingestor
 from graph.maintenance import Maintenance
-from graph.policy import Policy, DEFAULT_POLICY
+from graph.policy import DEFAULT_POLICY, Policy
 from graph.query import QueryResult, QueryService, RetrievedNode
 from graph.source_tree import CoverageError, read_compiled_document, validate_coverage
 from graph.store import Store
@@ -41,11 +41,23 @@ def _write_compiled_tree(root: Path, doc_name: str, pages, source_text: str):
             f"# {title}\n\n{summary}\n"
         )
         page_path.write_text(fm, encoding="utf-8")
-        files.append({"filename": rel, "title": title, "summary": summary,
-                      "source_ranges": [list(rng)]})
+        files.append(
+            {
+                "filename": rel,
+                "title": title,
+                "summary": summary,
+                "source_ranges": [list(rng)],
+            }
+        )
         assignments.append({"source_start": rng[0], "source_end": rng[1], "file": rel})
-        chunk_summaries.append({"source_start": rng[0], "source_end": rng[1],
-                                "summary": summary, "topics": topics})
+        chunk_summaries.append(
+            {
+                "source_start": rng[0],
+                "source_end": rng[1],
+                "summary": summary,
+                "topics": topics,
+            }
+        )
 
     line_count = max(r[3][1] for r in pages)
     manifest = {
@@ -55,12 +67,17 @@ def _write_compiled_tree(root: Path, doc_name: str, pages, source_text: str):
         "coverage": {"exact_coverage": True},
     }
     (out / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
-    (out / "_planning" / "coverage.json").write_text(json.dumps({
-        "source": str(src_path),
-        "source_line_count": line_count,
-        "exact_coverage": True,
-        "assignments": assignments,
-    }), encoding="utf-8")
+    (out / "_planning" / "coverage.json").write_text(
+        json.dumps(
+            {
+                "source": str(src_path),
+                "source_line_count": line_count,
+                "exact_coverage": True,
+                "assignments": assignments,
+            }
+        ),
+        encoding="utf-8",
+    )
     (out / "index.md").write_text("# index\n", encoding="utf-8")
     return out, src_path
 
@@ -74,20 +91,37 @@ def main() -> None:
 
         # two documents that share a topic -> controlled cross-document link
         out_a, src_a = _write_compiled_tree(
-            root, "gpu-guide",
+            root,
+            "gpu-guide",
             [
-                ("01-intro/001-setup.md", "GPU Setup", "Install drivers and toolkit.",
-                 (1, 100), ["gpu setup", "drivers"]),
-                ("01-intro/002-env.md", "GPU Environment", "Configure environment variables.",
-                 (101, 200), ["environment variables", "gpu setup"]),
+                (
+                    "01-intro/001-setup.md",
+                    "GPU Setup",
+                    "Install drivers and toolkit.",
+                    (1, 100),
+                    ["gpu setup", "drivers"],
+                ),
+                (
+                    "01-intro/002-env.md",
+                    "GPU Environment",
+                    "Configure environment variables.",
+                    (101, 200),
+                    ["environment variables", "gpu setup"],
+                ),
             ],
             "\n".join(f"line {i}" for i in range(1, 201)),
         )
         _write_compiled_tree(
-            root, "cpu-guide",
+            root,
+            "cpu-guide",
             [
-                ("01-intro/001-threads.md", "CPU Threads", "Set thread affinity.",
-                 (1, 100), ["gpu setup", "threads"]),
+                (
+                    "01-intro/001-threads.md",
+                    "CPU Threads",
+                    "Set thread affinity.",
+                    (1, 100),
+                    ["gpu setup", "threads"],
+                ),
             ],
             "\n".join(f"line {i}" for i in range(1, 101)),
         )
@@ -109,7 +143,9 @@ def main() -> None:
 
         # contains edges have evidence
         contains = [e for e in store.all_edges() if e.type == "contains"]
-        assert contains and all(e.has_evidence() for e in contains), "contains needs evidence"
+        assert contains and all(
+            e.has_evidence() for e in contains
+        ), "contains needs evidence"
 
         # cross-document link exists only via shared topic
         topic_edges = store.edges_to(gpu_topic[0].id)
@@ -177,11 +213,16 @@ def test_coverage_rejects_empty_nonempty_assignment() -> None:
     with tempfile.TemporaryDirectory() as td:
         root = Path(td)
         (root / "_planning").mkdir()
-        (root / "_planning" / "coverage.json").write_text(json.dumps({
-            "exact_coverage": True,
-            "source_line_count": 10,
-            "assignments": [],
-        }), encoding="utf-8")
+        (root / "_planning" / "coverage.json").write_text(
+            json.dumps(
+                {
+                    "exact_coverage": True,
+                    "source_line_count": 10,
+                    "assignments": [],
+                }
+            ),
+            encoding="utf-8",
+        )
         try:
             validate_coverage(root)
         except CoverageError:

@@ -48,6 +48,7 @@ Package `wiki/` — lossless Markdown wiki generator. Module layout
 
 Entrypoint: ../md.py is a thin shim that calls wiki.phases.main.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -56,7 +57,9 @@ import shutil
 from pathlib import Path
 from typing import Any, Optional
 
+from wiki.llm import make_llm, structured_ainvoke
 from wiki.models import CurrentFileState, GenerationDecision, NewFileRef
+from wiki.prompts import build_generation_prompt
 from wiki.utils import (
     add_chunk_record,
     add_or_update_file_record,
@@ -78,8 +81,6 @@ from wiki.utils import (
     update_markdown_frontmatter,
     write_json,
 )
-from wiki.prompts import build_generation_prompt
-from wiki.llm import make_llm, structured_ainvoke
 
 
 def parse_part_number(title: str) -> tuple[str, int]:
@@ -118,7 +119,9 @@ def enforce_generation_rules(
 
     # Clamp ranges first
     if decision.current_source_range:
-        cr = clamp_range_to_chunk(decision.current_source_range, source_start, source_end)
+        cr = clamp_range_to_chunk(
+            decision.current_source_range, source_start, source_end
+        )
         if cr:
             decision.current_source_range = cr
             assigned_set.update(range(cr[0], cr[1] + 1))
@@ -201,7 +204,10 @@ def enforce_generation_rules(
             # Extend new range
             existing = decision.new_source_range
             if existing:
-                decision.new_source_range = [min(existing[0], min_line), max(existing[1], max_line)]
+                decision.new_source_range = [
+                    min(existing[0], min_line),
+                    max(existing[1], max_line),
+                ]
             else:
                 decision.new_source_range = fallback_range
         elif decision.action in {"append", "split"} and current:
@@ -220,6 +226,7 @@ def enforce_generation_rules(
         unassigned = set()
 
     return decision
+
 
 async def phase_generate_flat(args: argparse.Namespace) -> None:
     source_path = Path(args.source)
@@ -304,12 +311,16 @@ async def phase_generate_flat(args: argparse.Namespace) -> None:
         def refresh_frontmatter(filename: str):
             file_record = find_file_record(manifest, filename)
             if file_record:
-                merged_ranges = file_record.get("_merged_source_ranges", [[source_start, source_end]])
+                merged_ranges = file_record.get(
+                    "_merged_source_ranges", [[source_start, source_end]]
+                )
                 update_markdown_frontmatter(out_dir / filename, merged_ranges)
 
         if decision.action == "append":
             if current is None:
-                raise RuntimeError("Internal error: append requested without current file.")
+                raise RuntimeError(
+                    "Internal error: append requested without current file."
+                )
 
             current_range = decision.current_source_range
             body = range_to_markdown(source_lines, current_range)
@@ -318,16 +329,22 @@ async def phase_generate_flat(args: argparse.Namespace) -> None:
             current.line_count = count_file_lines(out_dir / current.filename)
 
             add_or_update_file_record(
-                manifest, current.filename, current.title, current.summary,
-                current_range[0], current_range[1],
+                manifest,
+                current.filename,
+                current.title,
+                current.summary,
+                current_range[0],
+                current_range[1],
             )
             refresh_frontmatter(current.filename)
 
-            targets.append({
-                "filename": current.filename,
-                "source_start": current_range[0],
-                "source_end": current_range[1],
-            })
+            targets.append(
+                {
+                    "filename": current.filename,
+                    "source_start": current_range[0],
+                    "source_end": current_range[1],
+                }
+            )
 
         elif decision.action == "new":
             new_range = decision.new_source_range
@@ -336,35 +353,53 @@ async def phase_generate_flat(args: argparse.Namespace) -> None:
             title = decision.new_file.title.strip() or "Untitled"
             summary = decision.new_file.summary.strip()
             filename = make_unique_filename(
-                out_dir, next_index, decision.new_file.filename, title,
+                out_dir,
+                next_index,
+                decision.new_file.filename,
+                title,
             )
             next_index += 1
 
             create_markdown_file(
-                path=out_dir / filename, title=title, summary=summary,
-                source_start=new_range[0], source_end=new_range[1], body=body,
+                path=out_dir / filename,
+                title=title,
+                summary=summary,
+                source_start=new_range[0],
+                source_end=new_range[1],
+                body=body,
             )
 
             # The new file becomes the current file
             current = CurrentFileState(
-                title=title, filename=filename, summary=summary,
+                title=title,
+                filename=filename,
+                summary=summary,
                 line_count=count_file_lines(out_dir / filename),
             )
 
             add_or_update_file_record(
-                manifest, filename, title, summary, new_range[0], new_range[1],
+                manifest,
+                filename,
+                title,
+                summary,
+                new_range[0],
+                new_range[1],
             )
             refresh_frontmatter(filename)
 
-            targets.append({
-                "filename": filename,
-                "source_start": new_range[0],
-                "source_end": new_range[1],
-            })
+            targets.append(
+                {
+                    "filename": filename,
+                    "source_start": new_range[0],
+                    "source_end": new_range[1],
+                }
+            )
 
         elif decision.action == "split":
             if current is None:
-                raise RuntimeError("Internal error: split requested without current file.")
+                raise RuntimeError(
+                    "Internal error: split requested without current file."
+                )
 
             current_range = decision.current_source_range
             new_range = decision.new_source_range
@@ -376,16 +411,22 @@ async def phase_generate_flat(args: argparse.Namespace) -> None:
                 current.line_count = count_file_lines(out_dir / current.filename)
 
                 add_or_update_file_record(
-                    manifest, current.filename, current.title, current.summary,
-                    current_range[0], current_range[1],
+                    manifest,
+                    current.filename,
+                    current.title,
+                    current.summary,
+                    current_range[0],
+                    current_range[1],
                 )
                 refresh_frontmatter(current.filename)
 
-                targets.append({
-                    "filename": current.filename,
-                    "source_start": current_range[0],
-                    "source_end": current_range[1],
-                })
+                targets.append(
+                    {
+                        "filename": current.filename,
+                        "source_start": current_range[0],
+                        "source_end": current_range[1],
+                    }
+                )
 
             # 2. Create the new file for the remaining lines
             if new_range:
@@ -394,31 +435,47 @@ async def phase_generate_flat(args: argparse.Namespace) -> None:
                 title = decision.new_file.title.strip() or "Untitled"
                 summary = decision.new_file.summary.strip()
                 filename = make_unique_filename(
-                    out_dir, next_index, decision.new_file.filename, title,
+                    out_dir,
+                    next_index,
+                    decision.new_file.filename,
+                    title,
                 )
                 next_index += 1
 
                 create_markdown_file(
-                    path=out_dir / filename, title=title, summary=summary,
-                    source_start=new_range[0], source_end=new_range[1], body=new_body,
+                    path=out_dir / filename,
+                    title=title,
+                    summary=summary,
+                    source_start=new_range[0],
+                    source_end=new_range[1],
+                    body=new_body,
                 )
 
                 # The newly created file becomes the current file for the next chunk
                 current = CurrentFileState(
-                    title=title, filename=filename, summary=summary,
+                    title=title,
+                    filename=filename,
+                    summary=summary,
                     line_count=count_file_lines(out_dir / filename),
                 )
 
                 add_or_update_file_record(
-                    manifest, filename, title, summary, new_range[0], new_range[1],
+                    manifest,
+                    filename,
+                    title,
+                    summary,
+                    new_range[0],
+                    new_range[1],
                 )
                 refresh_frontmatter(filename)
 
-                targets.append({
-                    "filename": filename,
-                    "source_start": new_range[0],
-                    "source_end": new_range[1],
-                })
+                targets.append(
+                    {
+                        "filename": filename,
+                        "source_start": new_range[0],
+                        "source_end": new_range[1],
+                    }
+                )
 
         else:
             raise RuntimeError(f"Unknown action: {decision.action}")

@@ -18,7 +18,6 @@ from wiki_new.utils import (
     write_json,
 )
 
-
 # ---------------------------------------------------------------------
 # Schemas
 # ---------------------------------------------------------------------
@@ -31,9 +30,7 @@ class ConceptFilePlan(BaseModel):
     source_start/source_end are 1-based inclusive source line numbers.
     """
 
-    title: str = Field(
-        description="Human-readable concept/topic title."
-    )
+    title: str = Field(description="Human-readable concept/topic title.")
     filename: str = Field(
         description=(
             "Markdown filename only, no directories. Example: "
@@ -801,7 +798,9 @@ def _apply_section_judge_decision(
         target = plans[target_index]
         if not (previous.source_start < new_boundary_line <= target.source_end):
             return plans, False
-        revised_previous = previous.model_copy(update={"source_end": new_boundary_line - 1})
+        revised_previous = previous.model_copy(
+            update={"source_end": new_boundary_line - 1}
+        )
         revised_target = target.model_copy(update={"source_start": new_boundary_line})
         return (
             plans[: target_index - 1]
@@ -1329,7 +1328,9 @@ async def plan_concept_files_streaming(
         is_final_chunk = chunk_index == len(global_chunks)
 
         if chunk_end <= last_covered:
-            print(f"[Planning] chunk {chunk_index}/{len(global_chunks)}: skipping (covered through line {last_covered})")
+            print(
+                f"[Planning] chunk {chunk_index}/{len(global_chunks)}: skipping (covered through line {last_covered})"
+            )
             continue
 
         if not resumed and last_covered > 0:
@@ -1650,6 +1651,7 @@ def render_concept_files(
 
     return coverage
 
+
 # ---------------------------------------------------------------------
 # Enrichment Schemas & Prompts (Sequential Headers & Global Filename)
 # ---------------------------------------------------------------------
@@ -1682,19 +1684,25 @@ class GlobalName(BaseModel):
     )
 
 
-def build_first_chunk_prompt(original_filename: str, current: ConceptFilePlan) -> list[Any]:
+def build_first_chunk_prompt(
+    original_filename: str, current: ConceptFilePlan
+) -> list[Any]:
     return [
-        SystemMessage(content="You are an expert technical writer assigning logical headings to document chunks."),
-        HumanMessage(content=(
-            f"Original document name: '{original_filename}'\n\n"
-            f"First chunk details:\n"
-            f"- Filename: {current.filename}\n"
-            f"- Title: {current.title}\n"
-            f"- Summary: {current.summary}\n\n"
-            "Task: Assign a logical heading (up to 2 levels) for this first chunk. "
-            "Use descriptive names (e.g., 'Document Administration', 'API Reference'). "
-            "Do not use sequential numbers like '1.' or '2.'."
-        ))
+        SystemMessage(
+            content="You are an expert technical writer assigning logical headings to document chunks."
+        ),
+        HumanMessage(
+            content=(
+                f"Original document name: '{original_filename}'\n\n"
+                f"First chunk details:\n"
+                f"- Filename: {current.filename}\n"
+                f"- Title: {current.title}\n"
+                f"- Summary: {current.summary}\n\n"
+                "Task: Assign a logical heading (up to 2 levels) for this first chunk. "
+                "Use descriptive names (e.g., 'Document Administration', 'API Reference'). "
+                "Do not use sequential numbers like '1.' or '2.'."
+            )
+        ),
     ]
 
 
@@ -1705,38 +1713,46 @@ def build_subsequent_chunk_prompt(
     prev_header: str,
 ) -> list[Any]:
     return [
-        SystemMessage(content="You are an expert technical writer assigning logical headings to document chunks sequentially."),
-        HumanMessage(content=(
-            f"Original document name: '{original_filename}'\n\n"
-            f"Previous chunk details:\n"
-            f"- Title: {prev.title}\n"
-            f"- Summary: {prev.summary}\n"
-            f"- Assigned Header: {prev_header}\n\n"
-            f"Current chunk details:\n"
-            f"- Filename: {current.filename}\n"
-            f"- Title: {current.title}\n"
-            f"- Summary: {current.summary}\n\n"
-            "Task: Determine the logical heading for the current chunk.\n"
-            "1. If the current chunk is a continuation of the same logical section as the previous chunk "
-            "(e.g., another API function in the same API Reference section, or another definition file), "
-            "you MUST output the EXACT SAME header as the previous chunk.\n"
-            "2. If it starts a new logical section, output a new descriptive heading (up to 2 levels).\n"
-            "Do not use sequential numbers."
-        ))
+        SystemMessage(
+            content="You are an expert technical writer assigning logical headings to document chunks sequentially."
+        ),
+        HumanMessage(
+            content=(
+                f"Original document name: '{original_filename}'\n\n"
+                f"Previous chunk details:\n"
+                f"- Title: {prev.title}\n"
+                f"- Summary: {prev.summary}\n"
+                f"- Assigned Header: {prev_header}\n\n"
+                f"Current chunk details:\n"
+                f"- Filename: {current.filename}\n"
+                f"- Title: {current.title}\n"
+                f"- Summary: {current.summary}\n\n"
+                "Task: Determine the logical heading for the current chunk.\n"
+                "1. If the current chunk is a continuation of the same logical section as the previous chunk "
+                "(e.g., another API function in the same API Reference section, or another definition file), "
+                "you MUST output the EXACT SAME header as the previous chunk.\n"
+                "2. If it starts a new logical section, output a new descriptive heading (up to 2 levels).\n"
+                "Do not use sequential numbers."
+            )
+        ),
     ]
 
 
-def build_global_name_prompt(original_filename: str, files: list[ConceptFilePlan]) -> list[Any]:
+def build_global_name_prompt(
+    original_filename: str, files: list[ConceptFilePlan]
+) -> list[Any]:
     summaries = "\n".join(f"- {f.title}: {f.summary}" for f in files)
     return [
         SystemMessage(content="You are an expert technical writer."),
-        HumanMessage(content=(
-            f"The original uploaded file was named: '{original_filename}'.\n\n"
-            "Below is a list of document chunks with their titles and summaries:\n"
-            f"{summaries}\n\n"
-            "Task: Infer a single, descriptive, slugified global filename for the ENTIRE document (must end in .md). "
-            "Reflect the actual content, not just the original filename."
-        ))
+        HumanMessage(
+            content=(
+                f"The original uploaded file was named: '{original_filename}'.\n\n"
+                "Below is a list of document chunks with their titles and summaries:\n"
+                f"{summaries}\n\n"
+                "Task: Infer a single, descriptive, slugified global filename for the ENTIRE document (must end in .md). "
+                "Reflect the actual content, not just the original filename."
+            )
+        ),
     ]
 
 
@@ -1755,23 +1771,29 @@ async def enrich_concept_plan(
     print(f"[Enrichment] Inferring global name...")
     try:
         global_name_raw = await structured_ainvoke(
-            llm, GlobalName, build_global_name_prompt(original_filename, files), max_output_tokens=100
+            llm,
+            GlobalName,
+            build_global_name_prompt(original_filename, files),
+            max_output_tokens=100,
         )
         global_name = GlobalName.model_validate(global_name_raw).inferred_file_name
     except Exception as e:
         print(f"[Enrichment] Failed to infer global name: {e}. Using fallback.")
         global_name = "document.md"
-        
+
     if not global_name.endswith(".md"):
         global_name += ".md"
     global_name = normalize_filename(global_name, "document")
 
     inferred_headers = []
-    
+
     # First chunk
     print(f"[Enrichment] Inferring header for chunk 1/{len(files)}...")
     first_raw = await structured_ainvoke(
-        llm, ChunkHeader, build_first_chunk_prompt(original_filename, files[0]), max_output_tokens=100
+        llm,
+        ChunkHeader,
+        build_first_chunk_prompt(original_filename, files[0]),
+        max_output_tokens=100,
     )
     first_header = ChunkHeader.model_validate(first_raw).header
     inferred_headers.append(first_header)
@@ -1782,7 +1804,7 @@ async def enrich_concept_plan(
         prompt = build_subsequent_chunk_prompt(
             original_filename=original_filename,
             current=files[i],
-            prev=files[i-1],
+            prev=files[i - 1],
             prev_header=inferred_headers[-1],
         )
         raw = await structured_ainvoke(llm, ChunkHeader, prompt, max_output_tokens=100)
@@ -1791,7 +1813,7 @@ async def enrich_concept_plan(
 
     return EnrichmentResult(
         inferred_file_name=global_name,
-        files=[FileHeader(header=h) for h in inferred_headers]
+        files=[FileHeader(header=h) for h in inferred_headers],
     )
 
 

@@ -1,64 +1,72 @@
 # Memory Synchronization Domains
 
-Memory Synchronization Domains are a feature introduced in the Hopper architecture with CUDA 12.0 that alleviates performance degradation caused by memory fence interference [CUDA_C_Programming_Guide:L2024-L2116]. This feature allows applications to isolate memory traffic, enabling the GPU to reduce the scope of memory operations waited on by fence instructions [CUDA_C_Programming_Guide:L2024-L2116].
+Hopper architecture (CUDA 12.0+) feature that isolates memory traffic into logical domains to reduce fence/flush interference. Uses launch attributes to map logical domains to physical domains and manage cross-domain system-scope fencing.
 
-## Memory Fence Interference
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-Memory fence interference occurs when CUDA applications experience degraded performance because memory fence or flush operations wait on more transactions than those strictly necessitated by the CUDA memory consistency model [CUDA_C_Programming_Guide:L2024-L2116]. This often arises from the cumulativity of system-scope operations [CUDA_C_Programming_Guide:L2024-L2116].
+## Source CUDA_C_Programming_Guide:L2024-L2116
 
-For example, consider a scenario where:
-1. Thread 1 writes to a device-scope atomic `a` and a managed variable `x`.
-2. Thread 2 waits on `a` and then writes to a system-scope atomic `b`.
-3. Thread 3 (on CPU) waits on `b` and asserts `x == 1`.
+Citation: [CUDA_C_Programming_Guide:L2024-L2116]
 
-The CUDA memory consistency model guarantees that the write to `x` by Thread 1 is visible to Thread 3 before the write to `b` by Thread 2 [CUDA_C_Programming_Guide:L2024-L2116]. However, because the system-scope fence on `b` is cumulative, it must ensure that all writes visible to Thread 2 (including `x` from Thread 1) are visible to Thread 3 [CUDA_C_Programming_Guide:L2024-L2116]. Since the GPU cannot distinguish at execution time which writes are guaranteed by the source-level model versus those visible only by chance timing, it conservatively waits on a wide net of in-flight memory operations [CUDA_C_Programming_Guide:L2024-L2116].
+````text
+## 6.2.7. Memory Synchronization Domains
 
-A common example of this interference is when a kernel performing local GPU computation implicitly flushes its writes upon completion to satisfy synchronizes-with relationships [CUDA_C_Programming_Guide:L2024-L2116]. This may unnecessarily wait on slower NVLink or PCIe writes from a parallel communication kernel (e.g., NCCL) running concurrently [CUDA_C_Programming_Guide:L2024-L2116].
+## 6.2.7.1 Memory Fence Interference
 
-## Isolating Traffic with Domains
+Some CUDA applications may see degraded performance due to memory fence/flush operations waiting on more transactions than those necessitated by the CUDA memory consistency model.
 
-To alleviate this interference, Hopper GPUs support Memory Synchronization Domains [CUDA_C_Programming_Guide:L2024-L2116]. Each kernel launch is assigned a domain ID, and writes and fences are tagged with this ID [CUDA_C_Programming_Guide:L2024-L2116]. A fence will only order writes that match its domain's ID [CUDA_C_Programming_Guide:L2024-L2116].
+```txt
+__managed__ int x = 0;
+__device__ cuda::atomic
+    <int, cuda::thread_scope_
+    device> a(0);
+__managed__ cuda::atomic
+    <int, cuda::thread_scope_
+    system> b(0);
 
-By placing communication kernels in a different domain than compute kernels, the GPU can reduce the net cast of a fence operation, waiting only on relevant local traffic rather than remote communication traffic [CUDA_C_Programming_Guide:L2024-L2116].
+Thread 1 (SM)
+x = 1;
+a = 1;
 
-### Synchronization Rules
+Thread 2 (SM)
+while (a != 1) ;
+assert(x == 1);
+b = 1;
 
-When using domains, specific rules apply to synchronization:
-*   **Cross-Domain:** Ordering or synchronization between distinct domains on the same GPU requires system-scope fencing [CUDA_C_Programming_Guide:L2024-L2116]. This is necessary because cumulativity is satisfied by ensuring that cross-domain traffic is flushed to the system scope ahead of time [CUDA_C_Programming_Guide:L2024-L2116].
-*   **Intra-Domain:** Within a single domain, device-scope fencing remains sufficient [CUDA_C_Programming_Guide:L2024-L2116].
+Thread 3 (CPU)
+while (b != 1) ;
+assert(x == 1);
+```
 
-This mechanism modifies the definition of `thread_scope_device`, but backward compatibility is maintained because kernels default to domain 0 [CUDA_C_Programming_Guide:L2024-L2116].
+Consider the example above. The CUDA memory consistency model guarantees that the asserted condition will be true, so the write to x from thread 1 must be visible to thread 3, before the write to b from thread 2.
 
-## Configuration and Usage
+The memory ordering provided by the release and acquire of a is only suficient to make x visible to thread 2, not thread 3, as it is a device-scope operation. The system-scope ordering provided by release and acquire of b, therefore, needs to ensure not only writes issued from thread 2 itself are visible to thread 3, but also writes from other threads that are visible to thread 2. This is known as cumulativity. As the GPU cannot know at the time of execution which writes have been guaranteed at the source level to be visible and which are visible only by chance timing, it must cast a conservatively wide net for in-flight memory operations.
 
-Domains are configured using launch attributes and can be queried via device attributes [CUDA_C_Programming_Guide:L2024-L2116].
+This sometimes leads to interference: because the GPU is waiting on memory operations it is not required to at the source level, the fence/flush may take longer than necessary.
 
-### Querying Domain Count
-The number of available domains can be queried using the device attribute `cudaDevAttrMemSyncDomainCount` [CUDA_C_Programming_Guide:L2024-L2116]. Hopper architecture GPUs support 4 domains [CUDA_C_Programming_Guide:L2024-L2116]. For portability, CUDA reports a count of 1 on devices prior to Hopper [CUDA_C_Programming_Guide:L2024-L2116].
+Note that fences may occur explicitly as intrinsics or atomics in code, like in the example, or implicitly to implement synchronizes-with relationships at task boundaries.
 
-### Logical and Physical Domains
-CUDA provides a layer of abstraction between logical and physical domains to ease application composition [CUDA_C_Programming_Guide:L2024-L2116].
-*   **Logical Domains:** Defined by `cudaLaunchMemSyncDomainDefault` and `cudaLaunchMemSyncDomainRemote` [CUDA_C_Programming_Guide:L2024-L2116]. The remote domain is intended for kernels performing remote memory access to isolate their traffic from local kernels [CUDA_C_Programming_Guide:L2024-L2116].
-*   **Physical Domains:** The actual hardware domains (0-3 on Hopper) [CUDA_C_Programming_Guide:L2024-L2116].
+A common example is when a kernel is performing computation in local GPU memory, and a parallel kernel (e.g. from NCCL) is performing communications with a peer. Upon completion, the local kernel will implicitly flush its writes to satisfy any synchronizes-with relationships to downstream work. This may unnecessarily wait, fully or partially, on slower nvlink or PCIe writes from the communication kernel.
 
-### Launch Attributes
-Domains are controlled via two main attributes:
-1.  **`cudaLaunchAttributeMemSyncDomain`**: Selects the logical domain for a specific kernel launch (e.g., `cudaLaunchKernelEx`) [CUDA_C_Programming_Guide:L2024-L2116].
-2.  **`cudaLaunchAttributeMemSyncDomainMap`**: Maps logical domains to physical domains [CUDA_C_Programming_Guide:L2024-L2116]. This can be set at the stream level using `cudaStreamSetAttribute` [CUDA_C_Programming_Guide:L2024-L2116].
+## 6.2.7.2 Isolating Trafic with Domains
 
-The default mapping maps the default logical domain to physical domain 0 and the remote logical domain to physical domain 1 (on GPUs with more than 1 domain) [CUDA_C_Programming_Guide:L2024-L2116].
+Beginning with Hopper architecture GPUs and CUDA 12.0, the memory synchronization domains feature provides a way to alleviate such interference. In exchange for explicit assistance from code, the GPU can reduce the net cast by a fence operation. Each kernel launch is given a domain ID. Writes and fences are tagged with the ID, and a fence will only order writes matching the fence’s domain. In the concurrent compute vs communication example, the communication kernels can be placed in a diferent domain.
 
-### Usage Patterns
-*   **Stream-Level Mapping:** Applications can partition parallel streams by mapping different logical domains to different physical domains per stream [CUDA_C_Programming_Guide:L2024-L2116].
-*   **Library Integration:** Libraries like NCCL 2.16+ tag launches with the remote domain, providing beneficial use patterns out of the box without requiring changes in higher-level frameworks [CUDA_C_Programming_Guide:L2024-L2116].
+When using domains, code must abide by the rule that ordering or synchronization between distinct domains on the same GPU requires system-scope fencing. Within a domain, device-scope fencing remains suficient. This is necessary for cumulativity as one kernel’s writes will not be encompassed by a fence issued from a kernel in another domain. In essence, cumulativity is satisfied by ensuring that cross-domain trafic is flushed to the system scope ahead of time.
 
-### CUDA Graphs
-These attributes are exposed uniformly on CUDA streams, individual launches using `cudaLaunchKernelEx`, and kernel nodes in CUDA graphs [CUDA_C_Programming_Guide:L2024-L2116]. When a graph is captured, both attributes are copied to the graph nodes [CUDA_C_Programming_Guide:L2024-L2116]. Graphs take both attributes from the node itself, meaning domain-related attributes set on the stream into which the graph is launched are not used during the graph's execution [CUDA_C_Programming_Guide:L2024-L2116].
+Note that this modifies the definition of thread\_scope\_device. However, because kernels will default to domain 0 as described below, backward compatibility is maintained.
 
-### Example Code
+## 6.2.7.3 Using Domains in CUDA
 
-Launching a kernel with the remote logical domain:
-```cpp
+Domains are accessible via the new launch attributes cudaLaunchAttributeMemSyncDomain and cudaLaunchAttributeMemSyncDomainMap. The former selects between logical domains cudaLaunchMemSyncDomainDefault and cudaLaunchMemSyncDomainRemote, and the latter provides a mapping from logical to physical domains. The remote domain is intended for kernels performing remote memory access in order to isolate their memory trafic from local kernels. Note, however, the selection of a particular domain does not afect what memory access a kernel may legally perform.
+
+The domain count can be queried via device attribute cudaDevAttrMemSyncDomainCount. Hopper has 4 domains. To facilitate portable code, domains functionality can be used on all devices and CUDA will report a count of 1 prior to Hopper.
+
+Having logical domains eases application composition. An individual kernel launch at a low level in the stack, such as from NCCL, can select a semantic logical domain without concern for the surrounding application architecture. Higher levels can steer logical domains using the mapping. The default value for the logical domain if it is not set is the default domain, and the default mapping is to map the default domain to 0 and the remote domain to 1 (on GPUs with more than 1 domain). Specific libraries may tag launches with the remote domain in CUDA 12.0 and later; for example, NCCL 2.16 will do so. Together, this provides a beneficial use pattern for common applications out of the box, with no code changes needed in other components, frameworks, or at application level. An alternative use pattern, for example in an application using nvshmem or with no clear separation of kernel types, could be to partition parallel streams. Stream A may map both logical domains to physical domain 0, stream B to 1, and so on.
+
+```txt
+// Example of launching a kernel with the remote logical domain
 cudaLaunchAttribute domainAttr;
 domainAttr.id = cudaLaunchAttrMemSyncDomain;
 domainAttr.val = cudaLaunchMemSyncDomainRemote;
@@ -69,16 +77,19 @@ config.numAttrs = 1;
 cudaLaunchKernelEx(&config, myKernel, kernelArg1, kernelArg2...);
 ```
 
-Setting a mapping for a stream (default mapping illustration):
-```cpp
+```javascript
+// Example of setting a mapping for a stream
+// (This mapping is the default for streams starting on Hopper if not
+// explicitly set, and provided for illustration)
 cudaLaunchAttributeValue mapAttr;
 mapAttr.memSyncDomainMap.default_ = 0;
 mapAttr.memSyncDomainMap.remote = 1;
 cudaStreamSetAttribute(stream, cudaLaunchAttributeMemSyncDomainMap, &mapAttr);
 ```
 
-Mapping different streams to different physical domains:
-```cpp
+```javascript
+// Example of mapping different streams to different physical domains, ignoring
+// logical domain settings
 cudaLaunchAttributeValue mapAttr;
 mapAttr.memSyncDomainMap.default_ = 0;
 mapAttr.memSyncDomainMap.remote = 0;
@@ -87,3 +98,8 @@ mapAttr.memSyncDomainMap.default_ = 1;
 mapAttr.memSyncDomainMap.remote = 1;
 cudaStreamSetAttribute(streamB, cudaLaunchAttributeMemSyncDomainMap, &mapAttr);
 ```
+
+As with other launch attributes, these are exposed uniformly on CUDA streams, individual launches using cudaLaunchKernelEx, and kernel nodes in CUDA graphs. A typical use would set the mapping at stream level and the logical domain at launch level (or bracketing a section of stream use) as described above.
+
+Both attributes are copied to graph nodes during stream capture. Graphs take both attributes from the node itself, essentially an indirect way of specifying a physical domain. Domain-related attributes set on the stream a graph is launched into are not used in execution of the graph.
+````

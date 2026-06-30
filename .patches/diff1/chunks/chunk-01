@@ -1,0 +1,65 @@
+Folder:    db
+Reference: /home/seigyo/llm-wiki/llm-wiki/db
+Target:    /home/seigyo/llm-wiki/db
+====================================================================================================
+
+diff -ruN '--exclude=__pycache__' '--exclude=*.pyc' '--exclude=*.pyo' '--exclude=*.pyd' '--exclude=.git' '--exclude=.hg' '--exclude=.svn' '--exclude=.mypy_cache' '--exclude=.pytest_cache' '--exclude=.ruff_cache' '--exclude=node_modules' '--exclude=*.so' '--exclude=*.dll' '--exclude=*.dylib' '--exclude=*.o' '--exclude=*.a' '--exclude=*.bin' '--exclude=*.exe' '--exclude=*.jpg' '--exclude=*.jpeg' '--exclude=*.png' '--exclude=*.gif' '--exclude=*.webp' '--exclude=*.ico' '--exclude=*.svg' '--exclude=*.pdf' '--exclude=*.zip' '--exclude=*.tar' '--exclude=*.gz' '--exclude=*.bz2' '--exclude=*.xz' '--exclude=*.7z' '--exclude=*.rar' '--exclude=*.sqlite' '--exclude=*.db' /home/seigyo/llm-wiki/llm-wiki/db/README.md /home/seigyo/llm-wiki/db/README.md
+--- /home/seigyo/llm-wiki/llm-wiki/db/README.md	2026-06-29 07:55:18.025620919 +0000
++++ /home/seigyo/llm-wiki/db/README.md	2026-06-29 23:31:03.811397085 +0000
+@@ -4,7 +4,7 @@
+ 
+ The graph code imports `db.Database`. That alias is the switch point:
+ 
+-- [__init__.py](/run/media/blaze/Common/Code/llm-wiki/db/__init__.py:1)
++- [__init__.py](/home/seigyo/llm-wiki/db/__init__.py:1)
+ 
+ To try a different backend, change that one import.
+ 
+@@ -15,7 +15,7 @@
+ 
+ That shared contract lives in:
+ 
+-- [base.py](/run/media/blaze/Common/Code/llm-wiki/db/base.py:1)
++- [base.py](/home/seigyo/llm-wiki/db/base.py:1)
+ 
+ The shared database shape is:
+ 
+@@ -43,7 +43,7 @@
+ 
+ File:
+ 
+-- [raw_sqlite.py](/run/media/blaze/Common/Code/llm-wiki/db/raw_sqlite.py:1)
++- [raw_sqlite.py](/home/seigyo/llm-wiki/db/raw_sqlite.py:1)
+ 
+ This is the current implementation that used to live under `graph/`.
+ 
+@@ -73,7 +73,7 @@
+ 
+ File:
+ 
+-- [sqlmodel.py](/run/media/blaze/Common/Code/llm-wiki/db/sqlmodel.py:1)
++- [sqlmodel.py](/home/seigyo/llm-wiki/db/sqlmodel.py:1)
+ 
+ Design:
+ 
+@@ -104,7 +104,7 @@
+ 
+ File:
+ 
+-- [lancedb.py](/run/media/blaze/Common/Code/llm-wiki/db/lancedb.py:1)
++- [lancedb.py](/home/seigyo/llm-wiki/db/lancedb.py:1)
+ 
+ Design:
+ 
+@@ -138,7 +138,7 @@
+ Shared by all 3:
+ 
+ - the public database API
+-- `Node` / `Edge` domain models from [graph/models.py](/run/media/blaze/Common/Code/llm-wiki/graph/models.py:1)
++- `Node` / `Edge` domain models from [graph/models.py](/home/seigyo/llm-wiki/graph/models.py:1)
+ - the graph engine logic in `graph/engine.py`
+ - the edge logic in `graph/edges.py`
+ 
+
+
+====================================================================================================

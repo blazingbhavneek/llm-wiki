@@ -1,16 +1,20 @@
 # Unified Memory Performance Hints
 
-Performance hints are APIs available for all Unified Memory types, including CUDA Managed Memory and, on systems with full CUDA Unified Memory support, System-Allocated Memory [CUDA_C_Programming_Guide:L21193-L21201]. These hints enable applications to provide CUDA with more information than it may otherwise have, allowing for better performance-related decisions [CUDA_C_Programming_Guide:L21193-L21201].
+Introduces performance hints (cudaMemPrefetchAsync, cudaMemAdvise, etc.) that allow applications to provide CUDA with additional information to optimize data placement and migration without altering application semantics.
 
-## Characteristics
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-*   **Non-Semantic Impact**: These APIs are strictly hints; they do not impact the semantics of applications, only their performance [CUDA_C_Programming_Guide:L21193-L21201].
-*   **Reversibility**: Hints can be added or removed anywhere in an application without impacting its results [CUDA_C_Programming_Guide:L21193-L21201].
+## Source CUDA_C_Programming_Guide:L21193-L21200
 
-## Usage Guidelines
+Citation: [CUDA_C_Programming_Guide:L21193-L21200]
 
-Applications should only utilize these hints if they demonstrably improve performance [CUDA_C_Programming_Guide:L21193-L21201].
+````text
+## 24.1.2.8 Performance Hints
 
-## Data Prefetching
+The following sections describes the available unified memory performance hints, which may be used on all Unified Memory, for example, CUDA Managed memory or, on systems with full CUDA Unified Memory support, also all System-Allocated Memory. These APIs are hints, that is, they do not impact the semantics of applications, only their peformance. That is, they can be added or removed anywhere on any application without impacting its results.
 
-One category of performance hints involves data prefetching [CUDA_C_Programming_Guide:L21193-L21201].
+CUDA Unified Memory may not always have all the information necessary to make the best performance decisions related to unified memory. These performance hints enable the application to provide CUDA with more information.
+
+Note that applications should only use these hints if they improve their performance.
+````

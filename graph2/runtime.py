@@ -1,8 +1,12 @@
 """Runtime collaborators for the graph package."""
+
 from __future__ import annotations
-from collections import Counter
-from typing import Callable
+
 import json
+import re
+from collections import Counter
+from difflib import SequenceMatcher
+from typing import Callable
 
 from .db import Database
 from .models import (
@@ -21,9 +25,6 @@ from .models import (
     now_iso,
 )
 from .utils import make_edge_id, make_exogenous_node_id, source_hash
-
-import re
-from difflib import SequenceMatcher
 
 # region PROMPTS
 GRAPH_SYSTEM_PROMPT = "You maintain a concise, factual knowledge-graph wiki."
@@ -71,13 +72,11 @@ EDGE_PROMPT = (
 AGENT_SYSTEM_PROMPT = (
     "You answer questions by navigating a knowledge-graph wiki. You cannot see the "
     "graph directly; you must use tools to gather evidence.\n\n"
-
     "Tools:\n"
     "- search(text): find candidate nodes by keyword.\n"
     "- read(node_id): read a node's full body.\n"
     "- follow_link(node_id, direction): jump to a node's neighbors.\n"
     "- finish(answer, cited_node_ids): end with your answer and the node ids you used.\n\n"
-
     "Critical rules:\n"
     "1. Do NOT answer early.\n"
     "2. Search results are only summaries; they are NOT enough evidence.\n"
@@ -89,7 +88,6 @@ AGENT_SYSTEM_PROMPT = (
     "8. Prefer reading promising nodes over finishing early.\n"
     "9. Follow links when a read node references related concepts, examples, events, or required setup.\n"
     "10. Base the final answer ONLY on node bodies you actually read.\n\n"
-
     "Suggested workflow:\n"
     "1. Search the main query.\n"
     "2. Read the top relevant search results.\n"
@@ -97,10 +95,8 @@ AGENT_SYSTEM_PROMPT = (
     "4. Read those function-specific nodes.\n"
     "5. Follow links from important nodes if needed.\n"
     "6. Only then call finish.\n\n"
-
     "For this wiki, node ids often start with 'node:'. Always copy node ids exactly as shown.\n"
     "Never remove the 'node:' prefix.\n\n"
-
     "You should only call finish when you have enough full-body evidence to give a useful, concrete answer. "
     "If you have read fewer than 3 useful nodes and more relevant nodes are available, keep searching or reading."
 )
@@ -108,7 +104,6 @@ AGENT_SYSTEM_PROMPT = (
 MAIN_AGENT_SYSTEM_PROMPT = (
     "You are the LEAD researcher answering a question from a knowledge-graph wiki. "
     "You coordinate; you do NOT read nodes yourself.\n\n"
-
     "You have two capabilities:\n"
     "- search(text): find candidate nodes (already reranked by relevance). Returns "
     "node ids + titles + summaries only.\n"
@@ -116,7 +111,6 @@ MAIN_AGENT_SYSTEM_PROMPT = (
     "subagents. Each subagent reads and navigates the graph from one starting node "
     "and reports back what it found. Use this to investigate the promising leads.\n"
     "- finish(answer, cited_node_ids): give the final compiled answer.\n\n"
-
     "How to work:\n"
     "1. Search the main question, then search individual key terms/functions in it. "
     "Do a few searches to surface different parts of the graph.\n"
@@ -129,7 +123,6 @@ MAIN_AGENT_SYSTEM_PROMPT = (
     "run explore once more; otherwise compile.\n"
     "5. Call finish with a thorough answer grounded ONLY in what the subagents "
     "reported, citing the node ids they used as evidence.\n\n"
-
     "Rules:\n"
     "- You cannot read node bodies directly; rely on the subagents' reports.\n"
     "- Always copy node ids exactly as shown, including any 'node:' prefix.\n"
@@ -142,14 +135,12 @@ SUBAGENT_SYSTEM_PROMPT = (
     "You are a research subagent exploring ONE region of a knowledge-graph wiki. "
     "A lead researcher gave you a starting node. Investigate it thoroughly and "
     "report concrete, grounded findings.\n\n"
-
     "Tools:\n"
     "- read(node_id): read a node's full body. START by reading your assigned node.\n"
     "- follow_link(node_id, direction): jump to a node's neighbors to follow "
     "references, examples, prerequisites, related concepts.\n"
     "- search(text): find more nodes by keyword if your region needs them.\n"
     "- finish(answer, cited_node_ids): report your findings + the node ids you read.\n\n"
-
     "Rules:\n"
     "1. Read your assigned starting node FIRST.\n"
     "2. Follow links and read 2-5 nodes in YOUR region to gather real evidence.\n"
@@ -175,6 +166,7 @@ ENTITY_DEDUP_PROMPT = (
     "otherwise is_same=false and target_node_id=null."
 )
 # endregion PROMPTS
+
 
 class GraphRuntime:
     # region LIFECYCLE
@@ -231,7 +223,9 @@ class GraphRuntime:
         if callable(override):
             return list(override(text))
         result = self.llm.complete_structured(KEYWORD_PROMPT, text[:8000], Keywords)
-        parsed = result if isinstance(result, Keywords) else Keywords.model_validate(result)
+        parsed = (
+            result if isinstance(result, Keywords) else Keywords.model_validate(result)
+        )
         seen: list[str] = []
         seen_lower: set[str] = set()
         for keyword in parsed.keywords:
@@ -254,7 +248,9 @@ class GraphRuntime:
                 else ClaimExtraction.model_validate(result)
             )
 
-        result = self.llm.complete_structured(CLAIM_PROMPT, text[:12000], ClaimExtraction)
+        result = self.llm.complete_structured(
+            CLAIM_PROMPT, text[:12000], ClaimExtraction
+        )
         parsed = (
             result
             if isinstance(result, ClaimExtraction)
@@ -445,7 +441,9 @@ class GraphRuntime:
         if summary_vec:
             probes.append(("vec_summary", summary_vec))
         for table, vector in probes:
-            for candidate_id, _distance in self.database.vector_search(vector, table, k + 1):
+            for candidate_id, _distance in self.database.vector_search(
+                vector, table, k + 1
+            ):
                 if candidate_id != node_id and candidate_id not in ranked:
                     ranked.append(candidate_id)
         candidates: list[Node] = []
@@ -498,7 +496,9 @@ class GraphRuntime:
 
         return edges
 
-    def _invalidate_prior_edges(self, source_id: str, target_id: str, stamp: str) -> None:
+    def _invalidate_prior_edges(
+        self, source_id: str, target_id: str, stamp: str
+    ) -> None:
         """Mark existing non-contradiction edges between a pair as invalid."""
         for edge in self.database.get_edges_for_node(target_id):
             endpoints = {edge.source_node_id, edge.target_node_id}
@@ -523,7 +523,10 @@ class GraphRuntime:
         stamp = now_iso()
         episodes = [node.id, match.target_node_id]
         edges = []
-        for src, dst in ((node.id, match.target_node_id), (match.target_node_id, node.id)):
+        for src, dst in (
+            (node.id, match.target_node_id),
+            (match.target_node_id, node.id),
+        ):
             edge = Edge(
                 id=make_edge_id(src, dst, "same-as"),
                 source_node_id=src,
@@ -537,11 +540,17 @@ class GraphRuntime:
             edges.append(edge)
         return edges
 
-    def _check_entity_duplicate(self, node: Node, candidates: list[Node]) -> EntityMatch:
+    def _check_entity_duplicate(
+        self, node: Node, candidates: list[Node]
+    ) -> EntityMatch:
         override = getattr(self.llm, "check_entity_duplicate", None)
         if callable(override):
             result = override(node, candidates)
-            return result if isinstance(result, EntityMatch) else EntityMatch.model_validate(result)
+            return (
+                result
+                if isinstance(result, EntityMatch)
+                else EntityMatch.model_validate(result)
+            )
         payload = {
             "new_node": {
                 "id": node.id,
@@ -564,9 +573,15 @@ class GraphRuntime:
             json.dumps(payload, ensure_ascii=False),
             EntityMatch,
         )
-        return result if isinstance(result, EntityMatch) else EntityMatch.model_validate(result)
+        return (
+            result
+            if isinstance(result, EntityMatch)
+            else EntityMatch.model_validate(result)
+        )
 
-    def _suggest_edges(self, node: Node, candidates: list[Node]) -> list[EdgeSuggestion]:
+    def _suggest_edges(
+        self, node: Node, candidates: list[Node]
+    ) -> list[EdgeSuggestion]:
         if not candidates:
             return []
         override = getattr(self.llm, "suggest_edges", None)
@@ -607,7 +622,9 @@ class GraphRuntime:
     # endregion SEMANTIC EDGES
 
     # region EXOGENOUS REGENERATION
-    def regenerate_exogenous_text(self, previous: Node, support_nodes: list[Node]) -> str:
+    def regenerate_exogenous_text(
+        self, previous: Node, support_nodes: list[Node]
+    ) -> str:
         if not support_nodes:
             return ""
         override = getattr(self.llm, "regenerate_exogenous", None)
@@ -640,7 +657,10 @@ class GraphRuntime:
     # region FUTURE COMPATIBILITY
     # entity dedup logic goes here later.
     # contradiction helpers go here only if needed.
+
+
 # endregion FUTURE COMPATIBILITY
+
 
 class GraphQuery:
     # region LIFECYCLE
@@ -700,7 +720,11 @@ class GraphQuery:
         limit = limit or self.settings.vector_query_k
         # With a reranker, retrieve a wide pool first then let the cross-encoder
         # pick the final `limit`; without one, the fused list is the result.
-        pool = max(limit, self.settings.search_candidate_pool) if self.reranker else max(limit, 10)
+        pool = (
+            max(limit, self.settings.search_candidate_pool)
+            if self.reranker
+            else max(limit, 10)
+        )
 
         print(f"[GraphQuery.search] resolved limit={limit}", flush=True)
         print(f"[GraphQuery.search] pool={pool}", flush=True)
@@ -711,7 +735,10 @@ class GraphQuery:
         keyword_nodes = self.database.keyword_search(text, pool)
         keyword_ids = [node.id for node in keyword_nodes]
 
-        print(f"[GraphQuery.search] keyword_search returned {len(keyword_nodes)} node(s)", flush=True)
+        print(
+            f"[GraphQuery.search] keyword_search returned {len(keyword_nodes)} node(s)",
+            flush=True,
+        )
         for i, node in enumerate(keyword_nodes, start=1):
             print(
                 f"[GraphQuery.search] BM25 {i}. id={node.id!r} | title={node.title!r}",
@@ -725,19 +752,27 @@ class GraphQuery:
         ranked_lists.append(keyword_ids)
 
         try:
-            print("[GraphQuery.search] ensuring vector extension/table availability", flush=True)
+            print(
+                "[GraphQuery.search] ensuring vector extension/table availability",
+                flush=True,
+            )
             self.runtime.ensure_vec()
 
             print("[GraphQuery.search] embedding query", flush=True)
             query_vec = self.embedder.embed_query(text)
 
             try:
-                print(f"[GraphQuery.search] query_vec length={len(query_vec)}", flush=True)
+                print(
+                    f"[GraphQuery.search] query_vec length={len(query_vec)}", flush=True
+                )
             except Exception:
                 print("[GraphQuery.search] query_vec length unavailable", flush=True)
 
             for table in ("vec_body", "vec_summary"):
-                print(f"[GraphQuery.search] running vector_search table={table!r}", flush=True)
+                print(
+                    f"[GraphQuery.search] running vector_search table={table!r}",
+                    flush=True,
+                )
 
                 vector_hits = self.database.vector_search(query_vec, table, pool)
                 vector_ids = [node_id for node_id, _score in vector_hits]
@@ -756,13 +791,21 @@ class GraphQuery:
 
                 ranked_lists.append(vector_ids)
 
-        except Exception as exc:  # noqa: BLE001 - embedding/vec unavailable: degrade to BM25
-            print("[GraphQuery.search] vector search failed; falling back to BM25-only", flush=True)
+        except (
+            Exception
+        ) as exc:  # noqa: BLE001 - embedding/vec unavailable: degrade to BM25
+            print(
+                "[GraphQuery.search] vector search failed; falling back to BM25-only",
+                flush=True,
+            )
             print(f"[GraphQuery.search] vector exception={repr(exc)}", flush=True)
 
         print("[GraphQuery.search] ranked_lists before RRF:", flush=True)
         for i, ids in enumerate(ranked_lists, start=1):
-            print(f"[GraphQuery.search] ranked_list[{i}] count={len(ids)} ids={ids}", flush=True)
+            print(
+                f"[GraphQuery.search] ranked_list[{i}] count={len(ids)} ids={ids}",
+                flush=True,
+            )
 
         fused_ids = self._rrf(ranked_lists)
 
@@ -776,7 +819,10 @@ class GraphQuery:
             node = self.database.get_node(node_id)
 
             if node is None:
-                print(f"[GraphQuery.search] node_id={node_id!r} NOT FOUND in database", flush=True)
+                print(
+                    f"[GraphQuery.search] node_id={node_id!r} NOT FOUND in database",
+                    flush=True,
+                )
                 continue
 
             print(
@@ -786,9 +832,15 @@ class GraphQuery:
 
             if node.status == NodeStatus.active:
                 nodes.append(node)
-                print(f"[GraphQuery.search] accepted active node id={node.id!r}", flush=True)
+                print(
+                    f"[GraphQuery.search] accepted active node id={node.id!r}",
+                    flush=True,
+                )
             else:
-                print(f"[GraphQuery.search] skipped inactive node id={node.id!r}", flush=True)
+                print(
+                    f"[GraphQuery.search] skipped inactive node id={node.id!r}",
+                    flush=True,
+                )
 
             if len(nodes) >= pool:
                 print("[GraphQuery.search] reached pool size; stopping", flush=True)
@@ -831,7 +883,9 @@ class GraphQuery:
             )
             return reranked
         except Exception as exc:  # noqa: BLE001 - reranker down: keep fused order
-            print(f"[GraphQuery.search] rerank failed ({exc!r}); fused order", flush=True)
+            print(
+                f"[GraphQuery.search] rerank failed ({exc!r}); fused order", flush=True
+            )
             return nodes[:limit]
 
     def _rrf(self, ranked_lists: list[list[str]]) -> list[str]:
@@ -864,7 +918,9 @@ class GraphQuery:
 
         print("[GraphQuery._rrf] final scores:", flush=True)
         for node_id in sorted_ids:
-            print(f"[GraphQuery._rrf] id={node_id!r} score={scores[node_id]}", flush=True)
+            print(
+                f"[GraphQuery._rrf] id={node_id!r} score={scores[node_id]}", flush=True
+            )
 
         return sorted_ids
 
@@ -877,7 +933,10 @@ class GraphQuery:
 
         if node:
             print("[GraphQuery.read] exact lookup succeeded", flush=True)
-            print(f"[GraphQuery.read] found id={node.id!r} title={node.title!r}", flush=True)
+            print(
+                f"[GraphQuery.read] found id={node.id!r} title={node.title!r}",
+                flush=True,
+            )
             print("=" * 80 + "\n", flush=True)
             return node
 
@@ -891,7 +950,10 @@ class GraphQuery:
 
             if node:
                 print("[GraphQuery.read] repaired lookup succeeded", flush=True)
-                print(f"[GraphQuery.read] found id={node.id!r} title={node.title!r}", flush=True)
+                print(
+                    f"[GraphQuery.read] found id={node.id!r} title={node.title!r}",
+                    flush=True,
+                )
                 print("=" * 80 + "\n", flush=True)
                 return node
 
@@ -915,7 +977,10 @@ class GraphQuery:
         if matches:
             node = matches[0]
             print("[GraphQuery.read] using best fuzzy match", flush=True)
-            print(f"[GraphQuery.read] selected id={node.id!r} title={node.title!r}", flush=True)
+            print(
+                f"[GraphQuery.read] selected id={node.id!r} title={node.title!r}",
+                flush=True,
+            )
             print("=" * 80 + "\n", flush=True)
             return node
 
@@ -938,7 +1003,10 @@ class GraphQuery:
         print(f"[GraphQuery.follow_link] limit={limit}", flush=True)
 
         normalized_direction = direction.lower().strip()
-        print(f"[GraphQuery.follow_link] normalized_direction={normalized_direction!r}", flush=True)
+        print(
+            f"[GraphQuery.follow_link] normalized_direction={normalized_direction!r}",
+            flush=True,
+        )
 
         if normalized_direction not in {"incoming", "outgoing", "both"}:
             raise ValueError("direction must be 'incoming', 'outgoing', or 'both'")
@@ -1056,7 +1124,9 @@ class GraphQuery:
         nodes = [node] if node else []
         edges = self.database.get_edges_for_node(value) if node else []
 
-        print(f"[GraphQuery._query_id] nodes={len(nodes)} edges={len(edges)}", flush=True)
+        print(
+            f"[GraphQuery._query_id] nodes={len(nodes)} edges={len(edges)}", flush=True
+        )
 
         return QueryResult(query_type="id", value=value, nodes=nodes, edges=edges)
 
@@ -1066,7 +1136,10 @@ class GraphQuery:
 
         nodes = self.database.keyword_search(value, self.settings.vector_query_k)
 
-        print(f"[GraphQuery._query_keyword] keyword_search returned {len(nodes)} node(s)", flush=True)
+        print(
+            f"[GraphQuery._query_keyword] keyword_search returned {len(nodes)} node(s)",
+            flush=True,
+        )
         for i, node in enumerate(nodes, start=1):
             print(
                 f"[GraphQuery._query_keyword] {i}. id={node.id!r} title={node.title!r}",
@@ -1094,7 +1167,9 @@ class GraphQuery:
         vector = self.embedder.embed_query(value)
 
         print("[GraphQuery._query_vector] running vector_search vec_body", flush=True)
-        hits = self.database.vector_search(vector, "vec_body", self.settings.vector_query_k)
+        hits = self.database.vector_search(
+            vector, "vec_body", self.settings.vector_query_k
+        )
 
         print(f"[GraphQuery._query_vector] hits={len(hits)}", flush=True)
         for i, hit in enumerate(hits, start=1):
@@ -1111,7 +1186,10 @@ class GraphQuery:
 
         nodes, edges = self._expand_neighborhood(seeds, hops=2)
 
-        print(f"[GraphQuery._query_vector] expanded nodes={len(nodes)} edges={len(edges)}", flush=True)
+        print(
+            f"[GraphQuery._query_vector] expanded nodes={len(nodes)} edges={len(edges)}",
+            flush=True,
+        )
 
         return QueryResult(query_type="vector", value=value, nodes=nodes, edges=edges)
 
@@ -1131,7 +1209,9 @@ class GraphQuery:
         seen_edges: dict[str, Edge] = {}
         frontier = list(seen_nodes)
 
-        print(f"[GraphQuery._expand_neighborhood] initial frontier={frontier}", flush=True)
+        print(
+            f"[GraphQuery._expand_neighborhood] initial frontier={frontier}", flush=True
+        )
 
         for hop_index in range(hops):
             print(f"[GraphQuery._expand_neighborhood] hop={hop_index + 1}", flush=True)
@@ -1139,7 +1219,10 @@ class GraphQuery:
             next_frontier: list[str] = []
 
             for node_id in frontier:
-                print(f"[GraphQuery._expand_neighborhood] expanding node_id={node_id!r}", flush=True)
+                print(
+                    f"[GraphQuery._expand_neighborhood] expanding node_id={node_id!r}",
+                    flush=True,
+                )
 
                 edges = self.database.get_edges_for_node(node_id)
                 print(
@@ -1206,7 +1289,10 @@ class GraphQuery:
         seen: dict[str, Edge] = {}
 
         for node in nodes:
-            print(f"[GraphQuery._edges_for_nodes] loading edges for node_id={node.id!r}", flush=True)
+            print(
+                f"[GraphQuery._edges_for_nodes] loading edges for node_id={node.id!r}",
+                flush=True,
+            )
 
             edges = self.database.get_edges_for_node(node.id)
             print(f"[GraphQuery._edges_for_nodes] edge_count={len(edges)}", flush=True)
@@ -1229,6 +1315,7 @@ class GraphQuery:
     # agent-facing scoring/traversal tweaks stay here later.
     # endregion FUTURE COMPATIBILITY
 
+
 class GraphExogenous:
     # region LIFECYCLE
     def __init__(
@@ -1240,6 +1327,7 @@ class GraphExogenous:
         self.database = database
         self.runtime = runtime
         self.settings = settings
+
     # endregion LIFECYCLE
 
     # region PUBLIC API
@@ -1283,7 +1371,10 @@ class GraphExogenous:
     # region FUTURE COMPATIBILITY
     # query cache / synthetic reuse goes here later.
     # query-time exogenous growth goes here later.
+
+
 # endregion FUTURE COMPATIBILITY
+
 
 class GraphAnalytics:
     # region LIFECYCLE
@@ -1304,7 +1395,9 @@ class GraphAnalytics:
                 if edge.source_node_id == node_id or edge.target_node_id == node_id
             ]
         node_ids = {node.id for node in nodes}
-        neighbors: dict[str, set[str]] = {node_id_value: set() for node_id_value in node_ids}
+        neighbors: dict[str, set[str]] = {
+            node_id_value: set() for node_id_value in node_ids
+        }
         for edge in edges:
             if edge.source_node_id in neighbors and edge.target_node_id in node_ids:
                 neighbors[edge.source_node_id].add(edge.target_node_id)
@@ -1324,10 +1417,14 @@ class GraphAnalytics:
         return GraphStats(
             total_nodes=node_count,
             active_nodes=sum(1 for node in nodes if node.status == NodeStatus.active),
-            endogenous_nodes=sum(1 for node in nodes if node.type == NodeType.endogenous),
+            endogenous_nodes=sum(
+                1 for node in nodes if node.type == NodeType.endogenous
+            ),
             exogenous_nodes=sum(1 for node in nodes if node.type == NodeType.exogenous),
             total_edges=len(edges),
-            isolated_nodes=sum(1 for node_id_value in node_ids if not neighbors[node_id_value]),
+            isolated_nodes=sum(
+                1 for node_id_value in node_ids if not neighbors[node_id_value]
+            ),
             avg_degree=round(avg_degree, 3),
             density=round(density, 5),
             mean_neighbor_overlap=round(self._mean_neighbor_overlap(neighbors), 4),
@@ -1367,14 +1464,23 @@ class GraphAnalytics:
         or ``None``/empty to fall back to the deterministic TF-IDF keyword label.
         """
         import networkx as nx
-        nodes = [node for node in self.database.get_all_nodes() if node.status == NodeStatus.active]
+
+        nodes = [
+            node
+            for node in self.database.get_all_nodes()
+            if node.status == NodeStatus.active
+        ]
         node_by_id = {node.id: node for node in nodes}
         graph = nx.Graph()
         graph.add_nodes_from(node_by_id)
         for edge in self.database.get_all_edges():
             source_id = edge.source_node_id
             target_id = edge.target_node_id
-            if source_id not in node_by_id or target_id not in node_by_id or source_id == target_id:
+            if (
+                source_id not in node_by_id
+                or target_id not in node_by_id
+                or source_id == target_id
+            ):
                 continue
             if graph.has_edge(source_id, target_id):
                 graph[source_id][target_id]["weight"] += 1.0
@@ -1401,7 +1507,9 @@ class GraphAnalytics:
             for node_id in members:
                 node = node_by_id.get(node_id)
                 if node:
-                    counts.update(kw.lower().strip() for kw in node.keywords if kw.strip())
+                    counts.update(
+                        kw.lower().strip() for kw in node.keywords if kw.strip()
+                    )
                     if node.title:
                         comm_titles.append(node.title)
             per_comm.append(counts)

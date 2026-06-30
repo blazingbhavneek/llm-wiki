@@ -1,0 +1,714 @@
+# OpenMP-API-Specification Source Lines 26631-27332
+
+Fallback page created to preserve source coverage.
+
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
+
+## Source OpenMP-API-Specification:L26631-L27332
+
+Citation: [OpenMP-API-Specification:L26631-L27332]
+
+````text
+## 33.29 OMPT severity Type
+
+<table><tr><td>Name: severityProperties: C/C++-only, OMPT</td><td>Base Type: enumeration</td></tr></table>
+
+<table><tr><td colspan="3">Values</td></tr><tr><td>Name</td><td>Value</td><td>Properties</td></tr><tr><td>ompt_warning</td><td>1</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_fatal</td><td>2</td><td>C/C++-only, OMPT</td></tr></table>
+
+Type Definition
+
+<table><tr><td>typedef enum ompt_severity_t {</td></tr><tr><td>ompt_warning = 1,</td></tr><tr><td>ompt_fatal = 2</td></tr><tr><td>} ompt_severity_t;</td></tr></table>
+
+C / C++
+
+## Semantics
+
+The severity OMPT type defines severity values.
+
+## 33.30 OMPT start\_tool\_result Type
+
+<table><tr><td>Name: start_tool_resultProperties: C/C++-only, OMPT</td><td>Base Type: structure</td></tr></table>
+
+## Fields
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>initialize</td><td>initialize</td><td>C/C++-only, OMPT</td></tr><tr><td>finalize</td><td>finalize</td><td>C/C++-only, OMPT</td></tr><tr><td>tool_data</td><td>data</td><td>C/C++-only, OMPT</td></tr></table>
+
+## Type Definition
+
+typedef struct ompt\_start\_tool\_result\_t { ompt\_initialize\_t initialize; ompt\_finalize\_t finalize; ompt\_data\_t tool\_data; } ompt\_start\_tool\_result\_t;
+
+## C / C++
+
+## Semantics
+
+The ompt\_start\_tool procedure returns a pointer to a structure of the
+
+start\_tool\_result OMPT type, which provides pointers to the tool’s initialize and finalize callbacks as well as a data object for use by the tool.
+
+## Restrictions
+
+Restrictions to the start\_tool\_result OMPT type are as follows:
+
+• The initialize and finalize callback pointer values in a start\_tool\_result structure that ompt\_start\_tool returns must be non-null values.
+
+## Cross References
+
+• OMPT data Type, see Section 33.8
+
+• finalize Callback, see Section 34.1.2
+
+• initialize Callback, see Section 34.1.1
+
+• ompt\_start\_tool Procedure, see Section 32.2.1
+
+## 33.31 OMPT state Type
+
+<table><tr><td>Name: stateProperties: C/C++-only, OMPT</td><td>Base Type: enumeration</td></tr></table>
+
+<table><tr><td colspan="3">Values</td></tr><tr><td>Name</td><td>Value</td><td>Properties</td></tr><tr><td>ompt_state_work_serial</td><td>0x000</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_state_work_parallel</td><td>0x001</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_state_work_reduction</td><td>0x002</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_state_work_free_agent</td><td>0x003</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_state_work_induction</td><td>0x004</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_state_wait_barrier_implicit_parallel</td><td>0x011</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_state_wait_barrier_implicit_workshare</td><td>0x012</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_state_wait_barrier_explicit</td><td>0x014</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_state_wait_barrier_implementation</td><td>0x015</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_state_wait_barrier_teams</td><td>0x016</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_state_wait_taskwait</td><td>0x020</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_state_wait_taskgroup</td><td>0x021</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_state_wait_mutex</td><td>0x040</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_state_wait_lock</td><td>0x041</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_state_wait_critical</td><td>0x042</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_state_wait_atomic</td><td>0x043</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_state_wait_ordered</td><td>0x044</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_state_wait_target</td><td>0x080</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_state_wait_target_map</td><td>0x081</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_state_wait_target_update</td><td>0x082</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_state_idle</td><td>0x100</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_state_overhead</td><td>0x101</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_state_undefined</td><td>0x102</td><td>C/C++-only, OMPT</td></tr></table>
+
+<table><tr><td colspan="2">typedef enum ompt_state_t {</td></tr><tr><td>ompt_state_work_serial</td><td>= 0x000,</td></tr><tr><td>ompt_state_work_parallel</td><td>= 0x001,</td></tr><tr><td>ompt_state_work_reduction</td><td>= 0x002,</td></tr><tr><td>ompt_state_work_free_agent</td><td>= 0x003,</td></tr><tr><td>ompt_state_work_induction</td><td>= 0x004,</td></tr><tr><td>ompt_state_wait_barrier_implicit_parallel</td><td>= 0x011,</td></tr><tr><td>ompt_state_wait_barrier_implicit_workshare</td><td>= 0x012,</td></tr><tr><td>ompt_state_wait_barrier_explicit</td><td>= 0x014,</td></tr><tr><td>ompt_state_wait_barrier_implementation</td><td>= 0x015,</td></tr><tr><td>ompt_state_wait_barrier_teams</td><td>= 0x016,</td></tr><tr><td>ompt_state_wait_taskwait</td><td>= 0x020,</td></tr><tr><td>ompt_state_wait_taskgroup</td><td>= 0x021,</td></tr><tr><td>ompt_state_wait_mutex</td><td>= 0x040,</td></tr><tr><td>ompt_state_wait_lock</td><td>= 0x041,</td></tr></table>
+
+ompt\_state\_wait\_critical = 0x042, ompt\_state\_wait\_atomic 0x043, ompt\_state\_wait\_ordered 0x044, ompt\_state\_wait\_target 0x080, ompt\_state\_wait\_target\_map 0x081, ompt\_state\_wait\_target\_update 0x082, ompt\_state\_idle = 0x100, ompt\_state\_overhead = 0x101, ompt\_state\_undefined = 0x102 } ompt\_state\_t;
+
+## C / C++
+
+## Semantics
+
+The state OMPT type defines thread states that indicate the current activity of a thread. If the OMPT interface is in the active state then an OpenMP implementation must maintain thread state information for each thread. The thread state maintained is an approximation of the instantaneous state of a thread. A thread state must be one of the values of the state OMPT type or an implementation defined state value of 0x200 (512) or higher that extends the OMPT type.
+
+A tool can query the OpenMP thread state at any time. If a tool queries the thread state of a native thread that is not associated with OpenMP then the implementation reports the state as ompt\_state\_undefined.
+
+The ompt\_state\_work\_serial value indicates that the thread is executing code outside all parallel regions. The ompt\_state\_work\_parallel value indicates that the thread is executing code within the scope of a parallel region. The ompt\_state\_work\_reduction value indicates that the thread is combining partial reduction results from threads in its team. An OpenMP implementation may never report a thread in this state; a thread that is combining partial reduction results may have its state reported as ompt\_state\_work\_parallel or ompt\_state\_overhead. The ompt\_state\_work\_free\_agent value indicates that the thread is executing code within the scope of a task while not being assigned to the current team of that task. The ompt\_state\_wait\_barrier\_implicit\_parallel value indicates that the thread is waiting at the implicit barrier at the end of a parallel region. The ompt\_state\_wait\_barrier\_implicit\_workshare value indicates that the thread is waiting at an implicit barrier at the end of a worksharing construct. The ompt\_state\_wait\_barrier\_explicit value indicates that the thread is waiting in an explicit barrier region. The ompt\_state\_wait\_barrier\_implementation value indicates that the thread is waiting in a barrier that the OpenMP specification does not require but the implementation introduces. The ompt\_state\_wait\_barrier\_teams value indicates that the thread is waiting at a barrier at the end of a teams region. The value ompt\_state\_wait\_taskwait indicates that the thread is waiting at a taskwait construct. The ompt\_state\_wait\_taskgroup value indicates that the thread is waiting at the end of a taskgroup construct. The ompt\_state\_wait\_mutex value indicates that the thread is waiting for a mutex of an unspecified type. The ompt\_state\_wait\_lock value indicates that the thread is waiting for a lock or nestable lock. The ompt\_state\_wait\_critical value indicates that the thread is waiting to enter a critical region. The ompt\_state\_wait\_atomic value indicates that the thread is waiting to enter an atomic region. The ompt\_state\_wait\_ordered value indicates that the thread is waiting to enter an ordered region. The ompt\_state\_wait\_target value indicates that the thread is waiting for a target region to complete. The ompt\_state\_wait\_target\_map value indicates that the thread is waiting for a mapping operation to complete. An implementation may report ompt\_state\_wait\_target for target\_data constructs. The ompt\_state\_wait\_target\_update value indicates that the thread is waiting for a target\_update operation to complete. An implementation may report ompt\_state\_wait\_target for target\_update constructs. The ompt\_state\_idle value indicates that the native thread is an idle thread, that is, it is an unassigned thread that is not a free-agent thread. The ompt\_state\_overhead value indicates that the thread is in the overhead state at any point while executing within the OpenMP runtime, except while waiting at a synchronization point. The ompt\_state\_undefined value indicates that the native thread is not created by the OpenMP implementation.
+
+## 33.32 OMPT subvolume Type
+
+<table><tr><td colspan="2">Name: subvolumeProperties: C/C++-only, OMPT</td><td colspan="2">Base Type: structure</td></tr><tr><td colspan="4">Fields</td></tr><tr><td>Name</td><td colspan="2">Type</td><td>Properties</td></tr><tr><td>base</td><td colspan="2">c_ptr</td><td>C/C++-only, intent(in), value</td></tr><tr><td>size</td><td colspan="2">c_uint64_t</td><td>value</td></tr><tr><td>num_dims</td><td colspan="2">c_uint64_t</td><td>value, positive</td></tr><tr><td>volume</td><td colspan="2">c_uint64_t</td><td>C/C++-only, intent(in), pointer</td></tr><tr><td>offsets</td><td colspan="2">c_uint64_t</td><td>C/C++-only, intent(in), pointer</td></tr><tr><td>dimensions</td><td colspan="2">c_uint64_t</td><td>C/C++-only, intent(in), pointer</td></tr></table>
+
+```c
+typedef struct ompt_subvolume_t {
+    const void *base;
+    uint64_t size;
+    uint64_t num_dims;
+    const uint64_t *volume;
+    const uint64_t *offsets;
+```
+
+C / C++
+
+The subvolume OMPT type represents a rectangular subvolume used in a rectangular-memory-copying routine.
+
+## Cross References
+
+• Memory Copying Routines, see Section 25.7
+
+## 33.33 OMPT sync\_region Type
+
+<table><tr><td>Name: sync_regionProperties: C/C++-only, OMPT, overlapping-type-name</td><td colspan="2">Base Type: enumeration</td></tr><tr><td colspan="3">Values</td></tr><tr><td>Name</td><td>Value</td><td>Properties</td></tr><tr><td>ompt_sync_region_barrier_explicit</td><td>3</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_sync_region_barrier_implementation</td><td>4</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_sync_region_taskwait</td><td>5</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_sync_region_taskgroup</td><td>6</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_sync_region_reduction</td><td>7</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_sync_region_barrier_implicit_workshare</td><td>8</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_sync_region_barrier_implicit_parallel</td><td>9</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_sync_region_barrier_teams</td><td>10</td><td>C/C++-only, OMPT</td></tr><tr><td colspan="3">Type DefinitionC / C++typedef enum ompt_sync_region_t {ompt_sync_region_barrier_explicit = 3,ompt_sync_region_barrier_implementation = 4,ompt_sync_region_taskwait = 5,ompt_sync_region_taskgroup = 6,ompt_sync_region_reduction = 7,ompt_sync_region_barrier_implicit_workshare = 8,ompt_sync_region_barrier_implicit_parallel = 9,ompt_sync_region_barrier_teams = 10} ompt_sync_region_t;</td></tr></table>
+
+The sync\_region OMPT type defines the valid synchronization region values.
+
+33.34 OMPT target Type
+
+<table><tr><td>Name: targetProperties: C/C++-only, OMPT</td><td colspan="2">Base Type: enumeration</td></tr><tr><td colspan="3">Values</td></tr><tr><td>Name</td><td>Value</td><td>Properties</td></tr><tr><td>ompt_target</td><td>1</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_enter_data</td><td>2</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_exit_data</td><td>3</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_update</td><td>4</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_nowait</td><td>9</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_enter_data_nowait</td><td>10</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_exit_data_nowait</td><td>11</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_update_nowait</td><td>12</td><td>C/C++-only, OMPT</td></tr></table>
+
+<table><tr><td colspan="2">typedef enum ompt_target_t {</td></tr><tr><td>ompt_target</td><td>= 1,</td></tr><tr><td>ompt_target_enter_data</td><td>= 2,</td></tr><tr><td>ompt_target_exit_data</td><td>= 3,</td></tr><tr><td>ompt_target_update</td><td>= 4,</td></tr><tr><td>ompt_target_nowait</td><td>= 9,</td></tr><tr><td>ompt_target_enter_data_nowait</td><td>= 10,</td></tr><tr><td>ompt_target_exit_data_nowait</td><td>= 11,</td></tr><tr><td>ompt_target_update_nowait</td><td>= 12</td></tr><tr><td colspan="2">} ompt_target_t;</td></tr></table>
+
+## Semantics
+
+The target OMPT type defines valid values to identify device constructs.
+
+## 33.35 OMPT target\_data\_op Type
+
+<table><tr><td>Name: target_data_opProperties: C/C++-only, OMPT</td><td>Base Type: enumeration</td></tr></table>
+
+<table><tr><td colspan="3">Values</td></tr><tr><td>Name</td><td>Value</td><td>Properties</td></tr><tr><td>ompt_target_data_alloc</td><td>1</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_data_delete</td><td>4</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_data_associate</td><td>5</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_data_disassociate</td><td>6</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_data_transfer</td><td>7</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_data_memset</td><td>8</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_data_transfer_rect</td><td>9</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_data_alloc_async</td><td>17</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_data_delete_async</td><td>20</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_data_transfer_async</td><td>23</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_data_memset_async</td><td>24</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_data_transfer_rect_async</td><td>25</td><td>C/C++-only, OMPT</td></tr></table>
+
+## Type Definition
+
+## C / C++
+
+typedef enum ompt\_target\_data\_op\_t { ompt\_target\_data\_alloc = 1, ompt\_target\_data\_delete = 4, ompt\_target\_data\_associate = 5, ompt\_target\_data\_disassociate = 6, ompt\_target\_data\_transfer = 7, ompt\_target\_data\_memset = 8, ompt\_target\_data\_transfer\_rect = 9, ompt\_target\_data\_alloc\_async = 17, ompt\_target\_data\_delete\_async = 20, ompt\_target\_data\_transfer\_async = 23, ompt\_target\_data\_memset\_async = 24, ompt\_target\_data\_transfer\_rect\_async = 25 } ompt\_target\_data\_op\_t;
+
+## C / C++
+
+## Additional information
+
+The following instances and associated values of the target\_data\_op OMPT type are also defined: ompt\_target\_data\_transfer\_to\_device, with value 2;
+
+ompt\_target\_data\_transfer\_from\_device, with value 3;
+
+ompt\_target\_data\_transfer\_to\_device\_async, with value 18; and
+
+ompt\_target\_data\_transfer\_from\_device, with value 19. These instances have been deprecated.
+
+## Semantics
+
+The target\_data\_op OMPT type indicates the kind of target data operation for target\_data\_op\_emi callbacks, which can be allocate (ompt\_target\_data\_alloc and ompt\_target\_data\_alloc\_async); delete (ompt\_target\_data\_delete and
+
+```txt
+typedef enum empt_target_map_flag_t {
+    empt_target_map_flag_to          = 0x01,
+    empt_target_map_flag_from       = 0x02,
+    empt_target_map_flag_alloc     = 0x04,
+    empt_target_map_flag_release   = 0x08,
+    empt_target_map_flag_delete   = 0x10,
+    empt_target_map_flag_implicit = 0x20,
+    empt_target_map_flag_always   = 0x40,
+    empt_target_map_flag_present   = 0x80,
+    empt_target_map_flag_close      = 0x100,
+    empt_target_map_flag_shared   = 0x200
+} empt_target_map_flag_t;
+```
+
+```txt
+ompt_target_data_delete_async); associate (ompt_target_data_associate);
+disassociate (ompt_target_data_disassociate); transfer
+(ompt_target_data_transfer, ompt_target_data_transfer_async,
+ompt_target_data_transfer_rect, and
+ompt_target_data_transfer_rect_async); or memset
+(ompt_target_data_memset and ompt_target_data_memset_async), where the
+values that end with _async correspond to asynchronous data operations.
+```
+
+## 33.36 OMPT target\_map\_flag Type
+
+<table><tr><td>Name: target_map_flagProperties: C/C++-only, OMPT</td><td>Base Type: enumeration</td></tr></table>
+
+<table><tr><td colspan="3">Values</td></tr><tr><td>Name</td><td>Value</td><td>Properties</td></tr><tr><td>ompt_target_map_flag_to</td><td>0x01</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_map_flag_from</td><td>0x02</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_map_flag_alloc</td><td>0x04</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_map_flag_release</td><td>0x08</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_map_flag_delete</td><td>0x10</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_map_flag_implicit</td><td>0x20</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_map_flag_always</td><td>0x40</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_map_flag_present</td><td>0x80</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_map_flag_close</td><td>0x100</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_target_map_flag_shared</td><td>0x200</td><td>C/C++-only, OMPT</td></tr></table>
+
+## Type Definition
+
+## Semantics
+
+The target\_map\_flag OMPT type defines the valid map flag values. The ompt\_target\_map\_flag\_to, ompt\_target\_map\_flag\_from,
+
+ompt\_target\_map\_flag\_alloc, and ompt\_target\_map\_flag\_release values are set when the mapping operations have the corresponding map-type. If the map-type for the mapping operations is tofrom, both the ompt\_target\_map\_flag\_to and ompt\_target\_map\_flag\_from values are set. The ompt\_target\_map\_flag\_implicit value is set if the mapping operations correspond to implicitly determined data-mapping attributes. The ompt\_target\_map\_flag\_delete, ompt\_target\_map\_flag\_always, ompt\_target\_map\_flag\_present, and ompt\_target\_map\_flag\_close, values are set if the mapping operations are specified with the corresponding map-type-modifier modifiers. The ompt\_target\_map\_flag\_shared value is set if the original storage and corresponding storage are shared for the mapping operation.
+
+## 33.37 OMPT task\_flag Type
+
+<table><tr><td>Name: task_flagProperties: C/C++-only, OMPT</td><td colspan="2">Base Type: enumeration</td></tr><tr><td colspan="3">Values</td></tr><tr><td>Name</td><td>Value</td><td>Properties</td></tr><tr><td>ompt_task_initial</td><td>0x00000001</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_task_implicit</td><td>0x00000002</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_task_explicit</td><td>0x00000004</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_task_target</td><td>0x00000008</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_task_taskwait</td><td>0x00000010</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_task_importing</td><td>0x02000000</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_task_exporting</td><td>0x04000000</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_task_undeferred</td><td>0x08000000</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_task_untied</td><td>0x10000000</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_task_final</td><td>0x20000000</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_task_mergeable</td><td>0x40000000</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_task_merged</td><td>0x80000000</td><td>C/C++-only, OMPT</td></tr><tr><td>Name: task_statusProperties: C/C++-only, OMPT</td><td colspan="2">Base Type: enumeration</td></tr><tr><td colspan="3">Values</td></tr><tr><td>Name</td><td>Value</td><td>Properties</td></tr><tr><td>ompt_task_complete</td><td>1</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_task_yield</td><td>2</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_task_cancel</td><td>3</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_task_detach</td><td>4</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_task_early_fulfill</td><td>5</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_task_late_fulfill</td><td>6</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_task_switch</td><td>7</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_taskwait_complete</td><td>8</td><td>C/C++-only, OMPT</td></tr></table>
+
+## Type Definition
+
+<table><tr><td colspan="2">typedef enum empt_task_flag_t {</td></tr><tr><td>empt_task_initial</td><td>= 0x00000001,</td></tr><tr><td>empt_task_implicit</td><td>= 0x00000002,</td></tr><tr><td>empt_task_explicit</td><td>= 0x00000004,</td></tr><tr><td>empt_task_target</td><td>= 0x00000008,</td></tr><tr><td>empt_task_taskwait</td><td>= 0x00000010,</td></tr><tr><td>empt_task_importing</td><td>= 0x02000000,</td></tr><tr><td>empt_task_exporting</td><td>= 0x04000000,</td></tr><tr><td>empt_task_undeferred</td><td>= 0x08000000,</td></tr><tr><td>empt_task_untied</td><td>= 0x10000000,</td></tr><tr><td>empt_task_final</td><td>= 0x20000000,</td></tr><tr><td>empt_task_mergeable</td><td>= 0x40000000,</td></tr><tr><td>empt_task_merged</td><td>= 0x80000000</td></tr><tr><td colspan="2">} empt_task_flag_t;</td></tr></table>
+
+## Semantics
+
+The task\_flag OMPT type defines valid task values. The least significant byte provides information about the general classification of the task. The other bits represent its properties.
+
+## 33.38 OMPT task\_status Type
+
+## Semantics
+
+The task\_status OMPT type indicates the reason that a task was switched when it reached a task scheduling point. The ompt\_task\_complete value indicates that the task that encountered the task scheduling point completed execution of its associated structured block and any associated allow-completion event was fulfilled. The ompt\_task\_yield value indicates that the task encountered a taskyield construct. The ompt\_task\_cancel value indicates that the task was canceled when it encountered an active cancellation point. The ompt\_task\_detach value indicates that a task for which the detach clause was specified completed execution of the associated structured block and is waiting for an allow-completion event to be fulfilled. The ompt\_task\_early\_fulfill value indicates that the allow-completion event of the task was fulfilled before the task completed execution of the associated structured block. The ompt\_task\_late\_fulfill value indicates that the allow-completion event of the task was fulfilled after the task completed execution of the associated structured block. The ompt\_taskwait\_complete value indicates completion of the dependent task that results from a taskwait construct with one or more depend clauses. The ompt\_task\_switch value is used for all other cases that a task was switched.
+
+## 33.39 OMPT thread Type
+
+<table><tr><td>Name: threadProperties: C/C++-only, OMPT</td><td colspan="2">Base Type: enumeration</td></tr><tr><td colspan="3">Values</td></tr><tr><td>Name</td><td>Value</td><td>Properties</td></tr><tr><td>ompt_thread_initial</td><td>1</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_thread_worker</td><td>2</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_thread_other</td><td>3</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_thread_unknown</td><td>4</td><td>C/C++-only, OMPT</td></tr></table>
+
+## Type Definition
+
+C / C++
+
+ompt\_thread\_initial = 1,
+
+ompt\_thread\_worker = 2,
+
+ompt\_thread\_other = 3,
+
+ompt\_thread\_unknown = 4
+
+} ompt\_thread\_t;
+
+C / C++
+
+## Semantics
+
+The thread OMPT type defines the valid thread type values. Any initial thread has thread type ompt\_thread\_initial. All threads that are thread-pool-worker threads have thread type ompt\_thread\_worker. A native thread that an OpenMP implementation uses but that does not execute user code has thread type ompt\_thread\_other. Any native thread that is created outside an OpenMP implementation and that is not an initial thread has thread type ompt\_thread\_unknown.
+
+## 33.40 OMPT wait\_id Type
+
+<table><tr><td>Name: wait_idProperties: C/C++-only, OMPT</td><td colspan="2">Base Type: c_uint64_t</td></tr><tr><td colspan="3">Predefined Identifiers</td></tr><tr><td>Name</td><td>Value</td><td>Properties</td></tr><tr><td>ompt_wait_id_none</td><td>0</td><td>C/C++-only, OMPT</td></tr><tr><td colspan="3">Type DefinitionC / C+mtypedef uint64_t ompt_wait_id_t;C / C++</td></tr></table>
+
+## Semantics
+
+The wait\_id OMPT type describes wait identifiers for a thread; each thread maintains one of these wait identifiers. When a task that a thread executes is waiting for mutual exclusion, the wait identifier of the thread indicates the reason that the thread is waiting. A wait identifier may represent the name argument of a critical section, or a lock, or a variable accessed in an atomic region, or a synchronization object that is internal to an OpenMP implementation. When a thread is not in a wait state then the value of the wait identifier of the thread is undefined.
+
+33.41 OMPT work Type
+
+<table><tr><td>Name: workProperties: C/C++-only, OMPT, overlapping-type-name</td><td colspan="2">Base Type: enumeration</td></tr><tr><td colspan="3">Values</td></tr><tr><td>Name</td><td>Value</td><td>Properties</td></tr><tr><td>ompt_work_loop</td><td>1</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_work_sections</td><td>2</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_work_single_executor</td><td>3</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_work_single_other</td><td>4</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_work_workshare</td><td>5</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_work_distribute</td><td>6</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_work_taskloop</td><td>7</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_work_scope</td><td>8</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_work_workdistribute</td><td>9</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_work_loop_static</td><td>10</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_work_loop_dynamic</td><td>11</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_work_loop_guided</td><td>12</td><td>C/C++-only, OMPT</td></tr><tr><td>ompt_work_loop_other</td><td>13</td><td>C/C++-only, OMPT</td></tr><tr><td colspan="3">Type DefinitionC / C++typedef enum ompt_work_t {ompt_work_loop = 1,ompt_work_sections = 2,ompt_work_single_executor = 3,ompt_work_single_other = 4,ompt_work_workshare = 5,ompt_work_distribute = 6,ompt_work_taskloop = 7,ompt_work_scope = 8,ompt_work_workdistribute = 9,ompt_work_loop_static = 10,ompt_work_loop_dynamic = 11,ompt_work_loop_guided = 12,ompt_work_loop_other = 13} ompt_work_t;</td></tr></table>
+
+The work OMPT type defines the valid work values.
+
+## 34 General Callbacks and Trace Records
+
+This chapter describes general OMPT callbacks that an OMPT tool may register and that are called during the runtime of an OpenMP program. The C/C++ header file (omp-tools.h) provides the types that this chapter defines. Tool implementations of callbacks are not required to be async signal safe.
+
+Several OMPT callbacks include a codeptr\_ra argument that relates the implementation of an OpenMP region to its source code. If a routine implements the region associated with a callback then codeptr\_ra contains the return address of the call to that routine. If the implementation of the region is inlined then codeptr\_ra contains the return address of the callback invocation. If attribution to source code is impossible or inappropriate, codeptr\_ra may be NULL.
+
+Several OMPT callbacks have a flags argument; the meaning and valid values for that argument is described with the callback. Some callbacks have an encountering\_task\_frame argument that points to the frame object that is associated with the encountering task. The behavior for accessing the frame object after the callback returns is unspecified. Some callbacks have a tool\_data argument that is a pointer to the tool\_data field in the start\_tool\_result structure that
+
+ompt\_start\_tool returned. Some callbacks have a parallel\_data argument; the binding of these arguments is the parallel or teams region that is beginning or ending or the current parallel region for callbacks that are dispatched during the execution of one. Some callbacks have an encountering\_task\_data argument; the binding of these arguments is the encountering task. Some callbacks have an endpoint argument that indicates whether the callback signals that a region begins or ends. Some callbacks have a wait\_id argument, which indicates the object being awaited. Several OMPT callbacks have a task\_data argument; unless otherwise specified, the binding of these arguments is the encountering task of the event for which the implementation dispatches the callback. For some of those callbacks, OpenMP semantics imply that this task to which the task\_data argument binds is the implicit task that executes the structured block of the binding parallel region or teams region.
+
+An implementation may also provide a trace of events per device. Along with the callbacks, this chapter also defines standard trace records. For these trace records, unless otherwise specified, tool data arguments are replaced by an ID, which must be initialized by the OpenMP implementation. Each of parallel\_id, task\_id, and thread\_id must be unique per target region. If the target\_emi callback is dispatched, the target\_id used in any trace records associated with the device region is given by the value field of the target\_data data object that is set in the callback.
+
+## Restrictions
+
+Restrictions to OpenMP tool callbacks are as follows:
+
+• Tool callbacks may not use directives or call any routines.
+
+• Tool callbacks must exit by either returning to the caller or aborting.
+
+## 34.1 Initialization and Finalization Callbacks
+
+This section describes callbacks that are called to initialize and to finalize tools and when native threads are initialized and finalized.
+
+## 34.1.1 initialize Callback
+
+<table><tr><td>Name: initializeCategory: function</td><td>Properties: C/C++-only, OMPT</td></tr></table>
+
+## Return Type and Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td></td><td>integer</td><td>default</td></tr><tr><td>lookup</td><td>function_lookup</td><td>OMPT</td></tr><tr><td>initial_device_num</td><td>integer</td><td>default</td></tr><tr><td>tool_data</td><td>data</td><td>OMPT, pointer</td></tr></table>
+
+## Type Signature
+
+C / C++
+
+typedef int (<sub>\*</sub>ompt\_initialize\_t) (ompt\_function\_lookup\_t lookup, int initial\_device\_num, ompt\_data\_t \*tool\_data);
+
+C / C++
+
+## Semantics
+
+A tool provides an initialize callback, which has the initialize OMPT type, in the non-null pointer to a start\_tool\_result OMPT type structure that its implementation of ompt\_start\_tool returns. An OpenMP implementation must call this OMPT-tool initializer after fully initializing itself but before beginning execution of any construct or routine. An initialize callback returns a non-zero value if it succeeds; otherwise, the OMPT interface state changes to OMPT inactive as described in Section 32.2.3.
+
+The lookup argument of an initialize callback is a pointer to a runtime entry point that a tool must use to obtain pointers to the other entry points in the OMPT interface. The initial\_device\_num argument provides the value that a call to omp\_get\_initial\_device would return.
+
+C / C++
+
+A callback of initialize OMPT type is a callback of type ompt\_initialize\_t.
+
+C / C++
+
+## Cross References
+
+• OMPT data Type, see Section 33.8
+
+• omp\_get\_initial\_device Routine, see Section 24.10
+
+• ompt\_start\_tool Procedure, see Section 32.2.1
+
+• OMPT start\_tool\_result Type, see Section 33.30
+
+## 34.1.2 finalize Callback
+
+<table><tr><td>Name: finalizeCategory: subroutine</td><td>Properties: C/C++-only, OMPT</td></tr></table>
+
+## Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>tool_data</td><td>data</td><td>OMPT, pointer</td></tr></table>
+
+## Type Signature
+
+C / C++
+
+typedef void (<sub>\*</sub>ompt\_finalize\_t) (ompt\_data\_t <sub>\*</sub>tool\_data);
+
+C / C++
+
+## Semantics
+
+A tool provides a finalize callback, which has the finalize OMPT type, in the non-null pointer to a start\_tool\_result OMPT type structure that its implementation of ompt\_start\_tool returns. An OpenMP implementation must call this OMPT-tool finalizer after the last OMPT event as the OpenMP implementation shuts down.
+
+C / C++
+
+A callback of finalize OMPT type is a callback of type ompt\_finalize\_t.
+
+C / C++
+
+## Cross References
+
+• OMPT data Type, see Section 33.8
+
+• ompt\_start\_tool Procedure, see Section 32.2.1
+
+• OMPT start\_tool\_result Type, see Section 33.30
+
+## 34.1.3 thread\_begin Callback
+
+<table><tr><td>Name: thread_beginCategory: subroutine</td><td>Properties: C/C++-only, OMPT</td></tr></table>
+
+## Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>thread_type</td><td>thread</td><td>OMPT</td></tr><tr><td>thread_data</td><td>data</td><td>OMPT, pointer, untraced-argument</td></tr></table>
+
+## Type Signature
+
+C / C++
+
+typedef void (<sub>\*</sub>ompt\_callback\_thread\_begin\_t) ( ompt\_thread\_t thread\_type, ompt\_data\_t <sub>\*</sub>thread\_data);
+
+## Trace Record
+
+C / C++
+
+typedef struct ompt\_record\_thread\_begin\_t {
+
+ompt\_thread\_t thread\_type;
+
+} ompt\_record\_thread\_begin\_t;
+
+C / C++
+
+## Semantics
+
+A tool provides a thread\_begin callback, which has the thread\_begin OMPT type, that the OpenMP implementation dispatches when native threads are created. The thread\_type argument indicates the type of the new thread: initial, worker, other, or unknown. The binding of the thread\_data argument is the new thread.
+
+Cross References
+
+• OMPT data Type, see Section 33.8
+
+• OMPT thread Type, see Section 33.39
+
+## 34.1.4 thread\_end Callback
+
+<table><tr><td>Name: thread_endCategory: subroutine</td><td>Properties: C/C++-only, OMPT</td></tr></table>
+
+## Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>thread_data</td><td>data</td><td>OMPT, pointer</td></tr></table>
+
+## Type Signature
+
+C / C++
+
+typedef void (<sub>\*</sub>ompt\_callback\_thread\_end\_t) ( ompt\_data\_t <sub>\*</sub>thread\_data);
+
+C / C++
+
+## Semantics
+
+A tool provides a thread\_end callback, which has the thread\_end OMPT type, that the OpenMP implementation dispatches when native threads are destroyed. The binding of the thread\_data argument is the thread that will be destroyed.
+
+## Cross References
+
+• OMPT data Type, see Section 33.8
+
+## 34.2 error Callback
+
+<table><tr><td>Name: errorCategory: subroutine</td><td>Properties: C/C++-only, OMPT</td></tr></table>
+
+## Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>severity</td><td>severity</td><td>OMPT</td></tr><tr><td>message</td><td>char</td><td>intent(in), pointer</td></tr><tr><td>length</td><td>size_t</td><td>default</td></tr><tr><td>codeptr_ra</td><td>void</td><td>intent(in), pointer</td></tr></table>
+
+## Type Signature
+
+C / C++
+
+typedef void (<sub>\*</sub>ompt\_callback\_error\_t) (ompt\_severity\_t severity, const char <sub>\*</sub>message, size\_t length, const void <sub>\*</sub>codeptr\_ra);
+
+C / C++
+
+## Trace Record
+
+C / C++
+
+typedef struct ompt\_record\_error\_t {
+
+ompt\_severity\_t severity;
+
+const char <sub>\*</sub>message;
+
+size\_t length;
+
+const void <sub>\*</sub>codeptr\_ra;
+
+} ompt\_record\_error\_t;
+
+C / C++
+
+## Semantics
+
+A tool provides an error callback, which has the error OMPT type, that the OpenMP implementation dispatches when an error directive is encountered for which the action-time argument of the at clause is specified as execution. The severity argument passes the specified severity level. The message argument passes the C string from the message clause. The length argument provides the length of the C string.
+
+Cross References
+
+• error Directive, see Section 10.1
+
+• OMPT severity Type, see Section 33.29
+
+## 34.3 Parallelism Generation Callback Signatures
+
+This section describes callbacks that are related to constructs for generating and controlling parallelism.
+
+34.3.1 parallel\_begin Callback
+
+<table><tr><td>Name: parallel_beginCategory: subroutine</td><td>Properties: C/C++-only, OMPT</td></tr></table>
+
+## Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>encountering_task_data</td><td>data</td><td>OMPT, pointer</td></tr><tr><td>encountering_task_frame</td><td>frame</td><td>intent(in), OMPT, pointer, untraced-argument</td></tr><tr><td>parallel_data</td><td>data</td><td>OMPT, pointer</td></tr><tr><td>requested_parallelism</td><td>integer</td><td>unsigned</td></tr><tr><td>flags</td><td>integer</td><td>default</td></tr><tr><td>codeptr_ra</td><td>void</td><td>intent(in), pointer</td></tr></table>
+
+## Type Signature
+
+C / C++
+
+typedef void (<sub>\*</sub>ompt\_callback\_parallel\_begin\_t) ( ompt\_data\_t \*encountering\_task\_data, const ompt\_frame\_t \*encountering\_task\_frame, ompt\_data\_t \*parallel\_data, unsigned int requested\_parallelism, int flags, const void \*codeptr\_ra);
+
+C / C++
+
+## Trace Record
+
+C / C++
+
+typedef struct ompt\_record\_parallel\_begin\_t {
+
+ompt\_id\_t encountering\_task\_id;
+
+ompt\_id\_t parallel\_id;
+
+unsigned int requested\_parallelism;
+
+const void <sub>\*</sub>codeptr\_ra;
+
+} ompt\_record\_parallel\_begin\_t;
+
+C / C++
+
+## Semantics
+
+A tool provides a parallel\_begin callback, which has the parallel\_begin OMPT type, that the OpenMP implementation dispatches when a parallel or teams region starts. The requested\_parallelism argument indicates the number of threads or teams that the user requested. The flags argument indicates whether the code for the region is inlined into the application or invoked by the runtime and also whether the region is a parallel or teams region. Valid values for flags are a disjunction of elements in the parallel\_flag OMPT type.
+
+## Cross References
+
+• OMPT data Type, see Section 33.8
+
+• OMPT frame Type, see Section 33.15
+
+• OMPT id Type, see Section 33.18
+
+• parallel Construct, see Section 12.1
+
+• OMPT parallel\_flag Type, see Section 33.22
+
+• teams Construct, see Section 12.2
+
+## 34.3.2 parallel\_end Callback
+
+<table><tr><td>Name: parallel_endCategory: subroutine</td><td>Properties: C/C++-only, OMPT</td></tr></table>
+
+## Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>parallel_data</td><td>data</td><td>OMPT, pointer</td></tr><tr><td>encountering_task_data</td><td>data</td><td>OMPT, pointer</td></tr><tr><td>flags</td><td>integer</td><td>default</td></tr><tr><td>codeptr_ra</td><td>void</td><td>intent(in), pointer</td></tr></table>
+
+## Type Signature
+
+C / C++
+
+typedef void (<sub>\*</sub>ompt\_callback\_parallel\_end\_t) ( ompt\_data\_t \*parallel\_data, ompt\_data\_t \*encountering\_task\_data, int flags, const void \*codeptr\_ra);
+
+C / C++
+
+## Trace Record
+
+C / C++
+
+typedef struct ompt\_record\_parallel\_end\_t {
+
+ompt\_id\_t parallel\_id;
+
+ompt\_id\_t encountering\_task\_id;
+
+int flags;
+
+const void <sub>\*</sub>codeptr\_ra;
+
+} ompt\_record\_parallel\_end\_t;
+
+C / C++
+
+## Semantics
+
+A tool provides a parallel\_end callback, which has the parallel\_end OMPT type, that the OpenMP implementation dispatches when a parallel or teams region ends. The flags
+
+argument indicates whether the code for the region is inlined into the application or invoked by the runtime and also whether the region is a parallel or teams region. Valid values for flags are a disjunction of elements in the parallel\_flag OMPT type.
+
+## Cross References
+
+• OMPT data Type, see Section 33.8
+
+• OMPT id Type, see Section 33.18
+
+• parallel Construct, see Section 12.1
+
+• OMPT parallel\_flag Type, see Section 33.22
+
+• teams Construct, see Section 12.2
+
+## 34.3.3 masked Callback
+
+<table><tr><td>Name: maskedCategory: subroutine</td><td>Properties: C/C++-only, OMPT</td></tr></table>
+
+## Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>endpoint</td><td>scope_endpoint</td><td>OMPT</td></tr><tr><td>parallel_data</td><td>data</td><td>OMPT, pointer</td></tr><tr><td>task_data</td><td>data</td><td>OMPT, pointer</td></tr><tr><td>codeptr_ra</td><td>void</td><td>intent(in), pointer</td></tr></table>
+
+## Type Signature
+
+C / C++
+
+typedef void (<sub>\*</sub>ompt\_callback\_masked\_t) ( ompt\_scope\_endpoint\_t endpoint, ompt\_data\_t <sub>\*</sub>parallel\_data, ompt\_data\_t <sub>\*</sub>task\_data, const void <sub>\*</sub>codeptr\_ra);
+
+C / C++
+
+## Trace Record
+
+C / C++
+
+typedef struct ompt\_record\_masked\_t { ompt\_scope\_endpoint\_t endpoint; ompt\_id\_t parallel\_id; ompt\_id\_t task\_id; const void <sub>\*</sub>codeptr\_ra; } ompt\_record\_masked\_t;
+
+C / C++
+
+## Semantics
+
+26 A tool provides a masked callback, which has the masked OMPT type, that the OpenMP 27 implementation dispatches for masked regions.
+
+## Cross References
+
+• OMPT data Type, see Section 33.8
+
+• masked Construct, see Section 12.5
+
+• OMPT id Type, see Section 33.18
+
+• OMPT scope\_endpoint Type, see Section 33.27
+
+## 34.4 Work Distribution Callback Signatures
+
+This section describes callbacks that are related to work-distribution constructs.
+
+## 34.4.1 work Callback
+
+<table><tr><td colspan="2">Name: workCategory: subroutine</td><td>Properties: C/C++-only, OMPT, overlapping-type-name</td></tr><tr><td colspan="3">Arguments</td></tr><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>work_type</td><td>work</td><td>OMPT, overlapping-type-name</td></tr><tr><td>endpoint</td><td>scope_endpoint</td><td>OMPT</td></tr><tr><td>parallel_data</td><td>data</td><td>OMPT, pointer</td></tr><tr><td>task_data</td><td>data</td><td>OMPT, pointer</td></tr><tr><td>count</td><td>c_uint64_t</td><td>default</td></tr><tr><td>codeptr_ra</td><td>void</td><td>intent(in), pointer</td></tr><tr><td colspan="3">Type SignatureC / C++typedef void (*empt_callback_work_t) (empt_work_t work_type,empt_scope_endpoint_t endpoint,empt_data_t *parallel_data,empt_data_t *task_data, uint64_t count, const void *codeptr_ra);C / C++Trace RecordC / C++typedef struct empt_record_work_t {empt_work_t work_type;empt_scope_endpoint_t endpoint;empt_id_t parallel_id;empt_id_t task_id;uint64_t count;const void *codeptr_ra;}empt_record_work_t;</td></tr></table>
+
+## Semantics
+
+A tool provides a work callback, which has the work OMPT type, that the OpenMP implementation dispatches for worksharing regions and taskloop regions. The work\_type argument indicates the kind of region. The count argument is a measure of the quantity of work involved in the construct. For a worksharing-loop construct or taskloop construct, count represents the number of collapsed iterations. For a sections construct, count represents the number of sections. For a workshare or workdistribute construct, count represents the units of work, as defined by the workshare or workdistribute construct. For a single or scope construct, count is always 1. When the endpoint argument signals the end of a region, a count value of 0 indicates that the actual count value is not available.
+
+## Cross References
+
+• OMPT data Type, see Section 33.8
+
+• Work-Distribution Constructs, see Chapter 13
+
+• OMPT id Type, see Section 33.18
+
+• OMPT scope\_endpoint Type, see Section 33.27
+
+• taskloop Construct, see Section 14.2
+
+• OMPT work Type, see Section 33.41
+
+## 34.4.2 dispatch Callback
+
+<table><tr><td>Name: dispatchCategory: subroutine</td><td>Properties: C/C++-only, OMPT, overlapping-type-name</td></tr></table>
+
+Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td> $parallel\_data$ </td><td>data</td><td>OMPT, pointer</td></tr><tr><td> $task\_data$ </td><td>data</td><td>OMPT, pointer</td></tr><tr><td>kind</td><td>dispatch</td><td>OMPT, overlapping-type-name</td></tr><tr><td>instance</td><td>data</td><td>OMPT</td></tr></table>
+
+## Type Signature
+
+C / C++
+
+typedef void (<sub>\*</sub>ompt\_callback\_dispatch\_t) ( ompt\_data\_t \*parallel\_data, ompt\_data\_t \*task\_data, ompt\_dispatch\_t kind, ompt\_data\_t instance);
+
+C / C++
+
+## Trace Record
+
+C / C++
+
+typedef struct ompt\_record\_dispatch\_t { ompt\_id\_t parallel\_id; ompt\_id\_t task\_id; ompt\_dispatch\_t kind; ompt\_id\_t instance; } ompt\_record\_dispatch\_t;
+
+## C / C++
+
+## Semantics
+
+A tool provides a dispatch callback, which has the dispatch OMPT type (which has an overlapping type name with the dispatch OMPT type that applies to the kind argument of the callback), that the OpenMP implementation dispatches when a thread begins to execute a section or a collapsed iteration. The kind argument indicates whether a collapsed iteration or a section is being dispatched. If the kind argument is ompt\_dispatch\_iteration, the value field of the instance argument contains the logical iteration number. If the kind argument is ompt\_dispatch\_section, the ptr field of the instance argument contains a code address that identifies the structured block. In cases where a routine implements the structured block associated with this callback, the ptr field of the instance argument contains the return address of the call to the routine. In cases where the implementation of the structured block is inlined, the ptr field of the instance argument contains the return address of the invocation of this callback. If the kind argument is ompt\_dispatch\_ws\_loop\_chunk, ompt\_dispatch\_taskloop\_chunk or ompt\_dispatch\_distribute\_chunk, the ptr field of the instance argument points to a structure of type dispatch\_chunk that contains the information for the chunk.
+
+## Cross References
+
+• OMPT data Type, see Section 33.8
+
+• OMPT dispatch Type, see Section 33.13
+
+• OMPT dispatch\_chunk Type, see Section 33.14
+
+• Worksharing-Loop Constructs, see Section 13.6
+
+• OMPT id Type, see Section 33.18
+
+• sections Construct, see Section 13.3
+
+• taskloop Construct, see Section 14.2
+
+# 34.5 Tasking Callback Signatures
+
+This section describes callbacks that are related to tasks.
+
+## 34.5.1 task\_create Callback
+
+<table><tr><td>Name: task_createCategory: subroutine</td><td>Properties: C/C++-only, OMPT</td></tr></table>
+
+## Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>encountering_task_data</td><td>data</td><td>OMPT, pointer</td></tr><tr><td>encountering_task_frame</td><td>frame</td><td>intent(in), OMPT, pointer, untraced-argument</td></tr><tr><td>new_task_data</td><td>data</td><td>OMPT, pointer</td></tr><tr><td>flags</td><td>integer</td><td>default</td></tr><tr><td>has_dependencies</td><td>integer</td><td>default</td></tr><tr><td>codeptr_ra</td><td>void</td><td>intent(in), pointer</td></tr></table>
+
+## Type Signature
+
+C / C++
+
+typedef void (<sub>\*</sub>ompt\_callback\_task\_create\_t) ( ompt\_data\_t \*encountering\_task\_data, const ompt\_frame\_t \*encountering\_task\_frame, ompt\_data\_t \*new\_task\_data, int flags, int has\_dependences, const void \*codeptr\_ra);
+
+C / C++
+
+## Trace Record
+
+C / C++
+
+typedef struct ompt\_record\_task\_create\_t {
+
+ompt\_id\_t encountering\_task\_id;
+
+int has\_dependences;
+
+const void <sub>\*</sub>codeptr\_ra;
+
+} ompt\_record\_task\_create\_t;
+
+C / C++
+
+## Semantics
+
+A tool provides a task\_create callback, which has the task\_create OMPT type, that the OpenMP implementation dispatches when task regions are generated. The binding of the new\_task\_data argument is the generated task. The flags argument indicates the kind of task (explicit task or target task) that is generated. Values for flags are a disjunction of elements in the task\_flag OMPT type. The has\_dependences argument is true if the generated task has dependences and false otherwise.
+
+## Cross References
+
+• OMPT data Type, see Section 33.8
+
+• OMPT frame Type, see Section 33.15
+
+• Initial Task, see Section 14.13
+
+• OMPT id Type, see Section 33.18
+
+• task Construct, see Section 14.1
+
+• OMPT task\_flag Type, see Section 33.37
+````

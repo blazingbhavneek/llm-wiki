@@ -1,33 +1,37 @@
 # Fabric Memory
 
-Fabric Memory is a feature introduced in CUDA 12.4 that provides a new Virtual Memory Management (VMM) allocation handle type, `CU_MEM_HANDLE_TYPE_FABRIC` [CUDA_C_Programming_Guide:L15231-L15255]. This handle type enables the sharing of memory allocations not only within a single node (intra-node) using various communication mechanisms such as MPI, but also across different nodes (inter-node) [CUDA_C_Programming_Guide:L15231-L15255].
+Introduces CU_MEM_HANDLE_TYPE_FABRIC for intra-node and inter-node memory sharing via NVIDIA IMEX daemon and NVLINK fabric.
 
-## Key Capabilities
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-*   **Multi-Node NVLINK Support**: Fabric Memory allows GPUs within a Multi Node NVLINK system to map the memory of all other GPUs part of the same NVLINK fabric, even if those GPUs reside on different physical nodes [CUDA_C_Programming_Guide:L15231-L15255].
-*   **Scalability**: This capability greatly increases the scale of multi-GPU programming with NVLINK by facilitating seamless memory access across nodes [CUDA_C_Programming_Guide:L15231-L15255].
-*   **Simplified Handle Exchange**: Unlike other allocation handle types, using `CU_MEM_HANDLE_TYPE_FABRIC` does not require operating system native mechanisms for inter-process communication to exchange sharable handles [CUDA_C_Programming_Guide:L15231-L15255].
+## Source CUDA_C_Programming_Guide:L15231-L15255
 
-## Prerequisites
+Citation: [CUDA_C_Programming_Guide:L15231-L15255]
 
-To use Fabric Memory, the following conditions must be met:
+````text
+## 14.8. Fabric Memory
 
-1.  **Supported Platforms**: The underlying hardware platform must support Fabric Memory [CUDA_C_Programming_Guide:L15231-L15255].
-2.  **NVIDIA IMEX Daemon**: The NVIDIA IMEX daemon must be running on the system [CUDA_C_Programming_Guide:L15231-L15255].
-3.  **Device Support**: The specific devices intended for use must support Fabric Memory [CUDA_C_Programming_Guide:L15231-L15255].
+CUDA 12.4 introduced a new VMM allocation handle type CU\_MEM\_HANDLE\_TYPE\_FABRIC. On supported platforms and provided the NVIDIA IMEX daemon is running this allocation handle type enables sharing allocations not only intra node with any communication mechanism, e.g. MPI, but also inter node. This allows GPUs in a Multi Node NVLINK System to map the memory of all other GPUs part of the same NVLINK fabric even if they are in diferent nodes greatly increasing the scale of multi-GPU Programming with NVLINK.
 
-## Querying for Support
+## 14.8.1. Query for Support
 
-Before attempting to use Fabric Memory, applications must verify that the target devices support this feature. This is done by querying the `CU_DEVICE_ATTRIBUTE_HANDLE_TYPE_FABRIC_SUPPORTED` attribute [CUDA_C_Programming_Guide:L15231-L15255].
+Before attempting to use Fabric Memory, applications must ensure that the devices they want to use support Fabric Memory. The following code sample shows querying for Fabric Memory support:
 
-```cpp
+```txt
 int deviceSupportsFabricMem;
 CUresult result = cuDeviceGetAttribute(&deviceSupportsFabricMem, CU_DEVICE_ATTRIBUTE_HANDLE_TYPE_FABRIC_SUPPORTED, device);
 if (deviceSupportsFabricMem != 0) {
-    // `device` supports Fabric Memory
+```
+
+(continues on next page)
+
+(continued from previous page)
+
+```txt
+// `device` supports Fabric Memory
 }
 ```
 
-## Usage
-
-Aside from specifying `CU_MEM_HANDLE_TYPE_FABRIC` as the handle type and the absence of a need for OS native inter-process communication mechanisms, the usage of Fabric Memory is identical to other allocation handle types [CUDA_C_Programming_Guide:L15231-L15255].
+Aside from using CU\_MEM\_HANDLE\_TYPE\_FABRIC as handle type and not requiring OS native mechanisms for inter process communication to exchange sharable handles there is no diference in using Fabric Memory compared to other allocation handle types.
+````

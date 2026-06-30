@@ -123,7 +123,9 @@ def source(doc_id: str) -> dict[str, Any]:
 
 
 @app.get("/api/wiki/page")
-def page(path: str = Query(..., description="canonical page path, relative to wiki root")) -> dict[str, Any]:
+def page(
+    path: str = Query(..., description="canonical page path, relative to wiki root")
+) -> dict[str, Any]:
     """Return the raw markdown of a canonical wiki page (read-only, sandboxed)."""
 
     target = (WIKI_ROOT / path).resolve()

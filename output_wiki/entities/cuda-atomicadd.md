@@ -1,15 +1,25 @@
 # atomicAdd()
 
-The `atomicAdd()` function performs an atomic addition operation on a value located at a specified memory address. It reads the old value, computes `(old + val)`, and stores the result back to the same address in a single atomic transaction. The function returns the old value that was read from memory.
+Performs an atomic addition operation on 16-bit, 32-bit, 64-bit, and vector types (float2, float4, __half, __nv_bfloat16) in global or shared memory. Returns the old value.
 
-## Supported Types and Signatures
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-The function supports integer, floating-point, and vector types. The following signatures are available:
+## Source CUDA_C_Programming_Guide:L7786-L7823
+
+Citation: [CUDA_C_Programming_Guide:L7786-L7823]
+
+````text
+## 10.14.1. Arithmetic Functions
+
+## 10.14.1.1 atomicAdd()
 
 ```c
 int atomicAdd(int* address, int val);
-unsigned int atomicAdd(unsigned int* address, unsigned int val);
-unsigned long long int atomicAdd(unsigned long long int* address, unsigned long long int val);
+unsigned int atomicAdd(unsigned int* address,
+                    unsigned int val);
+unsigned long long int atomicAdd(unsigned long long int* address,
+                    unsigned long long int val);
 float atomicAdd(float* address, float val);
 double atomicAdd(double* address, double val);
 __half2 atomicAdd(__half2 *address, __half2 val);
@@ -20,26 +30,21 @@ float2 atomicAdd(float2* address, float2 val);
 float4 atomicAdd(float4* address, float4 val);
 ```
 
-These operations can be performed on values located in global or shared memory [CUDA_C_Programming_Guide:L7789-L7823].
+reads the 16-bit, 32-bit or 64-bit old located at the address address in global or shared memory, computes (old + val), and stores the result back to memory at the same address. These three operations are performed in one atomic transaction. The function returns old.
 
-## Compute Capability Requirements
+The 32-bit floating-point version of atomicAdd() is only supported by devices of compute capability 2.x and higher.
 
-Support for specific data types depends on the device's compute capability:
+The 64-bit floating-point version of atomicAdd() is only supported by devices of compute capability 6.x and higher.
 
-*   **32-bit float (`float`)**: Supported by devices of compute capability 2.x and higher [CUDA_C_Programming_Guide:L7789-L7823].
-*   **64-bit float (`double`)**: Supported by devices of compute capability 6.x and higher [CUDA_C_Programming_Guide:L7789-L7823].
-*   **32-bit `__half2`**: Supported by devices of compute capability 6.x and higher [CUDA_C_Programming_Guide:L7789-L7823].
-*   **16-bit `__half`**: Supported by devices of compute capability 7.x and higher [CUDA_C_Programming_Guide:L7789-L7823].
-*   **16-bit `__nv_bfloat16`**: Supported by devices of compute capability 8.x and higher [CUDA_C_Programming_Guide:L7789-L7823].
-*   **`float2` and `float4`**: Supported by devices of compute capability 9.x and higher [CUDA_C_Programming_Guide:L7789-L7823].
+The 32-bit \_\_half2 floating-point version of atomicAdd() is only supported by devices of compute capability 6.x and higher. The atomicity of the \_\_half2 or \_\_nv\_bfloat162 add operation is guaranteed separately for each of the two \_\_half or \_\_nv\_bfloat16 elements; the entire \_\_half2 or \_\_nv\_bfloat162 is not guaranteed to be atomic as a single 32-bit access.
 
-## Atomicity Guarantees
+The float2 and float4 floating-point vector versions of atomicAdd() are only supported by devices of compute capability 9.x and higher. The atomicity of the float2 or float4 add operation is guaranteed separately for each of the two or four float elements; the entire float2 or float4 is not guaranteed to be atomic as a single 64-bit or 128-bit access.
 
-The atomicity guarantees vary by data type:
+The 16-bit \_\_half floating-point version of atomicAdd() is only supported by devices of compute capability 7.x and higher.
 
-*   **`__half2` and `__nv_bfloat162`**: The atomicity of the add operation is guaranteed separately for each of the two elements. The entire 32-bit access is not guaranteed to be atomic as a single unit [CUDA_C_Programming_Guide:L7789-L7823].
-*   **`float2` and `float4`**: The atomicity of the add operation is guaranteed separately for each of the two or four float elements. The entire 64-bit or 128-bit access is not guaranteed to be atomic as a single unit [CUDA_C_Programming_Guide:L7789-L7823].
+The 16-bit \_\_nv\_bfloat16 floating-point version of atomicAdd() is only supported by devices of compute capability 8.x and higher.
 
-## Memory Constraints
+The float2 and float4 floating-point vector versions of atomicAdd() are only supported by devices of compute capability 9.x and higher.
 
-The `float2` and `float4` floating-point vector versions of `atomicAdd()` are only supported for global memory addresses [CUDA_C_Programming_Guide:L7789-L7823].
+The float2 and float4 floating-point vector versions of atomicAdd() are only supported for global memory addresses.
+````

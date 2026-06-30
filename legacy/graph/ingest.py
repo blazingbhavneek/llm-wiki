@@ -18,10 +18,10 @@ from typing import Any, Optional
 from . import ids
 from .llm import LLMClient
 from .models import (
+    EDGE_TYPES,
     SUBTYPE_DOCUMENT,
     SUBTYPE_SOURCE_PAGE,
     SUBTYPE_TOPIC,
-    EDGE_TYPES,
     CompiledDocument,
     CompiledSourcePage,
     Edge,
@@ -56,9 +56,7 @@ class Ingestor:
             done.append(doc.document_id)
         return done
 
-    def ingest_document(
-        self, doc: CompiledDocument, created_by: str = "ingest"
-    ) -> str:
+    def ingest_document(self, doc: CompiledDocument, created_by: str = "ingest") -> str:
         """Stage + activate a document version as one catalog transaction."""
         if not doc.exact_coverage():
             raise RuntimeError(
@@ -176,7 +174,11 @@ class Ingestor:
         linked_topics = 0
         for topic in page.local_topics[:page_topic_limit]:
             if self._link_topic(
-                node, topic, doc, ranges=page.source_ranges, strength=0.7,
+                node,
+                topic,
+                doc,
+                ranges=page.source_ranges,
+                strength=0.7,
                 created_by=created_by,
             ):
                 linked_topics += 1

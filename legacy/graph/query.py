@@ -103,7 +103,11 @@ class QueryService:
             node = self.store.get_node(nid)
             if node is None or node.status not in ("active",):
                 continue
-            if node.node_class == "synthetic" and exclude_stale and node.status != "active":
+            if (
+                node.node_class == "synthetic"
+                and exclude_stale
+                and node.status != "active"
+            ):
                 continue
             retrieved[nid] = RetrievedNode(node=node, score=score, hop=0)
 
@@ -124,13 +128,9 @@ class QueryService:
                     if other is None or other.status != "active":
                         continue
                     score = (
-                        rn.score
-                        * self._traversal_strength(edge)
-                        * (decay ** (hop - 1))
+                        rn.score * self._traversal_strength(edge) * (decay ** (hop - 1))
                     )
-                    nxt = RetrievedNode(
-                        node=other, score=score, hop=hop, via=edge.type
-                    )
+                    nxt = RetrievedNode(node=other, score=score, hop=hop, via=edge.type)
                     retrieved[other_id] = nxt
                     next_frontier.append(nxt)
                     if len(retrieved) >= budget:
@@ -151,6 +151,7 @@ class QueryService:
             for e in self.store.edges_touching(node.id, status="active")
             if e.strength >= min_strength
         ]
+
         # Prefer structural/local edges and same-document targets, but never
         # expand an entire book merely because its document root was a seed.
         def rank(e: Edge) -> tuple[int, float]:

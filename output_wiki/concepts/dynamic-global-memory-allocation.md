@@ -1,43 +1,74 @@
-# Dynamic Global Memory Allocation
+# Dynamic Global Memory Allocation and Operations
 
-Dynamic global memory allocation enables CUDA kernels to allocate and deallocate memory from a fixed-size heap located in global memory [CUDA_C_Programming_Guide:L11304-L11331]. This feature is supported on devices with compute capability 2.x and higher [CUDA_C_Programming_Guide:L11304-L11331].
+Dynamic global memory allocation is supported on compute capability 2.x and higher. Functions include __device__ malloc(), __nv_aligned_device_malloc(), free(), memcpy(), and memset(). Memory is allocated from a fixed-size device heap (default 8 MB, configurable via cudaDeviceSetLimit). Allocated memory persists for the context lifetime and can be shared across threads and kernel launches. It cannot be freed via host-side runtime APIs, nor can host-allocated memory be freed via device free(). Examples cover per-thread, per-block, and cross-kernel-persistence allocation patterns.
 
-## Overview
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-The CUDA runtime provides several functions for in-kernel memory management:
+## Source CUDA_C_Programming_Guide:L11303-L11532
 
-*   `malloc(size_t size)`: Allocates at least `size` bytes from the device heap. Returns a pointer aligned to a 16-byte boundary, or `NULL` if insufficient memory exists [CUDA_C_Programming_Guide:L11304-L11331].
-*   `__nv_aligned_device_malloc(size_t size, size_t align)`: Allocates at least `size` bytes with a specific alignment. The address is a multiple of `align`, which must be a non-zero power of 2. Returns `NULL` if the request cannot be fulfilled [CUDA_C_Programming_Guide:L11304-L11331].
-*   `free(void* ptr)`: Deallocates memory previously allocated by `malloc` or `__nv_aligned_device_malloc`. If `ptr` is `NULL`, the call is ignored. Repeated calls with the same pointer result in undefined behavior [CUDA_C_Programming_Guide:L11304-L11331].
-*   `memcpy(void* dest, const void* src, size_t size)`: Copies `size` bytes from `src` to `dest` [CUDA_C_Programming_Guide:L11304-L11331].
-*   `memset(void* ptr, int value, size_t size)`: Sets `size` bytes of memory pointed to by `ptr` to `value` [CUDA_C_Programming_Guide:L11304-L11331].
+Citation: [CUDA_C_Programming_Guide:L11303-L11532]
 
-Memory allocated by a CUDA thread persists for the lifetime of the CUDA context or until explicitly released via `free()` [CUDA_C_Programming_Guide:L11304-L11331]. Allocated memory can be accessed by any other CUDA threads, including those in subsequent kernel launches [CUDA_C_Programming_Guide:L11304-L11331]. Any thread may free memory allocated by another thread, but care must be taken to ensure the same pointer is not freed more than once [CUDA_C_Programming_Guide:L11304-L11331].
+````text
+# 10.36. Dynamic Global Memory Allocation and Operations
 
-## Heap Configuration
+Dynamic global memory allocation and operations are only supported by devices of compute capability 2.x and higher.
 
-The device memory heap has a fixed size that must be specified before any program using `malloc()`, `__nv_aligned_device_malloc()`, or `free()` is loaded into the context [CUDA_C_Programming_Guide:L11332-L11348].
+```c
+__host__ __device__ void* malloc(size_t size);
+__device__ void *__nv_aligned_device_malloc(size_t size, size_t align);
+__host__ __device__ void free(void* ptr);
+```
 
-*   **Default Size**: If no explicit size is specified, a default heap of 8 megabytes is allocated [CUDA_C_Programming_Guide:L11332-L11348].
-*   **API Functions**: The heap size can be queried and set using:
-    *   `cudaDeviceGetLimit(size_t* size, cudaLimitMallocHeapSize)`
-    *   `cudaDeviceSetLimit(cudaLimitMallocHeapSize, size_t size)` [CUDA_C_Programming_Guide:L11332-L11348]
-*   **Constraints**: The heap size cannot be changed once a module has been loaded into the context [CUDA_C_Programming_Guide:L11332-L11348]. It does not resize dynamically based on need [CUDA_C_Programming_Guide:L11332-L11348].
-*   **Separation**: Memory reserved for the device heap is separate from memory allocated via host-side APIs like `cudaMalloc()` [CUDA_C_Programming_Guide:L11332-L11348].
+allocate and free memory dynamically from a fixed-size heap in global memory.
 
-## Interoperability
+\_\_host\_\_ \_\_device\_\_ void\* memcpy(void\* dest, const void\* src, size\_t size);
 
-Memory allocated via device-side functions (`malloc`, `__nv_aligned_device_malloc`) is distinct from memory allocated via the CUDA runtime API (`cudaMalloc`, etc.) [CUDA_C_Programming_Guide:L11349-L11357].
+copy size bytes from the memory location pointed by src to the memory location pointed by dest.
 
-*   Device-allocated memory cannot be freed using runtime free functions [CUDA_C_Programming_Guide:L11349-L11357].
-*   Runtime-allocated memory cannot be freed using the device `free()` function [CUDA_C_Programming_Guide:L11349-L11357].
-*   Memory allocated by `malloc()` or `__nv_aligned_device_malloc()` in device code cannot be used in runtime or driver API calls such as `cudaMemcpy` or `cudaMemset` [CUDA_C_Programming_Guide:L11349-L11357].
+\_\_host\_\_ \_\_device\_\_ void\* memset(void\* ptr, int value, size\_t size);
 
-## Usage Examples
+set size bytes of memory block pointed by ptr to value (interpreted as an unsigned char).
 
-### Per-Thread Allocation
+The CUDA in-kernel malloc()function allocates at least size bytes from the device heap and returns a pointer to the allocated memory or NULL if insuficient memory exists to fulfill the request. The returned pointer is guaranteed to be aligned to a 16-byte boundary.
 
-Each thread can allocate its own memory. In the following example, each of the 5 threads allocates 123 bytes, initializes it, and then frees it [CUDA_C_Programming_Guide:L11358-L11405].
+The CUDA in-kernel \_\_nv\_aligned\_device\_malloc() function allocates at least size bytes from the device heap and returns a pointer to the allocated memory or NULL if insuficient memory exists to fulfill the requested size or alignment. The address of the allocated memory will be a multiple of align. align must be a non-zero power of 2.
+
+The CUDA in-kernel free() function deallocates the memory pointed to by ptr, which must have been returned by a previous call to malloc() or \_\_nv\_aligned\_device\_malloc(). If ptr is NULL, the call to free() is ignored. Repeated calls to free() with the same ptr has undefined behavior.
+
+The memory allocated by a given CUDA thread via malloc() or \_\_nv\_aligned\_device\_malloc() remains allocated for the lifetime of the CUDA context, or until it is explicitly released by a call to free(). It can be used by any other CUDA threads even from subsequent kernel launches. Any CUDA thread may free memory allocated by another thread, but care should be taken to ensure that the same pointer is not freed more than once.
+
+## 10.36.1. Heap Memory Allocation
+
+The device memory heap has a fixed size that must be specified before any program using malloc(), \_\_nv\_aligned\_device\_malloc() or free() is loaded into the context. A default heap of eight megabytes is allocated if any program uses malloc() or \_\_nv\_aligned\_device\_malloc() without explicitly specifying the heap size.
+
+The following API functions get and set the heap size:
+
+cudaDeviceGetLimit(size\_t\* size, cudaLimitMallocHeapSize)
+
+cudaDeviceSetLimit(cudaLimitMallocHeapSize, size\_t size)
+
+The heap size granted will be at least size bytes. cuCtxGetLimit()and cudaDeviceGetLimit() return the currently requested heap size.
+
+The actual memory allocation for the heap occurs when a module is loaded into the context, either explicitly via the CUDA driver API (see Module), or implicitly via the CUDA runtime API (see CUDA Runtime). If the memory allocation fails, the module load will generate a CUDA\_ERROR\_SHARED\_OBJECT\_INIT\_FAILED error.
+
+Heap size cannot be changed once a module load has occurred and it does not resize dynamically according to need.
+
+Memory reserved for the device heap is in addition to memory allocated through host-side CUDA API calls such as cudaMalloc().
+
+## 10.36.2. Interoperability with Host Memory API
+
+Memory allocated via device malloc() or \_\_nv\_aligned\_device\_malloc() cannot be freed using the runtime (i.e., by calling any of the free memory functions from Device Memory).
+
+Similarly, memory allocated via the runtime (i.e., by calling any of the memory allocation functions from Device Memory) cannot be freed via free().
+
+In addition, memory allocated by a call to malloc() or \_\_nv\_aligned\_device\_malloc() in device code cannot be used in any runtime or driver API calls (i.e. cudaMemcpy, cudaMemset, etc).
+
+## 10.36.3. Examples
+
+## 10.36.3.1 Per Thread Allocation
+
+The following code sample:
 
 ```c
 #include <stdlib.h>
@@ -49,7 +80,12 @@ __global__ void mallocTest()
     char* ptr = (char*)malloc(size);
     memset(ptr, 0, size);
     printf("Thread %d got pointer: %p\n", threadIdx.x, ptr);
-    free(ptr);
+```
+
+(continues on next page)
+
+```cpp
+free(ptr);
 }
 
 int main()
@@ -63,9 +99,21 @@ int main()
 }
 ```
 
-### Per-Thread Block Allocation
+(continued from previous page)
 
-To allow all threads in a block to share allocated memory, one thread (e.g., `threadIdx.x == 0`) performs the allocation and stores the pointer in shared memory [CUDA_C_Programming_Guide:L11406-L11457].
+will output:
+
+```txt
+Thread 0 got pointer: 00057020
+Thread 1 got pointer: 0005708c
+Thread 2 got pointer: 000570f8
+Thread 3 got pointer: 00057164
+Thread 4 got pointer: 000571d0
+```
+
+Notice how each thread encounters the malloc() and memset() commands and so receives and initializes its own allocation. (Exact pointer values will vary: these are illustrative.)
+
+## 10.36.3.2 Per Thread Block Allocation
 
 ```c
 #include <stdlib.h>
@@ -97,14 +145,27 @@ __global__ void mallocTest()
     __syncthreads();
 
     // Only one thread may free the memory!
-    if (threadIdx.x == 0)
+```
+
+(continues on next page)
+
+```txt
+if (threadIdx.x == 0)
         free(data);
+}
+
+int main()
+{
+    cudaDeviceSetLimit(cudaLimitMallocHeapSize, 128*1024*1024);
+    mallocTest<<<10, 128>>>();
+    cudaDeviceSynchronize();
+    return 0;
 }
 ```
 
-### Allocation Persisting Between Kernel Launches
+(continued from previous page)
 
-Memory allocated in one kernel launch can be accessed by subsequent kernel launches if the pointer is stored in device global memory [CUDA_C_Programming_Guide:L11458-L11532].
+## 10.36.3.3 Allocation Persisting Between Kernel Launches
 
 ```c
 #include <stdlib.h>
@@ -147,8 +208,15 @@ __global__ void freemem()
             blockIdx.x, threadIdx.x, ptr[threadIdx.x]);
 
     // Only free from one thread!
-    if (threadIdx.x == 0)
-        free(ptr);
+```
+
+(continues on next page)
+
+(continued from previous page)
+
+```cpp
+if (threadIdx.x == 0)
+    free(ptr);
 }
 
 int main()
@@ -171,3 +239,4 @@ int main()
     return 0;
 }
 ```
+````

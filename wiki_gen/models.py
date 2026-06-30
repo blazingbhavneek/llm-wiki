@@ -3,8 +3,7 @@ from __future__ import annotations
 import os
 from typing import Literal
 
-from pydantic import BaseModel, Field
-
+from pydantic import BaseModel, Field, model_validator
 
 # ---------------------------------------------------------------------
 # Runtime config
@@ -23,13 +22,13 @@ INPUT_ROOT = os.environ.get(
     "/run/media/blaze/Common/Code/llm-wiki/input",
 )
 
-BASE_URL = os.environ.get("OPENAI_BASE_URL", "http://194.14.47.19:23149/v1")
+BASE_URL = os.environ.get("OPENAI_BASE_URL", "http://180.21.170.235:42383/v1")
 API_KEY = os.environ.get("OPENAI_API_KEY", "local")
 GEN_MODEL = os.environ.get("WIKI_GEN_MODEL", "nvidia/Qwen3.6-35B-A3B-NVFP4")
 VERIFY_MODEL = os.environ.get("WIKI_VERIFY_MODEL", GEN_MODEL)
 
 TEMPERATURE = float(os.environ.get("WIKI_GEN_TEMPERATURE", "0.3"))
-TIMEOUT = int(os.environ.get("WIKI_GEN_TIMEOUT", "300"))
+TIMEOUT = int(os.environ.get("WIKI_GEN_TIMEOUT", "600"))
 
 ASSIGN_CONCURRENCY = int(os.environ.get("WIKI_ASSIGN_CONCURRENCY", "12"))
 PAGE_CONCURRENCY = int(os.environ.get("WIKI_PAGE_CONCURRENCY", "6"))
@@ -39,6 +38,11 @@ RESEARCH_CONCURRENCY = int(os.environ.get("WIKI_RESEARCH_CONCURRENCY", "8"))
 MAX_CATALOG_ITEMS = int(os.environ.get("WIKI_MAX_CATALOG_ITEMS", "18"))
 ASSIGN_REPAIR_ATTEMPTS = int(os.environ.get("WIKI_ASSIGN_REPAIR_ATTEMPTS", "5"))
 FACT_REPAIR_ATTEMPTS = int(os.environ.get("WIKI_FACT_REPAIR_ATTEMPTS", "5"))
+RESEARCH_CONTEXT_LINES = int(os.environ.get("WIKI_RESEARCH_CONTEXT_LINES", "120"))
+COVERAGE_PAGE_CHAR_LIMIT = int(os.environ.get("WIKI_COVERAGE_PAGE_CHAR_LIMIT", "6000"))
+COVERAGE_EXCERPT_CONTEXT_LINES = int(
+    os.environ.get("WIKI_COVERAGE_EXCERPT_CONTEXT_LINES", "2")
+)
 
 # Global wiki output should normally be incremental; cleaning would destroy
 # pages that later documents are supposed to assimilate into.
@@ -83,7 +87,9 @@ class SourceChunk(BaseModel):
     text: str
     source_path: str
 
-    def span(self, line_start: int | None = None, line_end: int | None = None) -> SourceSpan:
+    def span(
+        self, line_start: int | None = None, line_end: int | None = None
+    ) -> SourceSpan:
         start = self.line_start if line_start is None else line_start
         end = self.line_end if line_end is None else line_end
         return SourceSpan(
@@ -143,6 +149,13 @@ class AssignmentSpan(BaseModel):
 
 class ChunkAssignmentResult(BaseModel):
     assignments: list[AssignmentSpan] = Field(default_factory=list)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _coerce_bare_list(cls, data):
+        if isinstance(data, list):
+            return {"assignments": data}
+        return data
 
 
 class WikiAssignment(BaseModel):

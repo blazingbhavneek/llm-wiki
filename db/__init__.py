@@ -1,12 +1,11 @@
-"""Storage backends for the graph package.
+"""Storage backend for the graph package.
 
-Change the ``Database`` alias here to try a different store globally.
+One backend: raw SQLite — FTS5 keyword search + sqlite-vec vectors + WAL for
+concurrent readers. ``Database`` is the alias the graph code imports.
 """
 
 from .base import BaseDatabase
-from .lancedb import LanceDatabase
 from .raw_sqlite import RawSqliteDatabase
-from .sqlmodel import SQLModelDatabase
 
 Database = RawSqliteDatabase
 
@@ -14,6 +13,4 @@ __all__ = [
     "Database",
     "BaseDatabase",
     "RawSqliteDatabase",
-    "SQLModelDatabase",
-    "LanceDatabase",
 ]

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+
 class BaseLlmClient:
     """Minimal shape shared by chat clients in this repo."""
 

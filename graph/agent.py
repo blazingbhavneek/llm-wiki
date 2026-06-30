@@ -54,7 +54,7 @@ class follow_link(BaseModel):
     node_id: str = Field(description="展開するノードの ID。")
     direction: str = Field(
         default="both",
-        description="'incoming'、'outgoing'、または 'both'。たどるリンクの方向を指定する。"
+        description="'incoming'、'outgoing'、または 'both'。たどるリンクの方向を指定する。",
     )
 
 
@@ -77,8 +77,7 @@ class finish(BaseModel):
         description="ノード内容に基づいた最終回答。日本語で記述すること。"
     )
     cited_node_ids: list[str] = Field(
-        default_factory=list,
-        description="回答の根拠となるノード ID のリスト。"
+        default_factory=list, description="回答の根拠となるノード ID のリスト。"
     )
 
 
@@ -217,7 +216,11 @@ class QueryAgent:
         self._ev("compiling")
         if result.finished_args is not None:
             answer_text = str(result.finished_args.get("answer", "")).strip()
-            cited = [node_id for node_id in result.finished_args.get("cited_node_ids", []) if node_id]
+            cited = [
+                node_id
+                for node_id in result.finished_args.get("cited_node_ids", [])
+                if node_id
+            ]
         else:
             answer_text = result.content
             cited = []
@@ -271,8 +274,7 @@ class QueryAgent:
             )
 
         assignments = [
-            (start, [other for other in starts if other != start])
-            for start in starts
+            (start, [other for other in starts if other != start]) for start in starts
         ]
 
         start_nodes = [self.query_api.read(start) for start in starts]
@@ -291,9 +293,15 @@ class QueryAgent:
             for future in futures:
                 try:
                     reports.append(future.result())
-                except Exception as exc:  # noqa: BLE001 - one subagent failing is non-fatal
+                except (
+                    Exception
+                ) as exc:  # noqa: BLE001 - one subagent failing is non-fatal
                     reports.append(
-                        {"start": "?", "answer": f"(subagent failed: {exc})", "cited": []}
+                        {
+                            "start": "?",
+                            "answer": f"(subagent failed: {exc})",
+                            "cited": [],
+                        }
                     )
 
         for report in reports:
@@ -326,7 +334,11 @@ class QueryAgent:
         database = Database(self.settings.database_path)
         try:
             runtime = GraphRuntime(
-                database, self.query_api.embedder, self.llm, self.settings, subagent=True
+                database,
+                self.query_api.embedder,
+                self.llm,
+                self.settings,
+                subagent=True,
             )
             sub_query = GraphQuery(
                 database,
@@ -346,7 +358,9 @@ class QueryAgent:
             state: dict[str, Any] = {"empty_streak": 0, "read_ids": set()}
 
             def dispatch(name: str, args: dict[str, Any]) -> str:
-                return self._dispatch_tools(sub_query, name, args, visited, state, agent)
+                return self._dispatch_tools(
+                    sub_query, name, args, visited, state, agent
+                )
 
             def finish_guard(_args: dict[str, Any]) -> str | None:
                 read_count = len(state["read_ids"])
@@ -425,10 +439,7 @@ class QueryAgent:
 
         note = ""
         if requested_id.strip() != cleaned_id:
-            note = (
-                f"要求された ID: {requested_id}\n"
-                f"正規化後の ID: {cleaned_id}\n"
-            )
+            note = f"要求された ID: {requested_id}\n" f"正規化後の ID: {cleaned_id}\n"
 
         return (
             f"{note}"
@@ -499,7 +510,11 @@ class QueryAgent:
             self._ev(
                 "follow_link",
                 agent=agent,
-                node=self._node_ref(anchor) if anchor else {"id": node_id, "title": node_id},
+                node=(
+                    self._node_ref(anchor)
+                    if anchor
+                    else {"id": node_id, "title": node_id}
+                ),
                 neighbors=len(pairs),
             )
             return self._format_pairs(pairs)

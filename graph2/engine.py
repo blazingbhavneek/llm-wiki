@@ -100,7 +100,10 @@ class DomainEngine:
         try:
             return Reranker(self.settings)
         except Exception as exc:  # noqa: BLE001 - rerank is an optional enhancement
-            print(f"[engine] reranker unavailable, continuing without it: {exc}", flush=True)
+            print(
+                f"[engine] reranker unavailable, continuing without it: {exc}",
+                flush=True,
+            )
             return None
 
     def close(self) -> None:
@@ -144,7 +147,9 @@ class DomainEngine:
         nodes, structural_edges = self.md_to_nodes(wiki_output_dir)
         return self._ingest_loaded_nodes(nodes, structural_edges)
 
-    def _ingest_loaded_nodes(self, nodes: list[Node], structural_edges: list[Edge]) -> list[Node]:
+    def _ingest_loaded_nodes(
+        self, nodes: list[Node], structural_edges: list[Edge]
+    ) -> list[Node]:
         version = self.revisions._source_version_for_nodes(nodes)
 
         total = len(nodes)
@@ -216,7 +221,10 @@ class DomainEngine:
     def _safe_recluster(self) -> None:
         try:
             labels = self.recluster()
-            print(f"[ingest] reclustered into {len(set(labels.values()))} topic(s)", flush=True)
+            print(
+                f"[ingest] reclustered into {len(set(labels.values()))} topic(s)",
+                flush=True,
+            )
         except Exception as exc:  # noqa: BLE001 - clustering is non-critical
             print(f"[ingest] recluster skipped: {exc}", flush=True)
 
@@ -260,7 +268,9 @@ class DomainEngine:
         return self.analytics.health(node_id)
 
     def recluster(self, resolution: float = 1.0) -> dict[str, str]:
-        return self.analytics.recluster(resolution=resolution, namer=self._llm_cluster_namer)
+        return self.analytics.recluster(
+            resolution=resolution, namer=self._llm_cluster_namer
+        )
 
     def _llm_cluster_namer(
         self,
@@ -294,7 +304,7 @@ class DomainEngine:
             raw = self.llm.complete(system, user)
         except Exception:  # noqa: BLE001 - naming is non-critical
             return None
-        name = " ".join(raw.strip().strip('"\'').split())
+        name = " ".join(raw.strip().strip("\"'").split())
         if not name or len(name) > 60 or len(name.split()) > 6:
             return None
         if name.lower() in {used.lower() for used in avoided}:

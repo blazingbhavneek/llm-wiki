@@ -22,7 +22,9 @@ class LLMClient:
         temperature: float = 0.2,
         timeout: int = 300,
     ):
-        self.model = model or os.environ.get("WIKI_MODEL", "nvidia/Qwen3.6-35B-A3B-NVFP4")
+        self.model = model or os.environ.get(
+            "WIKI_MODEL", "nvidia/Qwen3.6-35B-A3B-NVFP4"
+        )
         self.base_url = base_url or os.environ.get(
             "OPENAI_BASE_URL", "http://localhost:8000/v1"
         )

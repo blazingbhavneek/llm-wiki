@@ -1,17 +1,18 @@
 # Pointers
 
-## Overview
-Pointers in CUDA C++ must respect the memory space boundaries between the host (CPU) and the device (GPU). Incorrect usage, such as dereferencing memory pointers across these boundaries, leads to undefined behavior.
+Rules for pointer dereferencing across host/device boundaries and usage of addresses for device/shared/constant variables.
 
-## Host-Device Memory Access Rules
-Dereferencing a pointer to global or shared memory in code executed on the host, or dereferencing a pointer to host memory in code executed on the device, results in undefined behavior. This typically manifests as a segmentation fault and application termination [CUDA_C_Programming_Guide:L16847-L16852].
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-## Address Usage Restrictions
-The usage of addresses obtained from specific device memory qualifiers is restricted based on the execution context:
+## Source CUDA_C_Programming_Guide:L16847-L16852
 
-*   **Device Code Only**: The address obtained by taking the address of a `__device__`, `__shared__`, or `__constant__` variable can only be used in device code [CUDA_C_Programming_Guide:L16847-L16852].
-*   **Host Code Only**: The address of a `__device__` or `__constant__` variable obtained through `cudaGetSymbolAddress()` can only be used in host code [CUDA_C_Programming_Guide:L16847-L16852].
+Citation: [CUDA_C_Programming_Guide:L16847-L16852]
 
-## Related Concepts
-*   Device Memory
-*   cudaGetSymbolAddress
+````text
+## 18.5.4. Pointers
+
+Dereferencing a pointer either to global or shared memory in code that is executed on the host, or to host memory in code that is executed on the device results in an undefined behavior, most often in a segmentation fault and application termination.
+
+The address obtained by taking the address of a \_\_device\_\_, \_\_shared\_\_ or \_\_constant\_\_ variable can only be used in device code. The address of a \_\_device\_\_ or \_\_constant\_\_ variable obtained through cudaGetSymbolAddress() as described in Device Memory can only be used in host code.
+````

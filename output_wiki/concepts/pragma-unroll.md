@@ -1,19 +1,54 @@
-# #pragma unroll
+# 10.40. #pragma unroll
 
-The `#pragma unroll` directive allows developers to explicitly control the loop unrolling behavior of the compiler for specific loops [CUDA_C_Programming_Guide:L11705-L11705].
+Covers the #pragma unroll directive for controlling loop unrolling behavior, including ICE arguments and compiler fallback rules.
 
-## Syntax and Usage
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-The directive must be placed immediately before the loop it applies to, and it only affects that specific loop [CUDA_C_Programming_Guide:L11707-L11707]. It is optionally followed by an integral constant expression (ICE) [CUDA_C_Programming_Guide:L11707-L11707].
+## Source CUDA_C_Programming_Guide:L11705-L11746
 
-## Behavior
+Citation: [CUDA_C_Programming_Guide:L11705-L11746]
 
-The behavior of the pragma depends on the presence and value of the optional ICE [CUDA_C_Programming_Guide:L11707-L11707]:
+````text
+## 10.40. #pragma unroll
 
-*   **No ICE**: If no ICE is provided, the loop will be completely unrolled if its trip count is constant [CUDA_C_Programming_Guide:L11707-L11707].
-*   **ICE = 1**: The compiler will not unroll the loop [CUDA_C_Programming_Guide:L11707-L11707].
-*   **Invalid ICE**: The pragma will be ignored if the ICE evaluates to a non-positive integer or to an integer greater than the maximum value representable by the `int` data type [CUDA_C_Programming_Guide:L11707-L11707].
+By default, the compiler unrolls small loops with a known trip count. The #pragma unroll directive however can be used to control unrolling of any given loop. It must be placed immediately before the loop and only applies to that loop. It is optionally followed by an integral constant expression (ICE)<sup>6</sup>. If the ICE is absent, the loop will be completely unrolled if its trip count is constant. If the ICE evaluates to 1, the compiler will not unroll the loop. The pragma will be ignored if the ICE evaluates to a non-positive integer or to an integer greater than the maximum value representable by the int data type.
 
-## Default Behavior
+Examples:
 
-By default, the compiler automatically unrolls small loops that have a known trip count [CUDA_C_Programming_Guide:L11707-L11707]. The `#pragma unroll` directive is used to override or specify this behavior for any given loop [CUDA_C_Programming_Guide:L11707-L11707].
+```c
+struct S1_t { static const int value = 4; };
+template <int X, typename T2>
+__device__ void foo(int *p1, int *p2) {
+
+// no argument specified, loop will be completely unrolled
+#pragma unroll
+for (int i = 0; i < 12; ++i)
+    p1[i] += p2[i]*2;
+
+// unroll value = 8
+#pragma unroll (X+1)
+for (int i = 0; i < 12; ++i)
+    p1[i] += p2[i]*4;
+
+// unroll value = 1, loop unrolling disabled
+```
+
+(continues on next page)
+
+```c
+#pragma unroll 1
+for (int i = 0; i < 12; ++i)
+    p1[i] += p2[i]*8;
+
+// unroll value = 4
+#pragma unroll (T2::value)
+for (int i = 0; i < 12; ++i)
+    p1[i] += p2[i]*16;
+}
+
+__global__ void bar(int *p1, int *p2) {
+foo<7, S1_t>(p1, p2);
+}
+```
+````

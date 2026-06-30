@@ -1,28 +1,25 @@
 # Minimize Memory Thrashing
 
-Applications that constantly allocate and free memory frequently may experience a degradation in allocation call performance over time, eventually reaching a limit. This behavior is typically expected due to the nature of releasing memory back to the operating system for its own use [CUDA_C_Programming_Guide:L6519-L6531].
+Provides recommendations for managing device memory allocation to avoid performance degradation, including sizing allocations, batching cudaMalloc/cudaFree calls, and using cudaMallocManaged for oversubscription.
 
-To maintain optimal performance, the following strategies are recommended:
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-## Sizing Allocations Appropriately
+## Source CUDA_C_Programming_Guide:L6519-L6531
 
-Allocations should be sized to the specific problem at hand rather than attempting to allocate all available memory using `cudaMalloc`, `cudaMallocHost`, or `cuMemCreate` [CUDA_C_Programming_Guide:L6519-L6531].
+Citation: [CUDA_C_Programming_Guide:L6519-L6531]
 
-*   **Immediate Residency**: Large allocations force memory to be resident immediately, which prevents other applications from using that memory [CUDA_C_Programming_Guide:L6519-L6531].
-*   **System Pressure**: Over-allocation can put excessive pressure on operating system schedulers or prevent other applications sharing the same GPU from running entirely [CUDA_C_Programming_Guide:L6519-L6531].
+````text
 
-## Reducing Allocation Frequency
+## 8.5. Minimize Memory Thrashing
 
-*   **Early Allocation**: Allocate memory in appropriately sized chunks early in the application lifecycle [CUDA_C_Programming_Guide:L6519-L6531].
-*   **Minimize Calls**: Reduce the number of `cudaMalloc` and `cudaFree` calls, particularly within performance-critical regions of the code [CUDA_C_Programming_Guide:L6519-L6531].
+Applications that constantly allocate and free memory too often may find that the allocation calls tend to get slower over time up to a limit. This is typically expected due to the nature of releasing memory back to the operating system for its own use. For best performance in this regard, we recommend the following:
 
-## Using Managed Memory for Oversubscription
+▶ Try to size your allocation to the problem at hand. Don’t try to allocate all available memory with cudaMalloc / cudaMallocHost / cuMemCreate, as this forces memory to be resident immediately and prevents other applications from being able to use that memory. This can put more pressure on operating system schedulers, or just prevent other applications using the same GPU from running entirely.
 
-If an application cannot allocate enough device memory, consider falling back on other memory types such as `cudaMallocHost` or `cudaMallocManaged`. While these may not offer the same peak performance as device memory, they enable the application to make progress [CUDA_C_Programming_Guide:L6519-L6531].
+Try to allocate memory in appropriately sized allocations early in the application and allocations only when the application does not have any use for it. Reduce the number of cudaMalloc+cudaFree calls in the application, especially in performance-critical regions.
 
-On platforms that support the feature, `cudaMallocManaged` provides specific advantages:
+▶ If an application cannot allocate enough device memory, consider falling back on other memory types such as cudaMallocHost or cudaMallocManaged, which may not be as performant, but will enable the application to make progress.
 
-*   **Oversubscription**: It allows for memory oversubscription [CUDA_C_Programming_Guide:L6519-L6531].
-*   **Performance Retention**: With correct `cudaMemAdvise` policies enabled, it can retain most if not all the performance of `cudaMalloc` [CUDA_C_Programming_Guide:L6519-L6531].
-*   **Lazy Allocation**: It does not force an allocation to be resident until it is needed or prefetched, reducing overall pressure on operating system schedulers [CUDA_C_Programming_Guide:L6519-L6531].
-*   **Multi-tenancy**: This approach better enables multi-tenant use cases by managing memory pressure more effectively [CUDA_C_Programming_Guide:L6519-L6531].
+For platforms that support the feature, cudaMallocManaged allows for oversubscription, and with the correct cudaMemAdvise policies enabled, will allow the application to retain most if not all the performance of cudaMalloc. cudaMallocManaged also won’t force an allocation to be resident until it is needed or prefetched, reducing the overall pressure on the operating system schedulers and better enabling multi-tenet use cases.
+````

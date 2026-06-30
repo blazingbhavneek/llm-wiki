@@ -5,10 +5,9 @@ import shutil
 from pathlib import Path
 from typing import Any
 
+from wiki_gen.models import INPUT_ROOT, EmbedDocument, SourceChunk, SourceSpan
 from wiki_new.planning import join_original_source_lines
 from wiki_new.utils import read_lines, write_json
-
-from wiki_gen.models import EmbedDocument, INPUT_ROOT, SourceChunk, SourceSpan
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -34,7 +33,9 @@ def discover_embed_documents(embed_root: Path) -> list[Path]:
         if (child / "_planning" / "coverage.json").exists():
             docs.append(child)
     if not docs:
-        raise RuntimeError(f"No embedded documents with _planning/coverage.json in {embed_root}")
+        raise RuntimeError(
+            f"No embedded documents with _planning/coverage.json in {embed_root}"
+        )
     return docs
 
 
@@ -50,7 +51,9 @@ def resolve_original_source(embed_doc_dir: Path, metadata: dict[str, Any]) -> Pa
     if original.exists():
         return original
 
-    original_name = str(metadata.get("original_file_name") or f"{embed_doc_dir.name}.md")
+    original_name = str(
+        metadata.get("original_file_name") or f"{embed_doc_dir.name}.md"
+    )
     input_candidate = Path(INPUT_ROOT) / original_name
     if input_candidate.exists():
         return input_candidate
@@ -71,7 +74,9 @@ def copy_if_exists(src: Path, dst: Path) -> None:
         shutil.copy2(src, dst)
 
 
-def copy_raw_artifacts(embed_doc_dir: Path, output_root: Path) -> tuple[Path, Path, Path | None]:
+def copy_raw_artifacts(
+    embed_doc_dir: Path, output_root: Path
+) -> tuple[Path, Path, Path | None]:
     pdir = planning_dir(embed_doc_dir)
     coverage_path = pdir / "coverage.json"
     metadata_path = pdir / "metadata.json"
@@ -101,7 +106,9 @@ def _chunk_text(source_lines: list[str], start: int, end: int) -> str:
 
 
 def load_embed_document(embed_doc_dir: Path, output_root: Path) -> EmbedDocument:
-    raw_original, raw_coverage, raw_metadata = copy_raw_artifacts(embed_doc_dir, output_root)
+    raw_original, raw_coverage, raw_metadata = copy_raw_artifacts(
+        embed_doc_dir, output_root
+    )
     coverage = load_json(raw_coverage)
     source_lines = read_lines(raw_original)
 
@@ -175,4 +182,3 @@ def write_planning_json(output_root: Path, name: str, payload: dict[str, Any]) -
     path = output_root / "_planning" / name
     path.parent.mkdir(parents=True, exist_ok=True)
     write_json(path, payload)
-

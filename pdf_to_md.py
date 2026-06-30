@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 
 import os
-from pathlib import Path
 import subprocess
 import sys
-
+from pathlib import Path
 
 PDF_DIR = Path("/run/media/blaze/Common/Code/llm-wiki/pdfs")
 OUTPUT_DIR = Path("/run/media/blaze/Common/Code/llm-wiki/mineru")
 DONE_DIR = OUTPUT_DIR / "_done_markers"
 
-GPU_MEMORY_UTILIZATION = "0.5"   # safer than 0.5
-PROCESSING_WINDOW_SIZE = "4"      # use 4; try 8 only if stable
+GPU_MEMORY_UTILIZATION = "0.5"  # safer than 0.5
+PROCESSING_WINDOW_SIZE = "4"  # use 4; try 8 only if stable
 
 
 def build_env():
@@ -46,8 +45,7 @@ def main():
     DONE_DIR.mkdir(parents=True, exist_ok=True)
 
     pdf_files = sorted(
-        p for p in PDF_DIR.iterdir()
-        if p.is_file() and p.suffix.lower() == ".pdf"
+        p for p in PDF_DIR.iterdir() if p.is_file() and p.suffix.lower() == ".pdf"
     )
 
     if not pdf_files:
@@ -80,9 +78,12 @@ def main():
 
         cmd = [
             "mineru",
-            "-p", str(pdf_path),
-            "-o", str(OUTPUT_DIR),
-            "--gpu-memory-utilization", GPU_MEMORY_UTILIZATION,
+            "-p",
+            str(pdf_path),
+            "-o",
+            str(OUTPUT_DIR),
+            "--gpu-memory-utilization",
+            GPU_MEMORY_UTILIZATION,
         ]
 
         print("  RUN:", " ".join(cmd))

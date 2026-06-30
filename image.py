@@ -13,7 +13,6 @@ from urllib.parse import unquote, urlparse
 
 from openai import AsyncOpenAI
 
-
 # =========================
 # HARDCODED CONFIG VALUES
 # =========================
@@ -23,7 +22,9 @@ MARKDOWN_FOLDER = "/run/media/blaze/Common/Code/llm-wiki/mineru/"
 # Number of Markdown files to process at the same time.
 FILE_CONCURRENCY = 5
 
-MERMAID_PUPPETEER_CONFIG_FILE = "/run/media/blaze/Common/Code/llm-wiki/puppeteer-config.json"
+MERMAID_PUPPETEER_CONFIG_FILE = (
+    "/run/media/blaze/Common/Code/llm-wiki/puppeteer-config.json"
+)
 
 OUTPUT_FILE = None
 # If OUTPUT_FILE is None, output will be:
@@ -82,9 +83,7 @@ ENABLE_SHALLOW_RETRY = False
 # MARKDOWN IMAGE MATCHING
 # =========================
 
-IMAGE_MARKDOWN_RE = re.compile(
-    r'!\[(?P<alt>[^\]]*)\]\((?P<target>[^)]+)\)'
-)
+IMAGE_MARKDOWN_RE = re.compile(r"!\[(?P<alt>[^\]]*)\]\((?P<target>[^)]+)\)")
 
 FENCE_START_RE = re.compile(r"^\s*(```|~~~)")
 
@@ -116,7 +115,7 @@ def strip_markdown_title(target: str) -> str:
     target = target.strip()
 
     if target.startswith("<") and ">" in target:
-        return target[1:target.index(">")].strip()
+        return target[1 : target.index(">")].strip()
 
     for quote in [' "', " '"]:
         if quote in target:
@@ -260,7 +259,9 @@ def get_response_text(response) -> str:
 def ensure_reconstruction_wrapper(description: str) -> str:
     description = description.strip()
 
-    if not description.startswith("[Image reconstruction:") and not description.startswith("[Image description:"):
+    if not description.startswith(
+        "[Image reconstruction:"
+    ) and not description.startswith("[Image description:"):
         description = f"[Image reconstruction:\n{description}\n]"
 
     return description
@@ -310,6 +311,7 @@ def looks_too_shallow(description: str) -> bool:
 # MERMAID EXTRACTION / EXAMPLES
 # =========================
 
+
 def extract_mermaid_blocks(markdown_text: str):
     """
     Extracts fenced Mermaid blocks from Markdown.
@@ -340,7 +342,7 @@ def get_good_mermaid_examples() -> str:
     Examples sent to the model when Mermaid repair/improvement is needed.
     Keep IDs simple ASCII. Put Japanese or complex text inside quoted labels.
     """
-    return r'''
+    return r"""
 Good Mermaid examples:
 
 Example 1: simple top-down flowchart
@@ -435,12 +437,13 @@ Rules:
 - Mermaid code block should contain only Mermaid syntax.
 - Prefer flowchart TD or flowchart LR for block diagrams and data-flow diagrams.
 - If Mermaid syntax is uncertain, simplify the diagram and explain details outside the Mermaid block.
-'''.strip()
+""".strip()
 
 
 # =========================
 # MERMAID VALIDATION / REPAIR
 # =========================
+
 
 async def validate_mermaid_code_with_mmdc(code: str, diagram_index: int):
     """
@@ -554,7 +557,8 @@ async def validate_mermaid_code_with_mmdc(code: str, diagram_index: int):
             return True, ""
 
         error_text = "\n".join(
-            part for part in [
+            part
+            for part in [
                 f"Mermaid block #{diagram_index} failed validation.",
                 f"Return code: {process.returncode}",
                 f"Command: {' '.join(cmd)}",
@@ -655,7 +659,9 @@ async def repair_mermaid_if_needed(
             print(f"Mermaid validation passed with {len(blocks)} block(s).")
             return description
 
-        print(f"Mermaid validation failed. Repair attempt {attempt}/{MERMAID_REPAIR_ATTEMPTS}.")
+        print(
+            f"Mermaid validation failed. Repair attempt {attempt}/{MERMAID_REPAIR_ATTEMPTS}."
+        )
         print(error_text)
         print("")
 
@@ -689,7 +695,9 @@ async def repair_mermaid_if_needed(
         blocks = extract_mermaid_blocks(description)
 
         if not blocks:
-            print("Repair response contains no Mermaid blocks. Skipping further Mermaid validation.")
+            print(
+                "Repair response contains no Mermaid blocks. Skipping further Mermaid validation."
+            )
             return description
 
     ok, error_text = await validate_all_mermaid_blocks(description)
@@ -718,6 +726,7 @@ async def repair_mermaid_if_needed(
 # MERMAID RENDERING / VISUAL MATCH JUDGE
 # =========================
 
+
 def extract_json_object(text: str):
     """
     Extracts a JSON object from model output.
@@ -743,6 +752,7 @@ def extract_json_object(text: str):
     except Exception:
         return None
 
+
 async def render_mermaid_code_to_png_data_url(code: str, diagram_index: int):
     """
     Renders one Mermaid diagram to PNG using mmdc.
@@ -755,7 +765,11 @@ async def render_mermaid_code_to_png_data_url(code: str, diagram_index: int):
         ok, png_data_url, error_text
     """
     if not VALIDATE_MERMAID:
-        return False, "", "Mermaid rendering requires VALIDATE_MERMAID=True because it uses mmdc."
+        return (
+            False,
+            "",
+            "Mermaid rendering requires VALIDATE_MERMAID=True because it uses mmdc.",
+        )
 
     mmdc_path = shutil.which(MERMAID_CLI_BIN)
 
@@ -852,7 +866,8 @@ async def render_mermaid_code_to_png_data_url(code: str, diagram_index: int):
             or output_file.stat().st_size == 0
         ):
             error_text = "\n".join(
-                part for part in [
+                part
+                for part in [
                     f"Mermaid block #{diagram_index} failed PNG rendering.",
                     f"Return code: {process.returncode}",
                     f"Command: {' '.join(cmd)}",
@@ -959,6 +974,7 @@ def build_original_image_blocks_for_compare(images):
 
     return blocks
 
+
 async def judge_mermaid_visual_match(
     client: AsyncOpenAI,
     original_image_blocks,
@@ -992,10 +1008,8 @@ async def judge_mermaid_visual_match(
             "text": (
                 "You are a strict visual judge comparing an original technical document image "
                 "against rendered Mermaid reconstruction image(s).\n\n"
-
                 "Your main job is to verify whether the Mermaid reconstruction preserves the "
                 "original diagram's INFORMATION, not whether Mermaid chose the exact same visual orientation.\n\n"
-
                 "CRITICAL JUDGING RULES:\n"
                 "1. Do NOT penalize heavily just because the original diagram is horizontal but Mermaid rendered it vertical.\n"
                 "2. Do NOT penalize heavily just because Mermaid uses top-to-bottom layout instead of left-to-right layout.\n"
@@ -1008,7 +1022,6 @@ async def judge_mermaid_visual_match(
                 "8. Wrong edge direction is a very serious error.\n"
                 "9. Missing or wrong arrow labels are errors when those labels are visible/meaningful in the original.\n"
                 "10. Extra nodes or extra edges that change the meaning are errors.\n\n"
-
                 "Before scoring, compare systematically:\n"
                 "- List the visible nodes/components in the original image.\n"
                 "- Check that each original node/component appears in the Mermaid rendering.\n"
@@ -1019,7 +1032,6 @@ async def judge_mermaid_visual_match(
                 "- Check that important edge labels are preserved.\n"
                 "- Check grouping/subgraphs/containers only when they carry meaningful information.\n"
                 "- Treat orientation/layout as secondary unless it destroys readability or changes meaning.\n\n"
-
                 "Score from 0 to 100:\n"
                 "- 100 = all nodes/components are present, all relationships/edges are present, all directions are correct, "
                 "important labels are correct. Layout may differ, including horizontal vs vertical.\n"
@@ -1029,7 +1041,6 @@ async def judge_mermaid_visual_match(
                 "- 40 = partially related, but many structural errors.\n"
                 "- 20 = very incomplete reconstruction with only a few matching elements.\n"
                 "- 0 = unrelated, unusable, or fails to represent the original diagram.\n\n"
-
                 "MANDATORY REJECTION GUIDANCE:\n"
                 "- If a major original node/component is missing, the score should usually be below 80.\n"
                 "- If multiple original nodes/components are missing, the score should usually be below 60.\n"
@@ -1039,14 +1050,12 @@ async def judge_mermaid_visual_match(
                 "- If nodes are present but connected incorrectly, the score should drop significantly.\n"
                 "- Do not give a high score to a diagram that has the right-looking nodes but misses edges.\n"
                 "- Do not give a high score to a diagram that has edges but connects the wrong nodes.\n\n"
-
                 "What to IGNORE or treat as minor:\n"
                 "- Horizontal original rendered vertically by Mermaid.\n"
                 "- Left-to-right original rendered top-to-bottom by Mermaid.\n"
                 "- Minor spacing differences.\n"
                 "- Minor shape differences, unless shape carries important meaning.\n"
                 "- Mermaid's automatic layout choices.\n\n"
-
                 "What to focus on most:\n"
                 "- exact node/component coverage\n"
                 "- Japanese/English labels\n"
@@ -1056,7 +1065,6 @@ async def judge_mermaid_visual_match(
                 "- grouping/subgraphs/containers when meaningful\n"
                 "- missing or extra items\n"
                 "- whether someone could reconstruct the original diagram's meaning from the Mermaid output\n\n"
-
                 "Return STRICT JSON only, with this schema:\n"
                 "{\n"
                 '  "score": 0,\n'
@@ -1065,13 +1073,10 @@ async def judge_mermaid_visual_match(
                 '  "wrong": ["wrong nodes, wrong edges, wrong directions, or harmful extras"],\n'
                 '  "suggested_fixes": ["concrete fixes, especially missing edges or node corrections"]\n'
                 "}\n\n"
-
                 "Important: If the only issue is orientation/layout direction, say that clearly and still give a high score. "
                 "If any edge is missing, say exactly which edge is missing. Never overlook missing relationships.\n\n"
-
                 "Surrounding context:\n"
                 f"{context}\n\n"
-
                 "Current Markdown replacement:\n"
                 f"{description}\n"
             ),
@@ -1355,17 +1360,17 @@ async def improve_mermaid_visual_match_loop(
 # MAIN RECONSTRUCTION PROMPT
 # =========================
 
-def build_reconstruction_prompt(markdown_file: Path, index: int, original_line: str, context: str) -> str:
+
+def build_reconstruction_prompt(
+    markdown_file: Path, index: int, original_line: str, context: str
+) -> str:
     return (
         "You are replacing an embedded image in a Markdown technical document with a reconstruction-quality textual representation.\n\n"
-
         "The goal is NOT to write a short caption. The goal is to extract enough information that a reader could "
         "approximately recreate the original image, table, chart, screenshot, or diagram from your output.\n\n"
-
         "Use both:\n"
         "1. The image itself.\n"
         "2. The surrounding Markdown context.\n\n"
-
         "Very important:\n"
         "- Do not merely describe the visual appearance.\n"
         "- Do not produce a one-sentence summary.\n"
@@ -1374,7 +1379,6 @@ def build_reconstruction_prompt(markdown_file: Path, index: int, original_line: 
         "- If the image contains Japanese text, transcribe the Japanese text accurately.\n"
         "- If the context gives a Japanese title/caption, preserve it and optionally add an English explanation.\n"
         "- If some text is too small or unclear, write '[unclear]' rather than inventing content.\n\n"
-
         "Output requirements:\n"
         "- Be exhaustive and concrete.\n"
         "- Preserve all visible text, labels, titles, captions, legends, numbers, arrows, boxes, nodes, columns, rows, "
@@ -1383,7 +1387,6 @@ def build_reconstruction_prompt(markdown_file: Path, index: int, original_line: 
         "- The output may be multiline.\n"
         "- Return only the Markdown replacement for the image line.\n"
         "- Do not include any preface like 'Here is the reconstruction'.\n\n"
-
         "For flowcharts, architecture diagrams, block diagrams, dependency graphs, sequence diagrams, or data-flow diagrams:\n"
         "- Output a Mermaid diagram whenever possible.\n"
         "- Use flowchart TD, flowchart LR, graph TD, graph LR, sequenceDiagram, or another appropriate Mermaid syntax.\n"
@@ -1394,42 +1397,36 @@ def build_reconstruction_prompt(markdown_file: Path, index: int, original_line: 
         "- Preserve grouping boundaries, containers, subsystems, layers, computers, networks, and external actors.\n"
         "- After the Mermaid block, include detailed reconstruction notes describing layout, direction, grouping, "
         "line styles, missing details, and visual features Mermaid cannot express.\n\n"
-
         "Mermaid syntax requirements:\n"
         "- Mermaid diagrams must be parseable by mermaid-cli.\n"
         "- Use simple ASCII node IDs like n1, n2, server1, process_a.\n"
         "- Put Japanese labels, spaces, parentheses, punctuation, and long text inside quoted labels.\n"
-        "- Good: n1[\"エラー処理機能\"] --> n2[\"ログファイル\"]\n"
+        '- Good: n1["エラー処理機能"] --> n2["ログファイル"]\n'
         "- Bad: エラー処理機能 --> ログファイル\n"
         "- Do not put Markdown bullets, notes, prose, or table syntax inside Mermaid code blocks.\n"
         "- Mermaid code blocks must contain only Mermaid syntax.\n"
         "- If a detailed visual feature is hard to express in Mermaid, keep the Mermaid simple and explain the detail outside the code block.\n\n"
-
         "For tables:\n"
         "- Recreate the table as a Markdown table.\n"
         "- Preserve all headers, row labels, column labels, values, merged-cell meaning, units, footnotes, and notes.\n"
         "- If the table has merged cells, explain the merge/grouping after the table.\n"
         "- If there are multi-level headers, represent them as clearly as possible in Markdown and explain the hierarchy.\n\n"
-
         "For charts/graphs:\n"
         "- Identify chart type.\n"
         "- Recreate visible data as a Markdown table when values are visible or reasonably readable.\n"
         "- Describe x-axis, y-axis, units, scale, legend, series, colors/patterns, trends, outliers, and key comparisons.\n"
         "- Include the main takeaway, but do not replace raw details with only a takeaway.\n\n"
-
         "For screenshots:\n"
         "- Recreate the UI state in text.\n"
         "- Preserve window titles, menus, dialogs, buttons, labels, fields, selected values, error messages, tables, "
         "visible paths, code, logs, and layout.\n"
         "- Describe what is selected, enabled, disabled, highlighted, or emphasized.\n\n"
-
         "For simple node/link diagrams:\n"
         "- Encode the structure explicitly, for example A --> B.\n"
         "- State the exact visible nodes and exact visible edges.\n"
         "- If the context defines the meaning of the edge, explain that meaning.\n"
         "- If the exact semantic meaning is not given by context, say only that the visible structure is a direct link/edge "
         "and avoid unsupported guesses.\n\n"
-
         "Preferred output structure:\n\n"
         "[Image reconstruction:\n"
         "Type: <table / flowchart / block diagram / chart / screenshot / photo / other>\n"
@@ -1438,15 +1435,12 @@ def build_reconstruction_prompt(markdown_file: Path, index: int, original_line: 
         "<Markdown table, Mermaid diagram, transcribed text, or detailed structured representation>\n"
         "Detailed notes: <layout, relationships, visual encoding, missing/unclear text, and context-based meaning>\n"
         "]\n\n"
-
         "If using Mermaid, include it as a fenced mermaid code block exactly like:\n"
         "```mermaid\n"
         "flowchart TD\n"
-        "    A[\"Example\"] --> B[\"Example\"]\n"
+        '    A["Example"] --> B["Example"]\n'
         "```\n\n"
-
         "Make the output detailed enough that another person could redraw the image approximately from the text alone.\n\n"
-
         f"Markdown file: {markdown_file}\n"
         f"Image line number: {index + 1}\n\n"
         f"Original image Markdown line:\n{original_line}\n\n"
@@ -1457,6 +1451,7 @@ def build_reconstruction_prompt(markdown_file: Path, index: int, original_line: 
 # =========================
 # IMAGE LINE PROCESSING
 # =========================
+
 
 async def describe_image_line(
     client: AsyncOpenAI,
@@ -1623,11 +1618,13 @@ async def describe_image_line(
                 src = img["resolved"]
             else:
                 if not os.path.exists(img["resolved"]):
-                    raise FileNotFoundError(f"Image not found for line {index + 1}: {img['resolved']}")
+                    raise FileNotFoundError(
+                        f"Image not found for line {index + 1}: {img['resolved']}"
+                    )
                 src = image_file_to_data_url(img["resolved"])
-            
+
             # Escape quotes in alt text to prevent breaking the HTML attribute
-            alt_escaped = img["alt"].replace('"', '&quot;')
+            alt_escaped = img["alt"].replace('"', "&quot;")
             image_tags.append(f'<img src="{src}" alt="{alt_escaped}">')
 
         media_html = "\n    ".join(image_tags)
@@ -1638,21 +1635,23 @@ async def describe_image_line(
 
         # 3. Construct the final bulletproof block
         block = (
-            f'<image-unit>\n'
-            f'  <image-media>\n'
-            f'    {media_html}\n'
-            f'  </image-media>\n'
-            f'  <image-description>\n'
-            f'{safe_description}\n'
-            f'  </image-description>\n'
-            f'</image-unit>'
+            f"<image-unit>\n"
+            f"  <image-media>\n"
+            f"    {media_html}\n"
+            f"  </image-media>\n"
+            f"  <image-description>\n"
+            f"{safe_description}\n"
+            f"  </image-description>\n"
+            f"</image-unit>"
         )
 
         return index, block + "\n"
 
+
 # =========================
 # MAIN PROCESS
 # =========================
+
 
 def get_described_output_path(input_path: Path) -> Path:
     """
@@ -1682,7 +1681,9 @@ def should_skip_markdown_file(input_path: Path) -> tuple[bool, str]:
     return False, ""
 
 
-def find_markdown_files_to_process(folder_path: Path) -> tuple[list[Path], list[tuple[Path, str]]]:
+def find_markdown_files_to_process(
+    folder_path: Path,
+) -> tuple[list[Path], list[tuple[Path, str]]]:
     """
     Finds all Markdown files recursively, excluding files that should be skipped.
 

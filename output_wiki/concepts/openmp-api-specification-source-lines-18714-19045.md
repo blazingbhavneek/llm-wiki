@@ -1,0 +1,344 @@
+# OpenMP-API-Specification Source Lines 18714-19045
+
+Fallback page created to preserve source coverage.
+
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
+
+## Source OpenMP-API-Specification:L18714-L19045
+
+Citation: [OpenMP-API-Specification:L18714-L19045]
+
+````text
+## 17.8.7 Implicit Flushes
+
+Flushes implied when executing an atomic region are described in Section 17.8.5.
+
+A flush region that corresponds to a flush directive with the release clause present is implied at the following locations:
+
+• During a barrier region;
+
+• At entry to a parallel region;
+
+• At entry to a teams region;
+
+• At exit from a critical region;
+
+• During an omp\_unset\_lock region;
+
+• During an omp\_unset\_nest\_lock region;
+
+• During an omp\_fulfill\_event region;
+
+• Immediately before every task scheduling point;
+
+• At exit from the task region of each implicit task;
+
+• At exit from an ordered region, if a threads clause or a doacross clause with a source task-dependence-type is present, or if no clauses are present; and
+
+• During a cancel region, if the cancel-var ICV is true.
+
+For a target construct, the thread-set of an implicit release flush that is performed in a target task during the generation of the target region and that is performed on exit from the initial task region that implicitly encloses the target region consists of the thread that executes the target task and the initial thread that executes the target region.
+
+A flush region that corresponds to a flush directive with the acquire clause present is implied at the following locations:
+
+• During a barrier region;
+
+• At exit from a teams region;
+
+• At entry to a critical region;
+
+• If the region causes the lock to be set, during:
+
+– an omp\_set\_lock region;
+
+– an omp\_test\_lock region;
+
+– an omp\_set\_nest\_lock region; and
+
+– an omp\_test\_nest\_lock region;
+
+• Immediately after every task scheduling point;
+
+• At entry to the task region of each implicit task;
+
+• At entry to an ordered region, if a threads clause or a doacross clause with a sink task-dependence-type is present, or if no clauses are present; and
+
+• Immediately before a cancellation point, if the cancel-var ICV is true and cancellation has been activated.
+
+For a target construct, the thread-set of an implicit acquire flush that is performed in a target task following the generation of the target region or that is performed on entry to the initial task region that implicitly encloses the target region consists of the thread that executes the target task and the initial thread that executes the target region.
+
+Note – A flush region is not implied at the following locations:
+
+• At entry to worksharing regions; and
+
+• At entry to or exit from masked regions.
+
+The synchronization behavior of implicit flushes is as follows:
+
+• When a thread executes an atomic region for which the corresponding construct has the release, acq\_rel, or seq\_cst clause and specifies an atomic operation that starts a given release sequence, the release flush that is performed on entry to the atomic operation synchronizes with an acquire flush that is performed by a diferent thread and has an associated atomic operation that reads a value written by a modification in the release sequence.
+
+• When a thread executes an atomic region for which the corresponding construct has the acquire, acq\_rel, or seq\_cst clause and specifies an atomic operation that reads a value written by a given modification, a release flush that is performed by a diferent thread and has an associated release sequence that contains that modification synchronizes with the acquire flush that is performed on exit from the atomic operation.
+
+• When a thread executes a critical region that has a given name, the behavior is as if the release flush performed on exit from the region synchronizes with the acquire flush performed on entry to the next critical region with the same name that is performed by a diferent thread, if it exists.
+
+• When a team executes a barrier region, the behavior is as if the release flush performed by each thread within the region, and the release flush performed by any other thread upon fulfilling the allow-completion event for a detachable task bound to the binding parallel region of the region, synchronizes with the acquire flush performed by all other threads within the region.
+
+• When a thread executes a taskwait region that does not result in the creation of a dependent task and the task that encounters the corresponding taskwait construct has at least one child task, the behavior is as if each thread that executes a child task that is generated before the taskwait region performs a release flush upon completion of the associated structured block of the child task that synchronizes with an acquire flush performed in the taskwait region. If the child task is a detachable task, the thread that fulfills its allow-completion event performs a release flush upon fulfilling the event that synchronizes with the acquire flush performed in the taskwait region.
+
+• When a thread executes a taskgroup region, the behavior is as if each thread that executes a remaining descendent task performs a release flush upon completion of the associated structured block of the descendent task that synchronizes with an acquire flush performed on exit from the taskgroup region. If the descendent task is a detachable task, the thread that fulfills its allow-completion event performs a release flush upon fulfilling the event that synchronizes with the acquire flush performed in the taskgroup region.
+
+• When a thread executes an ordered region that does not arise from a stand-alone ordered directive, the behavior is as if the release flush performed on exit from the region synchronizes with the acquire flush performed on entry to an ordered region encountered in the next collapsed iteration to be executed by a diferent thread, if it exists.
+
+• When a thread executes an ordered region that arises from a stand-alone ordered directive, the behavior is as if the release flush performed in the ordered region from a given source doacross iteration synchronizes with the acquire flush performed in all ordered regions executed by a diferent thread that are waiting for dependences on that doacross iteration to be satisfied.
+
+• When a team begins execution of a parallel region, the behavior is as if the release flush performed by the primary thread on entry to the parallel region synchronizes with the acquire flush performed on entry to each implicit task that is assigned to a diferent thread.
+
+• When an initial thread begins execution of a target region that is generated by a diferent thread from a target task, the behavior is as if the release flush performed by the generating thread in the target task synchronizes with the acquire flush performed by the initial thread on entry to its initial task region.
+
+• When an initial thread completes execution of a target region that is generated by a diferent thread from a target task, the behavior is as if the release flush performed by the initial thread on exit from its initial task region synchronizes with the acquire flush performed by the generating thread in the target task.
+
+• When a thread encounters a teams construct, the behavior is as if the release flush performed by the thread on entry to the teams region synchronizes with the acquire flush performed on entry to each initial task that is executed by a diferent initial thread that participates in the execution of the teams region.
+
+• When a thread that encounters a teams construct reaches the end of the teams region, the behavior is as if the release flush performed by each diferent participating initial thread at exit from its initial task synchronizes with the acquire flush performed by the thread at exit from the teams region.
+
+• When a task generates an explicit task that begins execution on a diferent thread, the behavior is as if the thread that is executing the generating task performs a release flush that synchronizes with the acquire flush performed by the thread that begins to execute the explicit task.
+
+• When an undeferred task completes execution on a given thread that is diferent from the thread on which its generating task is suspended, the behavior is as if a release flush performed by the thread that completes execution of the associated structured block of the undeferred task synchronizes with an acquire flush performed by the thread that resumes execution of the generating task.
+
+• When a dependent task with one or more antecedent tasks begins execution on a given thread, the behavior is as if each release flush performed by a diferent thread on completion of the associated structured block of a antecedent task synchronizes with the acquire flush performed by the thread that begins to execute the dependent task. If the antecedent task is a detachable task, the thread that fulfills its allow-completion event performs a release flush upon fulfilling the event that synchronizes with the acquire flush performed when the
+
+dependent task begins to execute.
+
+• When a task begins execution on a given thread and it is mutually exclusive with respect to another dependence-compatible task that is executed by a diferent thread, the behavior is as if each release flush performed on completion of the dependence-compatible task synchronizes with the acquire flush performed by the thread that begins to execute the task.
+
+• When a thread executes a cancel region, the cancel-var ICV is true, and cancellation is not already activated for the specified region, the behavior is as if the release flush performed during the cancel region synchronizes with the acquire flush performed by a diferent thread immediately before a cancellation point in which that thread observes cancellation was activated for the region.
+
+• When a thread executes an omp\_unset\_lock region that causes the specified lock to be unset, the behavior is as if a release flush is performed during the omp\_unset\_lock region that synchronizes with an acquire flush that is performed during the next omp\_set\_lock or omp\_test\_lock region to be executed by a diferent thread that causes the specified lock to be set.
+
+• When a thread executes an omp\_unset\_nest\_lock region that causes the specified nestable lock to be unset, the behavior is as if a release flush is performed during the omp\_unset\_nest\_lock region that synchronizes with an acquire flush that is performed during the next omp\_set\_nest\_lock or omp\_test\_nest\_lock region to be executed by a diferent thread that causes the specified nestable lock to be set.
+
+## 17.9 OpenMP Dependences
+
+This section describes constructs and clauses in OpenMP that support the specification and enforcement of dependences. OpenMP supports two kinds of dependences: task dependences, which enforce orderings between dependence-compatible tasks; and doacross dependences, which enforce orderings between doacross iterations of a loop.
+
+## 17.9.1 task-dependence-type Modifier
+
+Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>task-dependence-type</td><td>all arguments</td><td>Keyword:depobj, in,inout, inoutset, mutexinoutset, out</td><td>unique</td></tr></table>
+
+## Clauses
+
+depend, update
+
+## Semantics
+
+Clauses that are related to task dependences use the task-dependence-type modifier to identify the type of dependence relevant to that clause. The efect of the type of dependence is associated with locator list items as described with the depend clause, see Section 17.9.5.
+
+## Cross References
+
+• depend Clause, see Section 17.9.5
+
+• update Clause, see Section 17.9.4
+
+## 17.9.2 Depend Objects
+
+Depend objects are OpenMP objects that can be used to supply user-computed dependences to depend clauses. Depend objects must be accessed only through the depobj construct, the depend clause and the asynchronous device routines; OpenMP programs that otherwise access depend objects are non-conforming programs. A depend object can be in one of the following states: uninitialized or initialized. Initially, depend objects are in the uninitialized state.
+
+## 17.9.3 depobj Construct
+
+<table><tr><td>Name: depobjCategory: executable</td><td>Association: unassociatedProperties: default</td></tr></table>
+
+## Clauses
+
+destroy, init, update
+
+<table><tr><td colspan="2">Clause set</td></tr><tr><td>Properties: required</td><td>Members: destroy, init, update</td></tr></table>
+
+## Additional information
+
+The depobj construct may alternatively be specified with a directive argument depend-object that is a depend object. If this syntax is used, the init clause must not be specified and instead the depend clause may be specified to initialize depend-object to represent a given dependence type and locator list item. With this syntax the update clause is only permitted to specify the task-dependence-type as if it is the sole argument of the clause, with the efect being that the specified dependence type applies to depend-object. With this syntax, any update-var or destroy-var that is specified in an update or destroy clause must be the same as depend-object. Finally, with this syntax only one clause may be specified and it must be depend, update, or destroy.
+
+## Binding
+
+The binding thread set for a depobj region is the encountering thread.
+
+## Semantics
+
+The depobj construct initializes, updates or destroys depend objects. If an init clause is specified, the state of the specified depend object is set to initialized and the depend object is set to represent the specified dependence type and locator list item. If an update clause is specified, the specified depend object is updated to represent the new dependence type. If a destroy clause is specified, the specified depend object is set to uninitialized.
+
+## Cross References
+
+• destroy Clause, see Section 5.7
+
+• init Clause, see Section 5.6
+
+• update Clause, see Section 17.9.4
+
+## 17.9.4 update Clause
+
+Modifiers
+
+<table><tr><td>Name: update</td><td>Properties: innermost-leaf, unique</td></tr></table>
+
+Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>update-var</td><td>variable of OpenMP depend type</td><td>default</td></tr></table>
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>task-dependence-type</td><td>all arguments</td><td>Keyword:depobj, in,inout, inoutset, mutexinoutset, out</td><td>unique</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+depobj
+
+## Semantics
+
+The update clause sets the dependence type of update-var to task-dependence-type.
+
+## Restrictions
+
+Restrictions to the update clause are as follows:
+
+• task-dependence-type must not be depobj.
+
+• The state of update-var must be initialized.
+
+• If the locator list item represented by update-var is the omp\_all\_memory reserved locator, task-dependence-type must be either out or inout.
+
+## Cross References
+
+• depobj Construct, see Section 17.9.3
+
+• task-dependence-type Modifier, see Section 17.9.1
+
+## 17.9.5 depend Clause
+
+<table><tr><td>Name: depend</td><td>Properties: taskgraph-altering, task-inherited</td></tr></table>
+
+Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>locator-list</td><td>list of locator list item type</td><td>default</td></tr></table>
+
+Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>task-dependence-type</td><td>all arguments</td><td>Keyword:depobj, in,inout, inoutset, mutexinoutset, out</td><td>unique</td></tr><tr><td>iterator</td><td>locator-list</td><td>Complex, name:iteratorArguments:iterator-specifierlist of iterator specifier list item type (default)</td><td>unique</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+dispatch, interop, target, target\_data, target\_enter\_data, target\_exit\_data, target\_update, task, task\_iteration, taskwait
+
+## Semantics
+
+The depend clause enforces additional constraints on the scheduling of tasks. These constraints establish dependences only between two dependence-compatible tasks: the antecedent task and the dependent task. The scheduling constraints are transitive so that the antecedent task must complete execution before any of its successor tasks execute. Similarly, the dependent task cannot start execution before all of its predecessor tasks complete execution. Task dependences are derived from the task-dependence-type and the list items in the locator-list argument.
+
+One task, A, is a preceding dependence-compatible task of another task, B, if one of the following is true:
+
+• A is a previously generated sibling task of B;
+
+• A is a preceding dependence-compatible task of an importing task for which B is a child task;
+
+• A is a child task of an exporting task that is a predecessor task of B;
+
+• A is a child task of an undeferred exporting task that is a previously generated sibling task of B.
+
+The storage location of a list item matches the storage location of another list item if they have the same storage location, or if any of the list items is omp\_all\_memory.
+
+For the in task-dependence-type, if the storage location of at least one of the list items matches the storage location of a list item appearing in a depend clause with an out, inout, mutexinoutset, or inoutset task-dependence-type on a construct from which a preceding dependence-compatible task was generated then the generated task will be a dependent task of that preceding dependence-compatible task.
+
+For the out task-dependence-type and inout task-dependence-type, if the storage location of at least one of the list items matches the storage location of a list item appearing in a depend clause with an in, out, inout, mutexinoutset, or inoutset task-dependence-type on a construct from which a preceding dependence-compatible task was generated then the generated task will be a dependent task of that preceding dependence-compatible task.
+
+For the mutexinoutset task-dependence-type, if the storage location of at least one of the list items matches the storage location of a list item appearing in a depend clause with an in, out, inout, or inoutset task-dependence-type on a construct from which a preceding dependence-compatible task was generated then the generated task will be a dependent task of that preceding dependence-compatible task.
+
+If a list item appearing in a depend clause with a mutexinoutset task-dependence-type on a task-generating construct matches a list item appearing in a depend clause with a mutexinoutset task-dependence-type on a diferent task-generating construct, and both constructs generate dependence-compatible tasks, the dependence-compatible tasks will be mutually exclusive tasks.
+
+For the inoutset task-dependence-type, if the storage location of at least one of the list items matches the storage location of a list item appearing in a depend clause with an in, out, inout, or mutexinoutset task-dependence-type on a construct from which a preceding dependence-compatible task was generated then the generated task will be a dependent task of that preceding dependence-compatible task.
+
+When the task-dependence-type is depobj, the behavior is as if the dependence type and locator list item that each specified depend object list item represents was specified by depend clauses on the current construct.
+
+The list items that appear in the depend clause may reference any iterator-identifier defined in its iterator modifier.
+
+The list items that appear in the depend clause may include array sections or the omp\_all\_memory reserved locator.
+
+C / C++
+
+The list items that appear in a depend clause may use shape-operators.
+
+C / C++
+
+Note – The enforced task dependence establishes a synchronization of memory accesses performed by a dependent task with respect to accesses performed by the antecedent tasks. However, the programmer must properly synchronize with respect to other concurrent accesses that occur outside of those tasks.
+
+## Execution Model Events
+
+The task-dependences event occurs in a thread that encounters a task-generating construct or a taskwait construct with a depend clause immediately after the task-create event for the generated task or the taskwait-init event. The task-dependence event indicates an unfulfilled dependence for the generated task. This event occurs in a thread that observes the unfulfilled dependence before it is satisfied.
+
+## Tool Callbacks
+
+A thread dispatches the dependences callback for each occurrence of the task-dependences event to announce its dependences with respect to the list items in the depend clause. A thread dispatches the task\_dependence callback for a task-dependence event to report a dependence between a antecedent task (src\_task\_data) and a dependent task (sink\_task\_data).
+
+## Restrictions
+
+Restrictions to the depend clause are as follows:
+
+• List items, other than reserved locators, used in depend clauses of the same task or dependence-compatible tasks must indicate identical storage locations or disjoint storage locations.
+
+• List items used in depend clauses cannot be zero-length array sections.
+
+• The omp\_all\_memory reserved locator can only be used in a depend clause with an out or inout task-dependence-type.
+
+• Array sections cannot be specified in depend clauses with the depobj task-dependence-type.
+
+• List items used in depend clauses with the depobj task-dependence-type must be expressions of the depend OpenMP type that correspond to depend objects in the initialized state.
+
+• List items that are expressions of the depend OpenMP type can only be used in depend clauses with the depobj task-dependence-type.
+
+Fortran
+
+• A common block name cannot appear in a depend clause.
+
+• If a locator list item has the ALLOCATABLE attribute and its allocation status is unallocated, the behavior is unspecified.
+
+• If a locator list item has the POINTER attribute and its association status is disassociated or undefined, the behavior is unspecified.
+
+Fortran
+
+C / C++
+
+• A bit-field cannot appear in a depend clause.
+
+C / C++
+
+## Cross References
+
+• dependences Callback, see Section 34.7.1
+
+• dispatch Construct, see Section 9.7
+
+• Array Sections, see Section 5.2.5
+
+• Array Shaping, see Section 5.2.4
+
+• interop Construct, see Section 16.1
+
+• iterator Modifier, see Section 5.2.6
+
+• task-dependence-type Modifier, see Section 17.9.1
+
+• target Construct, see Section 15.8
+
+• target\_data Construct, see Section 15.7
+
+• target\_enter\_data Construct, see Section 15.5
+
+• target\_exit\_data Construct, see Section 15.6
+
+• target\_update Construct, see Section 15.9
+
+• task Construct, see Section 14.1
+
+• task\_dependence Callback, see Section 34.7.2
+
+• task\_iteration Directive, see Section 14.2.3
+
+• taskwait Construct, see Section 17.5
+````

@@ -6,8 +6,8 @@ Run: python -m pytest graph2/tests/ -q
 
 from __future__ import annotations
 
-import tempfile
 import json
+import tempfile
 from pathlib import Path
 
 from ..engine import DomainEngine
@@ -28,8 +28,12 @@ def _engine() -> DomainEngine:
 
 
 def _node(body: str, doc: str = "test.md") -> Node:
-    return Node(id=make_node_id(body, doc), body=body, type=NodeType.endogenous,
-                original_document_name=doc)
+    return Node(
+        id=make_node_id(body, doc),
+        body=body,
+        type=NodeType.endogenous,
+        original_document_name=doc,
+    )
 
 
 def _md_output(root: Path, name: str, bodies: list[tuple[str, str]]) -> Path:
@@ -39,12 +43,14 @@ def _md_output(root: Path, name: str, bodies: list[tuple[str, str]]) -> Path:
     files = []
     for index, (title, body) in enumerate(bodies, start=1):
         filename = f"01-manual/{index:03d}-{title}.md"
-        files.append({
-            "filename": filename,
-            "title": title,
-            "summary": title,
-            "source_ranges": [[index, index]],
-        })
+        files.append(
+            {
+                "filename": filename,
+                "title": title,
+                "summary": title,
+                "source_ranges": [[index, index]],
+            }
+        )
         (out / filename).write_text(
             f"---\ntitle: {title}\n---\n{body}\n",
             encoding="utf-8",
@@ -196,7 +202,9 @@ def test_entity_dedup_links_same_as() -> None:
         same_as = [
             e for e in eng.database.get_edges_for_node(a.id) if e.label == "same-as"
         ]
-        assert any(e.target_node_id == b.id or e.source_node_id == b.id for e in same_as)
+        assert any(
+            e.target_node_id == b.id or e.source_node_id == b.id for e in same_as
+        )
     finally:
         eng.close()
 
@@ -205,14 +213,19 @@ def test_cascading_update_supersedes_changed_source_node() -> None:
     eng = _engine()
     root = Path(tempfile.mkdtemp())
     try:
-        v1 = _md_output(root, "v1", [
-            ("omega", "omegaapi takes parameter alpha.\nomegaapi returns int."),
-            ("setup", "setupguide uses a config file."),
-        ])
+        v1 = _md_output(
+            root,
+            "v1",
+            [
+                ("omega", "omegaapi takes parameter alpha.\nomegaapi returns int."),
+                ("setup", "setupguide uses a config file."),
+            ],
+        )
         eng.ingest_md_output(v1)
 
         old_omega = next(
-            n for n in eng.database.get_nodes_by_document("manual.md", active_only=True)
+            n
+            for n in eng.database.get_nodes_by_document("manual.md", active_only=True)
             if "alpha" in n.body
         )
         exo1 = eng.create_exogenous_node(
@@ -226,10 +239,14 @@ def test_cascading_update_supersedes_changed_source_node() -> None:
             origin="agent-2",
         )
 
-        v2 = _md_output(root, "v2", [
-            ("omega", "omegaapi takes parameter beta.\nomegaapi returns int."),
-            ("setup", "setupguide uses a config file."),
-        ])
+        v2 = _md_output(
+            root,
+            "v2",
+            [
+                ("omega", "omegaapi takes parameter beta.\nomegaapi returns int."),
+                ("setup", "setupguide uses a config file."),
+            ],
+        )
         actions = eng.cascading_update(v2)
 
         assert any(a.startswith(f"superseded:{old_omega.id}->") for a in actions)
@@ -242,7 +259,11 @@ def test_cascading_update_supersedes_changed_source_node() -> None:
         active = eng.database.get_nodes_by_document("manual.md", active_only=True)
         assert any("beta" in n.body for n in active)
         assert any("setupguide" in n.body for n in active)
-        active_exo = [n for n in eng.database.get_all_nodes() if n.type == NodeType.exogenous and n.status.value == "active"]
+        active_exo = [
+            n
+            for n in eng.database.get_all_nodes()
+            if n.type == NodeType.exogenous and n.status.value == "active"
+        ]
         assert any("beta" in n.body for n in active_exo)
 
         edges = eng.database.get_edges_for_node(old_omega.id)
@@ -258,13 +279,18 @@ def test_cascading_update_stales_exogenous_with_removed_support() -> None:
     eng = _engine()
     root = Path(tempfile.mkdtemp())
     try:
-        v1 = _md_output(root, "v1", [
-            ("omega", "omegaapi takes parameter alpha."),
-            ("setup", "setupguide uses a config file."),
-        ])
+        v1 = _md_output(
+            root,
+            "v1",
+            [
+                ("omega", "omegaapi takes parameter alpha."),
+                ("setup", "setupguide uses a config file."),
+            ],
+        )
         eng.ingest_md_output(v1)
         old_omega = next(
-            n for n in eng.database.get_nodes_by_document("manual.md", active_only=True)
+            n
+            for n in eng.database.get_nodes_by_document("manual.md", active_only=True)
             if "omegaapi" in n.body
         )
         exo = eng.create_exogenous_node(
@@ -273,9 +299,13 @@ def test_cascading_update_stales_exogenous_with_removed_support() -> None:
             origin="removed-support-agent",
         )
 
-        v2 = _md_output(root, "v2", [
-            ("setup", "setupguide uses a config file."),
-        ])
+        v2 = _md_output(
+            root,
+            "v2",
+            [
+                ("setup", "setupguide uses a config file."),
+            ],
+        )
         actions = eng.cascading_update(v2)
 
         assert any(a == f"stale:{old_omega.id}" for a in actions)

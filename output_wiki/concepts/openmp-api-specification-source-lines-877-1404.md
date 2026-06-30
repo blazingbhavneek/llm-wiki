@@ -1,0 +1,540 @@
+# OpenMP-API-Specification Source Lines 877-1404
+
+Fallback page created to preserve source coverage.
+
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
+
+## Source OpenMP-API-Specification:L877-L1404
+
+Citation: [OpenMP-API-Specification:L877-L1404]
+
+````text
+# 1 Overview of the OpenMP API
+
+The collection of compiler directives, library routines, environment variables, and tool support that this document describes collectively define the specification of the OpenMP Application Program Interface (OpenMP API) for C, C++ and Fortran base programs. This specification provides a model for parallel programming that is portable across architectures from diferent vendors. Compilers from numerous vendors support the OpenMP API. More information about the OpenMP API can be found at the following web site: https://www.openmp.org.
+
+The directives, routines, environment variables, and tool support that this document defines allow users to create, to manage, to debug and to analyze parallel programs while permitting portability. The directives extend the C, C++ and Fortran base languages with single program multiple data (SPMD) constructs, tasking constructs, device constructs, work-distribution constructs, and synchronization constructs, and they provide support for sharing, mapping and privatizing data. The functionality to control the runtime environment is provided by routines and environment variables. Compilers that support the OpenMP API often include command line options to enable or to disable interpretation of some or all OpenMP directives.
+
+## 1.1 Scope
+
+The OpenMP API covers only user-directed parallelization, wherein the programmer explicitly specifies the actions to be taken by the compiler and runtime system in order to execute the program in parallel. OpenMP-compliant implementations are not required to check for data dependences, data conflicts, data races, or deadlocks. Compliant implementations also are not required to check for any code sequences that cause a program to be classified as a non-conforming program. Application developers are responsible for correctly using the OpenMP API to produce a conforming program. The OpenMP API does not cover compiler-generated automatic parallelization.
+
+## 1.2 Execution Model
+
+A compliant implementation must follow the abstract execution model that the supported base language and OpenMP specification define, as observable from the results of user code in a conforming program. These results do not include output from external monitoring tools or tools that use the OpenMP tool interfaces (i.e., OMPT and OMPD), which may reflect deviations from the execution model such as the unprescribed use of additional native threads, SIMD instruction, alternate loop transformations, or other target devices to facilitate parallel execution of the program.
+
+The OpenMP API includes several directives. Some directives allow customization of base language declarations while other directives specify details of program execution. Such executable directives may be lexically associated with base language code. Each executable directive and any such associated base language code forms a construct. An OpenMP program executes regions, which consist of all code encountered by native threads.
+
+Some regions are implicit but many are explicit regions, which correspond to a specific instance of a construct or routine. Execution is composed of nested regions since a given region may encounter additional constructs and routines. References to regions, particularly explicit regions or nested regions, that correspond to a specific type of construct or routine usually include the name of that construct or routine to identify the type of region that results.
+
+With the OpenMP API, multiple threads execute tasks defined implicitly or explicitly by OpenMP directives and their associated user code, if any. An implementation may use multiple devices for a given execution of an OpenMP program. Concurrent execution of threads may result in diferent numeric results because of changes in the association of numeric operations.
+
+Each device executes a set of one or more contention groups. Each contention group consists of a set of tasks that an associated set of threads, an OpenMP thread pool, executes. The lifetime of the OpenMP thread pool is the same as that of the contention group. The threads that are associated with each contention group are distinct from threads associated with any other contention group. Threads cannot migrate to execute tasks of a diferent contention group.
+
+Each OpenMP thread pool has an initial thread, which may be the thread that starts execution of a region that is not nested within any other region, or which may be the thread that starts execution of the structured block associated with a target or teams construct. Each initial thread executes sequentially; the code that it encounters is part of an implicit task region, called an initial task region, that is generated by the implicit parallel region that surrounds all code executed by the initial thread. The other threads in the OpenMP thread pool associated with a contention group are unassigned threads. An implicit task is assigned to each of those threads. When a task encounters a parallel construct, some of the unassigned threads become assigned threads that are assigned to the team of that parallel region.
+
+The thread that executes the implicit parallel region that surrounds the whole program executes on the host device. An implementation may support other devices besides the host device. If supported, these devices are available to the host device for ofloading code and data. Each device has its own contention groups.
+
+A task that encounters a target construct generates a new target task; its region encloses the target region. The target task is complete after the target region completes execution. When a target task executes, an initial thread executes the enclosed target region. The initial thread executes sequentially, as if the target region is part of an initial task region that an implicit parallel region generates. The initial thread may execute on the requested target device, if it is available. If the target device does not exist or the implementation does not support it, all target regions associated with that device execute on the host device. Otherwise, the implementation ensures that the target region executes as if it were executed in the data environment of the target device unless an if clause is present and the if clause expression evaluates to false.
+
+The teams construct creates a league of teams, where each team is an initial team that comprises an initial thread that executes the teams region and that executes a distinct contention group from those of initial threads. Each initial thread executes sequentially, as if the code encountered is part of an initial task region that is generated by an implicit parallel region associated with each team. Whether the initial threads concurrently execute the teams region is unspecified, and a program that relies on their concurrent execution for the purposes of synchronization may deadlock.
+
+Any thread that encounters a parallel construct becomes the primary thread of the new team that consists of itself and zero or more additional unassigned threads that are then assigned to that team as team-worker threads. Those threads remain assigned threads for the lifetime of that team. A set of implicit tasks, one per thread, is generated. The code inside the parallel construct defines the code for each implicit task. A diferent thread in the team is assigned to each implicit task, which is tied, that is, only that assigned thread ever executes it. The task region of the task being executed by the encountering thread is suspended, and each member of the new team executes its implicit task. The primary thread is the parent thread of any thread that executes a task that is bound to the parallel region. An implicit barrier occurs at the end of the parallel region. Only the primary thread resumes execution beyond the end of that region, resuming the suspended task region. The other threads again become unassigned threads. A single program can specify any number of parallel constructs.
+
+parallel regions may be arbitrarily nested inside each other. If nested parallelism is disabled, or is not supported by the OpenMP implementation, then the new team that is formed by a thread that encounters a parallel construct inside a parallel region will consist only of the encountering thread. However, if nested parallelism is supported and enabled, then the new team can consist of more than one thread. A parallel construct may include a proc\_bind clause to specify the places to use for the threads in the team within the parallel region.
+
+When any team encounters a partitioned worksharing construct, the work inside the construct is divided into work partitions, each of which is executed by one member of the team, instead of the work being executed redundantly by each thread. An implicit barrier occurs at the end of any region that corresponds to a worksharing construct for which the nowait clause is not specified. Redundant execution of code by every thread in the team resumes after the end of the worksharing construct. Regions that correspond to team-executed constructs, including all worksharing regions and barrier regions, are executed by the current team such that all threads in the team execute the team-executed regions in the same order.
+
+When a loop construct is encountered, the logical iterations of the collapsed loops, which are the afected loops as specified by the collapse clause, are executed in the context of its encountering threads, as determined according to its binding region. If the loop region binds to a teams region, the region is encountered by the set of primary thread that execute the teams region. If the loop region binds to a parallel region, the region is encountered by the team that execute the parallel region. Otherwise, the region is encountered by a single thread. If the loop region
+
+binds to a teams region, the encountering threads may continue execution after the loop region without waiting for all iterations to complete; the iterations are guaranteed to complete before the end of the teams region. Otherwise, all iterations must complete before the encountering threads continue execution after the loop region. All threads that encounter the loop construct may participate in the execution of the iterations. Only one thread may execute any given iteration.
+
+When any thread encounters a simd construct, the iterations of the loop associated with the construct may be executed concurrently using the SIMD lanes that are available to the thread.
+
+When any thread encounters a task-generating construct, one or more explicit tasks are generated. Explicitly generated tasks are scheduled onto threads of the binding thread set of the task, subject to the availability of the threads to execute work. Thus, execution of the new task could be immediate, or deferred until later according to task scheduling constraints and thread availability. Completion of all explicit tasks bound to a given parallel region is guaranteed before the primary thread leaves the implicit barrier at the end of the region. Completion of a subset of all explicit tasks bound to a given parallel region may be specified through the use of task synchronization constructs. Completion of all explicit tasks bound to an implicit parallel region is guaranteed when the associated initial task completes. The initial task on the host device that begins a typical OpenMP program is guaranteed to end by the time that the program exits.
+
+Threads are allowed to suspend the current task region at a task scheduling point in order to execute a diferent task. Thus, each task consists of a set of one or more subtasks that each correspond to the portion of the task region between any two consecutive task scheduling points that the task encounters. If the task region of a tied task is suspended, the initially assigned thread later resumes execution of the next subtask of the suspended task region. If the task region of an untied task is suspended, any thread in the binding thread set of the task may resume execution of its next subtask.
+
+OpenMP threads are logical execution entities that are mapped to native threads for actual execution. OpenMP does not dictate the details of the implementation of native threads and, instead, specifies requirements on the thread state of OpenMP threads. As long as those requirements are met, a compliant implementation may map the same OpenMP thread diferently (i.e., to diferent native threads) for diferent portions of its execution (e.g., for the execution of diferent subtasks). Similarly, while the lifetime of an OpenMP thread and its OpenMP thread pool is identical to that of the associated contention group, OpenMP does not specify the lifetime of any native threads to which it is mapped. Native threads may be created at any time and may be terminated at any time.
+
+The cancel construct can alter the previously described flow of execution in a region. The efect of the cancel construct depends on the cancel-directive-name that is specified on it. If a task encounters a cancel construct with a taskgroup clause, then the explicit task activates cancellation and continues execution at the end of its task region, which implies completion of that task. Any other task in that taskgroup that has begun executing completes execution unless it encounters a cancellation point, including one that corresponds to a cancellation point construct, in which case it continues execution at the end of its explicit task region, which implies its completion. Other tasks in that taskgroup region that have not begun execution are aborted, which implies their completion.
+
+If a task encounters a cancel construct with any other cancel-directive-name clause, it activates cancellation of the innermost enclosing region of the type specified and the thread continues execution at the end of that region. Tasks check if cancellation has been activated for their region at cancellation points and, if so, also resume execution at the end of the canceled region.
+
+If cancellation has been activated, regardless of the cancel-directive-name clauses, threads that are waiting inside a barrier other than an implicit barrier at the end of the canceled region exit the barrier and resume execution at the end of the canceled region. This action can occur before the other threads reach that barrier.
+
+OpenMP specifies circumstances that cause error termination. If compile-time error termination is specified, the efect is as if the program encounters an error directive on which a severity clause specifies a sev-level argument of fatal and an at clause specifies an action-time argument of compilation. If runtime error termination is specified, the efect is as if the program encounters an error directive on which a severity clause specifies a sev-level argument of fatal and an at clause specifies an action-time argument of execution.
+
+A construct that creates a data environment creates it at the time that the construct is encountered. The description of a construct defines whether it creates a data environment. Synchronization constructs and routines are available in the OpenMP API to coordinate tasks and their data accesses. In addition, routines and environment variables are available to control or to query the runtime environment of OpenMP programs. The scope of OpenMP synchronization mechanisms may be limited to the contention group of the encountering task. Except where explicitly specified any efect of the mechanisms between contention groups is implementation defined. Section 1.3 details the OpenMP memory model, including the efect of these features.
+
+The OpenMP specification makes no guarantee that input or output to the same file is synchronous when executed in parallel. In this case, the programmer is responsible for synchronizing input and output processing with the assistance of synchronization constructs or routines.
+
+Each native thread that enables the execution of a task by an OpenMP thread executes on a hardware thread. A hardware thread executes a stream of instructions defined by a given task region, so that only one OpenMP thread may execute on a hardware thread at a time. A set of consecutive hardware threads may form a progress unit. Hardware threads execute distinct streams of instructions unless they are part of the same progress unit. Threads that execute in the same progress unit may execute from a common stream of instructions, with serialized execution of diverging code paths that occur due to conditional statements. A program that relies on concurrent execution of such diverging code paths for the purposes of synchronization may deadlock.
+
+All concurrency semantics defined by the base language with respect to base language threads apply to OpenMP threads, unless otherwise specified. An OpenMP thread makes progress when it performs a flush operation, performs input or output processing, terminates, or makes progress as defined by the base language. OpenMP threads will eventually make progress in the absence of dependence cycles, unless otherwise specified by the base language. A dependence cycle may be implicitly introduced between synchronizing threads where concurrent execution is not guaranteed. Threads may therefore not make progress if the program includes synchronizing threads that
+
+descend from diferent initial teams formed by a teams construct or if the program includes synchronizing divergent threads from the same team that execute on the same progress unit. The generation and execution of explicit tasks by threads in the current team does not prevent any of the threads from making progress if executing the explicit tasks as included tasks would ensure that they make progress.
+
+Each device is identified by a device number. The device number for the host device is the value of the total number of non-host devices, while each non-host device has a unique device number that is greater than or equal to zero and less than the device number for the host device. Additionally, the predefined identifier omp\_initial\_device can be used as an alias for the host device and the predefined identifier omp\_invalid\_device can be used to specify an invalid device number. A conforming device number is either a non-negative integer that is less than or equal to the value returned by omp\_get\_num\_devices or equal to omp\_initial\_device or omp\_invalid\_device.
+
+A signal handler may only execute directives and routines that have the async-signal-safe property.
+
+## 1.3 Memory Model
+
+## 1.3.1 Structure of the OpenMP Memory Model
+
+The OpenMP API provides a relaxed-consistency, shared-memory model. All OpenMP threads have access to a place to store and to retrieve variables, called the memory. A given storage location in the memory may be associated with one or more devices, such that only threads on associated devices have access to it. In addition, each thread is allowed to have its own temporary view of the memory. The temporary view of memory for each thread is not a required part of the OpenMP memory model, but can represent any kind of intervening structure, such as machine registers, cache, or other local storage, between the thread and the memory. The temporary view of memory allows the thread to cache variables and thereby to avoid going to memory for every reference to a variable. Each thread also has access to another type of memory that must not be accessed by other threads, called threadprivate memory.
+
+A directive that accepts data-sharing attribute clauses determines two kinds of access to variables used in the associated structured block of the directive: shared variables and private variables. Each variable referenced in the structured block has an original variable, which is the variable by the same name that exists in the OpenMP program immediately outside the construct. Each reference to a shared variable in the structured block becomes a reference to the original variable. For each private variable referenced in the structured block, a new version of the original variable (of the same type and size) is created in memory for each task or SIMD lane that executes code associated with the directive. Creation of the new version does not alter the value of the original variable. However, attempts to access the original variable from within the region that corresponds to the directive result in unspecified behavior; see Section 7.5.3 for additional details. References to a private variable in the structured block refer to the private version of the original variable for the current task or SIMD lane. The relationship between the value of the value of the original variable and the initial or final value of the private version depends on the exact clause that specifies it. Details of this issue, as well as other issues with privatization, are provided in Chapter 7.
+
+The minimum size at which a memory update may also read and write back adjacent variables that are part of an aggregate variable is implementation defined but is no larger than the base language requires.
+
+A single access to a variable may be implemented with multiple load or store instructions and, thus, is not guaranteed to be an atomic operation with respect to other accesses to the same variable. Accesses to variables smaller than the implementation defined minimum size or to C or C++ bit-fields may be implemented by reading, modifying, and rewriting a larger unit of memory, and may thus interfere with updates of variables or fields in the same unit of memory.
+
+Two memory operations are considered unordered if the order in which they must complete, as seen by their afected threads, is not specified by the memory consistency guarantees listed in Section 1.3.6. If multiple threads write to the same memory unit (defined consistently with the above access considerations) then a data race occurs if the writes are unordered. Similarly, if at least one thread reads from a memory unit and at least one thread writes to that same memory unit then a data race occurs if the read and write are unordered. If a data race occurs then the result of the OpenMP program is unspecified behavior.
+
+A private variable in a task region that subsequently generates an inner nested parallel region is permitted to be made shared for implicit tasks in the inner parallel region. A private variable in a task region can also be shared by an explicit task region generated during its execution. However, the programmer must use synchronization that ensures that the lifetime of the variable does not end before completion of the explicit task region sharing it. Any other access by one task to the private variables of another task results in unspecified behavior.
+
+A storage location in memory that is associated with a given device has a device address that may be dereferenced by a thread executing on that device, but it may not be generally accessible from other devices. A diferent device may obtain a device pointer that refers to this device address. The manner in which an OpenMP program can obtain the referenced device address from a device pointer, outside of mechanisms specified by OpenMP, is implementation defined. Unless otherwise specified, the atomic scope of a storage location is all threads on the current device.
+
+## 1.3.2 Device Data Environments
+
+When an OpenMP program begins, an implicit target\_data region for each device surrounds the whole program. Each device has a device data environment that is defined by its implicit target\_data region. Any declare target directives and directives that accept data-mapping attribute clauses determine how an original storage block in a data environment is mapped to a corresponding storage block in a device data environment. Additionally, if a variable with static storage duration has original storage that is accessible on a device, and the variable is not a device-local variable, it may be treated as if its storage is mapped with a persistent self map in the implicit target\_data region of the device; whether this happens is implementation defined.
+
+When an original storage block is mapped to a device data environment and a corresponding storage block is not present in the device data environment, a new corresponding storage block (of the same type and size as the original storage block) is created in the device data environment. Conversely, the original storage block becomes the corresponding storage block of the new storage block in the device data environment of the device that performs a mapping operation.
+
+The corresponding storage block in the device data environment may share storage with the original storage block. Writes to the corresponding storage block may alter the value of the original storage block. Section 1.3.6 discusses the impact of this possibility on memory consistency. When a task executes in the context of a device data environment, references to the original storage block refer to the corresponding storage block in the device data environment. If an original storage block is not currently mapped and a corresponding storage block does not exist in the device data environment then accesses to the original storage block result in unspecified behavior unless the unified\_shared\_memory clause is specified on a requires directive for the compilation unit.
+
+The relationship between the value of the original storage block and the initial or final value of the corresponding storage block depends on the map-type. Details of this issue, as well as other issues with mapping a variable, are provided in Section 7.9.6.
+
+The original storage block in a data environment and a corresponding storage block in a device data environment may share storage. Without intervening synchronization data races can occur.
+
+If a storage block has a corresponding storage block with which it does not share storage, a write to a storage location designated by the storage block causes the value at the corresponding storage block to become undefined.
+
+## 1.3.3 Memory Management
+
+The host device, and other devices that an implementation may support, have attached storage resources where variables are stored. These resources can have diferent traits. A memory space in an OpenMP program represents a set of these storage resources. Memory spaces are defined according to a set of traits, and a single resource may be exposed as multiple memory spaces with diferent traits or may be part of multiple memory spaces. In any device, at least one memory space is guaranteed to exist.
+
+An OpenMP program can use a memory allocator to allocate memory in which to store variables. This memory will be allocated from the storage resources of the memory space associated with the memory allocator. Memory allocators are also used to deallocate previously allocated memory. When a memory allocator is not used to allocate memory, OpenMP does not prescribe the storage resource for the allocation; the memory for the variables may be allocated in any storage resource.
+
+## 1.3.4 The Flush Operation
+
+The memory model has relaxed-consistency because the temporary view of memory of a thread is not required to be consistent with memory at all times. A value written to a variable can remain in that temporary view until it is forced to memory at a later time. Likewise, a read from a variable may retrieve the value from that temporary view, unless it is forced to read from memory. OpenMP flush operations are used to enforce consistency between the temporary view of memory of a thread and memory, or between the temporary views of multiple threads.
+
+A flush has an associated thread-set that constrains the threads for which it enforces memory consistency. Consistency is only guaranteed to be enforced between the view of memory of these threads. Unless otherwise specified, the thread-set of a flush only includes all threads on the current device.
+
+If a flush is a strong flush, it enforces consistency between the temporary view of a thread and memory. A strong flush is applied to a set of variable called the flush-set. A strong flush restricts how an implementation may reorder memory operations. Implementations must not reorder the code for a memory operation for a given variable, or the code for a flush for the variable, with respect to a strong flush that refers to the same variable.
+
+If a thread has performed a write to its temporary view of a shared variable since its last strong flush of that variable then, when it executes another strong flush of the variable, the strong flush does not complete until the value of the variable has been written to the variable in memory. If a thread performs multiple writes to the same variable between two strong flushes of that variable, the strong flush ensures that the value of the last write is written to the variable in memory. A strong flush of a variable executed by a thread also causes its temporary view of the variable to be discarded, so that if its next memory operation for that variable is a read, then the thread will read from memory and capture the value in its temporary view. When a thread executes a strong flush, no later memory operation by that thread for a variable in the flush-set of that strong flush is allowed to start until the strong flush completes. The completion of a strong flush executed by a thread is defined as the point at which all writes to the flush-set performed by the thread before the strong flush are visible in memory to all other threads, and at which the temporary view of the flush-set of that thread is discarded.
+
+A strong flush provides a guarantee of consistency between the temporary view of a thread and memory. Therefore, a strong flush can be used to guarantee that a value written to a variable by one thread may be read by a second thread. To accomplish this, the programmer must ensure that the second thread has not written to the variable since its last strong flush of the variable, and that the following sequence of events are completed in this specific order:
+
+1. The value is written to the variable by the first thread;
+
+2. The variable is flushed, with a strong flush, by the first thread;
+
+3. The variable is flushed, with a strong flush, by the second thread; and
+
+4. The value is read from the variable by the second thread.
+
+If a flush is a release flush or acquire flush, it can enforce consistency between the views of memory of two synchronizing threads. A release flush guarantees that any prior operation that writes or reads a shared variable will appear to be completed before any operation that writes or reads the same shared variable and follows an acquire flush with which the release flush synchronizes (see Section 1.3.5 for more details on flush synchronization). A release flush will propagate the values of all shared variables in its temporary view to memory prior to the thread performing any subsequent atomic operation that may establish a synchronization. An acquire flush will discard any value of a shared variable in its temporary view to which the thread has not written since last performing a release flush, and it will load any value of a shared variable propagated by a release flush that synchronizes with it (according to the synchronizes-with relation) into its temporary view so that it may be subsequently read. Therefore, release flushes and acquire flushes may also be used to guarantee that a value written to a variable by one thread may be read by a second thread. To accomplish this, the programmer must ensure that the second thread has not written to the variable since its last acquire flush, and that the following sequence of events happen in this specific order:
+
+1. The value is written to the variable by the first thread;
+
+2. The first thread performs a release flush;
+
+3. The second thread performs an acquire flush; and
+
+4. The value is read from the variable by the second thread.
+
+Note – OpenMP synchronization operations, described in Chapter 17 and in Chapter 28, are recommended for enforcing this order. Synchronization through variables is possible but is not recommended because the proper timing of flushes is dificult.
+
+The flush properties that define whether a flush is a strong flush, a release flush, or an acquire flush are not mutually disjoint. A flush may be a strong flush and a release flush; it may be a strong flush and an acquire flush; it may be a release flush and an acquire flush; or it may be all three.
+
+## 1.3.5 Flush Synchronization and Happens-Before Order
+
+OpenMP supports thread synchronization with the use of release flushes and acquire flushes. For any such synchronization, a release flush is the source of the synchronization and an acquire flush is the sink of the synchronization, such that the release flush synchronizes with the acquire flush.
+
+A release flush has one or more associated release sequences that define the set of modifications that may be used to establish a synchronization. A release sequence starts with an atomic operation that follows the release flush and modifies a shared variable and additionally includes any read-modify-write atomic operations that read a value taken from some modification in the release sequence. The following rules determine the atomic operation that starts an associated release sequence.
+
+• If a release flush is performed on entry to an atomic operation, that atomic operation starts its release sequence.
+
+• If a release flush is performed in an implicit flush region, an atomic operation that is provided by the implementation and that modifies an internal synchronization variable starts its release sequence.
+
+• If a release flush is performed by an explicit flush region, any atomic operation that modifies a shared variable and follows the flush region in the program order of its thread starts an associated release sequence.
+
+An acquire flush is associated with one or more prior atomic operations that read a shared variable and that may be used to establish a synchronization. The following rules determine the associated atomic operation that may establish a synchronization.
+
+• If an acquire flush is performed on exit from an atomic operation, that atomic operation is its associated atomic operation.
+
+• If an acquire flush is performed in an implicit flush region, an atomic operation that is provided by the implementation and that reads an internal synchronization variable is its associated atomic operation.
+
+• If an acquire flush is performed by an explicit flush region, any atomic operation that reads a shared variable and precedes the flush region in the program order of its thread is an associated atomic operation.
+
+The atomic scope of the internal synchronization variable that is used in implicit flush regions is the intersection of the thread-sets of the synchronizing flushes.
+
+A release flush synchronizes with an acquire flush if the following conditions are satisfied:
+
+• An atomic operation associated with the acquire flush reads a value written by a modification from a release sequence associated with the release flush; and
+
+• The thread that performs each flush is in both of their respective thread-sets.
+
+An operation X simply happens before an operation Y, that is, X precedes Y in simply happens-before order, if any of the following conditions are satisfied:
+
+1. X and Y are performed by the same thread, and X precedes Y in the program order of the thread;
+
+2. X synchronizes with Y according to the flush synchronization conditions explained above or according to the definition of the synchronizes with relation in the base language, if such a definition exists; or
+
+3. Another operation, Z, exists such that X simply happens before Z and Z simply happens before Y.
+
+An operation X happens before an operation Y if any of the following conditions are satisfied:
+
+1. X happens before Y, as defined in the base language if such a definition exists; or
+
+2. X simply happens before Y.
+
+A variable with an initial value is treated as if the value is stored to the variable by an operation that happens before all operations that access or modify the variable in the program.
+
+## 1.3.6 OpenMP Memory Consistency
+
+The following rules guarantee an observable completion order for a given pair of memory operations in race-free programs, as seen by all afected threads. If both memory operations are strong flushes, the afected threads are all threads in both of their respective thread-sets. If exactly one of the memory operations is a strong flush, the afected threads are all threads in its thread-set. Otherwise, the afected threads are all threads.
+
+• If two operations performed by diferent threads are sequentially consistent atomic operations or they are strong flushes that flush the same variable, then they must be completed as if in some sequential order, seen by all afected threads.
+
+• If two operations performed by the same thread are sequentially consistent atomic operations or they access, modify, or, with a strong flush, flush the same variable, then they must be completed as if in the program order of that thread, as seen by all afected threads.
+
+• If two operations are performed by diferent threads and one happens before the other, then they must be completed as if in that happens-before order, as seen by all afected threads, if:
+
+– both operations access or modify the same variable;
+
+– both operations are strong flushes that flush the same variable; or
+
+– both operations are sequentially consistent atomic operations.
+
+• Any two atomic operations from diferent atomic regions must be completed as if in the same order as the strong flushes implied in their regions, as seen by all afected threads
+
+The flush operation can be specified using the flush directive, and is also implied at various locations in an OpenMP program; see Section 17.8.6 for details.
+
+Note – Since flushes by themselves cannot prevent data races, explicit flushes are only useful in combination with non-sequentially consistent atomic constructs.
+
+OpenMP programs that:
+
+• Do not use non-sequentially consistent atomic constructs;
+
+• Do not rely on the accuracy of a false result from omp\_test\_lock and omp\_test\_nest\_lock; and
+
+• Correctly avoid data races as required in Section 1.3.1,
+
+behave as though operations on shared variables were simply interleaved in an order consistent with the order in which they are performed by each thread. The relaxed consistency model is invisible for such programs, and any explicit flushes in such programs are redundant.
+
+## 1.4 Tool Interfaces
+
+The OpenMP API includes two tool interfaces, OMPT and OMPD, to enable development of high-quality, portable, tools that support monitoring, performance, or correctness analysis and debugging of OpenMP programs developed using any implementation of the OpenMP API. An implementation of the OpenMP API may difer from the abstract execution model described by its specification. The ability of tools that use OMPT or OMPD to observe such diferences does not constrain implementations of the OpenMP API in any way.
+
+## 1.4.1 OMPT
+
+The OMPT interface, which is intended for first-party tools, provides the following:
+
+• A mechanism to initialize a first-party tool;
+
+• Routines that enable a tool to determine the capabilities of an OpenMP implementation;
+
+• Routines that enable a tool to examine OpenMP state information associated with a thread;
+
+• Mechanisms that enable a tool to map implementation-level calling contexts back to their source-level representations;
+
+• A callback interface that enables a tool to receive notification of OpenMP events;
+
+• A tracing interface that enables a tool to trace activity on target devices; and
+
+• A runtime library routine that an OpenMP program can use to control a tool.
+
+OpenMP implementations may difer with respect to the thread states that they support, the mutual exclusion implementations that they employ, and the events for which tool callbacks are invoked. For some events, OpenMP implementations must guarantee that a registered callback will be invoked for each occurrence of the event. For other events, OpenMP implementations are permitted to invoke a registered callback for some or no occurrences of the event; for such events, however, OpenMP implementations are encouraged to invoke tool callbacks on as many occurrences of the event as is practical. Section 32.2.4 specifies the subset of OMPT callbacks that an OpenMP implementation must support for a minimal implementation of the OMPT interface.
+
+With the exception of the omp\_control\_tool routine for tool control, all other routines in the OMPT interface are intended for use only by tools. For that reason, OMPT includes a Fortran binding only for omp\_control\_tool; all other OMPT functionality is supported with C syntax only.
+
+## 1.4.2 OMPD
+
+The OMPD interface is intended for third-party tools, which run as separate processes. An OpenMP implementation must provide an OMPD library that can be dynamically loaded and used by a third-party tool. A third-party tool, such as a debugger, uses the OMPD library to access OpenMP state of a program that has begun execution. OMPD defines the following:
+
+• An interface that an OMPD library exports, which a tool can use to access OpenMP state of a program that has begun execution;
+
+• A callback interface that a tool provides to the OMPD library so that the library can use it to access the OpenMP state of a program that has begun execution; and
+
+• A small number of symbols that must be defined by an OpenMP implementation to help the tool find the correct OMPD library to use for that OpenMP implementation and to facilitate notification of events.
+
+Chapter 38, Chapter 39, Chapter 40, Chapter 41, and Chapter 42 describe OMPD in detail.
+
+## 1.5 OpenMP Compliance
+
+The OpenMP API defines constructs that operate in the context of the base language that is supported by an implementation. If the implementation of the base language does not support a language construct that appears in this document, a compliant implementation is not required to support it, with the exception that for Fortran, the implementation must allow case insensitivity for directive and routine names, and it must allow identifiers of more than six characters. An implementation of the OpenMP API is compliant if and only if it compiles and executes all other conforming programs, and supports the tool interfaces, according to the syntax and semantics laid out in Chapters 1 through 42. All appendices as well as text designated as a note or comment (see Section 1.7) are for information purposes only and are not part of the specification.
+
+All library, intrinsic and built-in procedures provided by the base language must be thread-safe procedures in a compliant implementation. In addition, the implementation of the base language must also be thread-safe. For example, ALLOCATE and DEALLOCATE statements must be thread-safe in Fortran. Unsynchronized concurrent use of such procedures by diferent threads must produce correct results (although not necessarily the same as serial execution results, as in the case of random number generation procedures).
+
+Starting with Fortran 90, variables with explicit initialization have the SAVE attribute implicitly. This is not the case in Fortran 77. However, a compliant OpenMP Fortran implementation must give such a variable the SAVE attribute, regardless of the underlying base language version.
+
+Appendix A lists certain aspects of the OpenMP API that are implementation defined. A compliant implementation must define and document its behavior for each of the items in Appendix A.
+
+## 1.6 Normative References
+
+• ISO/IEC 9899:1990, Information Technology - Programming Languages - C. This OpenMP API specification refers to ISO/IEC 9899:1990 as C90.
+
+• ISO/IEC 9899:1999, Information Technology - Programming Languages - C. This OpenMP API specification refers to ISO/IEC 9899:1999 as C99.
+
+• ISO/IEC 9899:2011, Information Technology - Programming Languages - C. This OpenMP API specification refers to ISO/IEC 9899:2011 as C11.
+
+• ISO/IEC 9899:2018, Information Technology - Programming Languages - C. This OpenMP API specification refers to ISO/IEC 9899:2018 as C18.
+
+• ISO/IEC 9899:2024, Information Technology - Programming Languages - C. This OpenMP API specification refers to ISO/IEC 9899:2024 as C23.
+
+• ISO/IEC 14882:1998, Information Technology - Programming Languages - C++. This OpenMP API specification refers to ISO/IEC 14882:1998 as C++98.
+
+• ISO/IEC 14882:2011, Information Technology - Programming Languages - C++. This OpenMP API specification refers to ISO/IEC 14882:2011 as C++11.
+
+• ISO/IEC 14882:2014, Information Technology - Programming Languages - C++. This OpenMP API specification refers to ISO/IEC 14882:2014 as C++14.
+
+• ISO/IEC 14882:2017, Information Technology - Programming Languages - C++. This OpenMP API specification refers to ISO/IEC 14882:2017 as C++17.
+
+• ISO/IEC 14882:2020, Information Technology - Programming Languages - C++. This OpenMP API specification refers to ISO/IEC 14882:2020 as C++20.
+
+• ISO/IEC 14882:2024, Information Technology - Programming Languages - C++. This OpenMP API specification refers to ISO/IEC 14882:2024 as C++23.
+
+• ISO/IEC 1539:1980, Information Technology - Programming Languages - Fortran. This OpenMP API specification refers to ISO/IEC 1539:1980 as Fortran 77.
+
+• ISO/IEC 1539:1991, Information Technology - Programming Languages - Fortran. This OpenMP API specification refers to ISO/IEC 1539:1991 as Fortran 90.
+
+• ISO/IEC 1539-1:1997, Information Technology - Programming Languages - Fortran. This OpenMP API specification refers to ISO/IEC 1539-1:1997 as Fortran 95.
+
+• ISO/IEC 1539-1:2004, Information Technology - Programming Languages - Fortran. This OpenMP API specification refers to ISO/IEC 1539-1:2004 as Fortran 2003.
+
+• ISO/IEC 1539-1:2010, Information Technology - Programming Languages - Fortran. This OpenMP API specification refers to ISO/IEC 1539-1:2010 as Fortran 2008.
+
+• ISO/IEC 1539-1:2018, Information Technology - Programming Languages - Fortran. This OpenMP API specification refers to ISO/IEC 1539-1:2018 as Fortran 2018.
+
+• ISO/IEC 1539-1:2023, Information Technology - Programming Languages - Fortran. This OpenMP API specification refers to ISO/IEC 1539-1:2023 as Fortran 2023.
+
+• Where this OpenMP API specification refers to C, C++ or Fortran, reference is made to the base language supported by the implementation.
+
+## 1.7 Organization of this Document
+
+The remainder of this document is structured as normative chapters that define the directives, including their syntax and semantics, the routines and the tool interfaces that comprise the OpenMP API. The document also includes appendices that facilitate maintaining a compliant implementation of the API.
+
+Some sections of this document only apply to programs written in a certain base language. Text that applies only to programs for which the base language is C or C++ is shown as follows:
+
+C / C++
+
+C/C++ specific text...
+
+C / C++
+
+Text that applies only to programs for which the base language is C only is shown as follows:
+
+C
+
+C specific text...
+
+C
+
+Text that applies only to programs for which the base language is C++ only is shown as follows:
+
+C++
+
+C++ specific text...
+
+C++
+
+Text that applies only to programs for which the base language is Fortran is shown as follows:
+
+Fortran
+
+Fortran specific text...
+
+Fortran
+
+Text that applies only to programs for which the base language is Fortran or C++ is shown as follows:
+
+Fortran / C++
+
+Fortran/C++ specific text...
+
+Fortran / C++
+
+Where an entire page consists of base language specific text, a marker is shown at the top of the page. For Fortran-specific text, the marker is:
+
+Fortran (cont.)
+
+For C/C++-specific text, the marker is:
+
+C/C++ (cont.)
+
+Some text is for information only, and is not part of the normative specification. Such text is designated as a note or comment, like this:
+
+Note – Non-normative text...
+
+COMMENT: Non-normative text...
+
+## 2 Glossary
+
+## A | B | C | D | E | F | G | H | I | L | M | N | O | P | R | S | T | U | V | W | Z
+
+## A
+
+## abstract name
+
+A conceptual abstract name or a numeric abstract name. 128, 34, 77, 128, 131, 134, 886, 897 accessible device
+
+The host device or any non-host device accessible for execution. 119, 139–141, 360
+
+## accessible storage
+
+A storage block that may be accessed by a given thread. 285, 606
+
+## acquire flush
+
+A flush that has the acquire flush property. 10, 11, 12, 92, 101, 496, 499, 501–504
+
+## acquire flush property
+
+A flush with the acquire flush property orders memory operations that follow the flush after memory operations performed by a diferent thread that synchronizes with it. 19, 52, 499
+
+## active level
+
+An active parallel region that encloses a given region at some point in the execution of an OpenMP program. The number of active levels is the number of active parallel regions that encloses the given region. 19, 75, 100, 129, 130, 133, 576, 886, 892, 911
+
+## active parallel region
+
+A parallel region comprised of implicit tasks that are being executed by a team to which multiple threads are assigned. 19, 105, 115, 116, 132, 216, 217, 571, 576, 577, 579, 580, 885, 888, 915, 916
+
+## active target region
+
+A target region that is executed on a device other than the device that encountered the target construct. 124
+
+## address range
+
+The addresses of a contiguous set of storage locations. 51, 70, 99, 606
+
+## address space
+
+A collection of logical, virtual, or physical memory address ranges that contain code, stack, and/or data. Address ranges within an address space need not be contiguous. An address space consists of one or more segments. 20, 52, 80, 95, 109, 145, 146, 359, 606, 699, 700, 820, 831, 836, 838, 839, 841–843, 846, 849, 850, 852, 853, 855, 870, 872, 874
+
+## address space context
+
+A tool context that refers to an address space within an OpenMP process. 820
+
+## address space handle
+
+A handle that refers to an address space within an OpenMP process. 828, 849–851, 857, 868
+
+## affected iteration
+
+A logical iteration of the afected loops of a loop-nest-associated directive. 60, 94, 97, 382
+
+## affected loop
+
+A loop from a canonical loop nest, or a DO CONCURRENT loop in Fortran, that is afected by a given loop-nest-associated directive. 203, 4, 20, 62, 67, 68, 108, 113, 154, 203–205, 211, 212, 226, 230, 231, 233, 234, 253, 259, 267, 268, 371, 372, 378–381, 424, 910
+
+## affected loop nest
+
+The subset of canonical loop nests of an associated loop sequence that are selected by the looprange clause. 207, 35, 92, 205, 371, 375
+
+## aggregate variable
+
+A variable, such as an array or structure, composed of other variables. For Fortran, a variable of character type is considered an aggregate variable. 8, 20, 40, 112, 164, 217, 223, 292, 445, 885
+
+## aligned-memory-allocating routine
+
+A memory-management routine that has the aligned-memory-allocating-routine property. 654, 655, 657, 659
+
+## aligned-memory-allocating-routine property
+
+The property that a memory-allocating routine ensures the allocated memory is aligned with respect to an alignment argument. 654, 20, 657, 659
+
+## all-constituents property
+
+The property that a clause applies to all leaf constructs that permit it when the clause appears on a compound directive. 159, 160, 528
+
+## all-contention-group-tasks binding property
+
+The binding property that the binding task set is all tasks in the contention group. 534, 664–671, 673–676
+
+## all-data-environments clause
+
+A clause that has the all-data-environments property. 73, 236, 238
+
+## all-data-environments property
+
+The property that a data-sharing attribute clause afects any data environment for which it is specified, including minimal data environments. 21, 236, 238, 257
+
+## all-device-tasks binding property
+
+The binding property that the binding task set is all tasks on a specified device. 690
+
+## all-device-threads binding property
+
+The binding property that the binding thread set is all threads on the current device. The efect of executing a construct or a routine with this property is not related to any specific region that corresponds to any other construct or routine. 534, 586, 594, 630–636, 638–644, 646–651, 679, 680, 791, 792
+
+## allocator
+
+A memory allocator. 21, 143, 144, 305–312, 315, 316, 358, 463, 545, 547, 555, 558, 638–640, 645, 647, 652–655, 662, 888, 899, 900, 904, 905
+
+## allocator structured block
+
+A context-specific structured block that may be associated with an allocators directive. 187, 315
+
+## allocator trait
+
+A trait of an allocator. 144, 305, 307, 308, 311, 313, 547, 549, 552, 638, 645, 888, 899, 900, 910
+
+## all-privatizing property
+
+The property that a clause, when it appears on a combined construct or a composite construct, applies to all constituent constructs to which it applies for which a data-sharing attribute clause may create a private copy of the same list item. 159, 312, 528
+
+## all tasks
+
+All tasks participating in the OpenMP program or in a specified limiting context. 21, 28, 251, 301, 306, 535, 690
+
+## all-tasks binding property
+
+The binding property that the binding task set is all tasks. 690, 689, 690
+
+## all threads
+
+All OpenMP threads participating in the OpenMP program. A specific usage of the term may be explicitly limited to a limiting context, such as all threads on a given device or an OpenMP thread pool. 8, 13, 21, 22, 28, 231, 494, 535, 630, 691, 791–793
+
+## all-threads binding property
+
+The binding property that the binding thread set is all threads. The efect of executing a construct or a routine with this property is not related to any specific region that corresponds to any other construct or routine. 534
+
+## ancestor thread
+
+For a given thread, its parent thread or one of the ancestor threads of its parent thread. 22, 578, 579, 589, 902, 916
+
+## antecedent task
+
+A task that must complete before its dependent tasks can be executed. 507, 42, 51, 59, 86, 103, 503, 507, 509, 762
+
+## argument list
+
+A list that is used as an argument of a directive, clause, or modifier. 158, 46, 47, 51, 63, 65, 80, 83, 86, 87, 108, 112, 159, 162, 163, 210, 218, 219, 269, 270
+
+## array base
+
+The base array of a given array section or array element, if it exists; otherwise, the base pointer of the array section or array element.
+
+COMMENT: For the array section (\*p0).x0[k1].p1->p2[k2].x1[k3].x2[4][0:n], where identifiers pi have a pointer type declaration and identifiers xi have an array type declaration, the array base is: (\*p0).x0[k1].p1->p2[k2].x1[k3].x2.
+
+More examples for C/C++:
+
+• The array base for x[i] and for x[i:n] is x, if x is an array or pointer.
+
+• The array base for x[5][i] and for x[5][i:n] is x, if x is a pointer to an array or x is 2-dimensional array.
+
+• The array base for y[5][i] and for y[5][i:n] is y[5], if y is an array of pointers or y is a pointer to a pointer.
+
+Examples for Fortran:
+
+• The array base for x(i) and for x(i:j) is x.
+
+22, 167, 168, 237, 239, 247, 277, 281, 282
+````

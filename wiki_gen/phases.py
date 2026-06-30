@@ -4,9 +4,6 @@ import asyncio
 import shutil
 from pathlib import Path
 
-from wiki_new.llm import make_llm
-from wiki_new.utils import slugify, write_json
-
 from wiki_gen.assign import assign_chunks_bounded, missing_ranges_for_chunk
 from wiki_gen.catalog import load_catalog, write_catalog
 from wiki_gen.generate import (
@@ -14,9 +11,9 @@ from wiki_gen.generate import (
     generate_page,
     generate_pages_bounded,
     hydrate_pages_with_cumulative_sources,
-    write_source_excerpt_page,
     write_page_metadata,
     write_page_sources,
+    write_source_excerpt_page,
 )
 from wiki_gen.io import ensure_output_dirs, load_embed_corpus, write_planning_json
 from wiki_gen.judges import (
@@ -25,12 +22,12 @@ from wiki_gen.judges import (
     write_coverage_audit,
     write_fact_check_audit,
 )
-from wiki_gen.research import research_page_plan, research_page_plans_bounded
 from wiki_gen.models import (
     API_KEY,
     ASSIGN_CONCURRENCY,
     BASE_URL,
     CLEAN_OUTPUT,
+    COVERAGE_PAGE_CHAR_LIMIT,
     EMBED_ROOT,
     FACT_REPAIR_ATTEMPTS,
     GEN_MODEL,
@@ -38,16 +35,20 @@ from wiki_gen.models import (
     OUTPUT_ROOT,
     PAGE_CONCURRENCY,
     RESEARCH_CONCURRENCY,
+    RESEARCH_CONTEXT_LINES,
     TEMPERATURE,
     TIMEOUT,
     VERIFY_MODEL,
+    CoverageCheckResult,
+    FactCheckResult,
     GeneratedPage,
     PagePlan,
     SourceChunk,
     SourceSpan,
-    CoverageCheckResult,
-    FactCheckResult,
 )
+from wiki_gen.research import research_page_plan, research_page_plans_bounded
+from wiki_new.llm import get_llm_cache_stats, make_llm
+from wiki_new.utils import slugify, write_json
 
 
 def write_doc_assignments(output_root: Path, assignments) -> None:
@@ -56,7 +57,9 @@ def write_doc_assignments(output_root: Path, assignments) -> None:
         by_doc.setdefault(item.doc_id, []).append(item.model_dump())
 
     for doc_id, rows in by_doc.items():
-        write_json(output_root / "raw" / doc_id / "assignments.json", {"assignments": rows})
+        write_json(
+            output_root / "raw" / doc_id / "assignments.json", {"assignments": rows}
+        )
 
     write_planning_json(
         output_root,
@@ -92,7 +95,11 @@ def write_assignment_coverage_gate(output_root: Path, chunks, assignments) -> No
 
 
 def write_indexes(output_root: Path, pages: list[GeneratedPage]) -> None:
-    by_type: dict[str, list[GeneratedPage]] = {"summary": [], "entity": [], "concept": []}
+    by_type: dict[str, list[GeneratedPage]] = {
+        "summary": [],
+        "entity": [],
+        "concept": [],
+    }
     for page in pages:
         by_type.setdefault(page.page_type, []).append(page)
 
@@ -123,7 +130,9 @@ def write_indexes(output_root: Path, pages: list[GeneratedPage]) -> None:
         lines = [f"# {title}", ""]
         lines.extend(page_link(page) for page in by_type.get(page_type, []))
         lines.append("")
-        (output_root / "indexes" / filename).write_text("\n".join(lines), encoding="utf-8")
+        (output_root / "indexes" / filename).write_text(
+            "\n".join(lines), encoding="utf-8"
+        )
 
 
 async def verify_repair_or_fallback_pages(
@@ -154,7 +163,10 @@ async def verify_repair_or_fallback_pages(
             if not result.passed and slug in plans_by_slug
         ]
         if not failed:
-            return sorted(page_by_slug.values(), key=lambda page: page.slug), fact_results
+            return (
+                sorted(page_by_slug.values(), key=lambda page: page.slug),
+                fact_results,
+            )
 
         if attempt >= FACT_REPAIR_ATTEMPTS:
             break
@@ -173,8 +185,10 @@ async def verify_repair_or_fallback_pages(
                 if current_page is not None:
                     plan = plan.model_copy(
                         update={
-                            "source_spans": current_page.source_spans or plan.source_spans,
-                            "existing_content": current_page.content or plan.existing_content,
+                            "source_spans": current_page.source_spans
+                            or plan.source_spans,
+                            "existing_content": current_page.content
+                            or plan.existing_content,
                             "research_reports": [],
                         }
                     )
@@ -190,7 +204,9 @@ async def verify_repair_or_fallback_pages(
                     repair_instruction=result.repair_instruction or result.reason,
                 )
 
-        repaired_pages = await asyncio.gather(*(run(slug, result) for slug, result in failed))
+        repaired_pages = await asyncio.gather(
+            *(run(slug, result) for slug, result in failed)
+        )
         for page in repaired_pages:
             page_by_slug[page.slug] = page
         write_page_sources(output_root, repaired_pages)
@@ -328,6 +344,27 @@ async def async_main() -> None:
 
     print(f"[WikiGen] embed root:  {embed_root}")
     print(f"[WikiGen] output root: {output_root}")
+    research_context = (
+        "full documents"
+        if RESEARCH_CONTEXT_LINES < 0
+        else f"+/-{RESEARCH_CONTEXT_LINES} source lines"
+    )
+    print(
+        "[WikiGen] concurrency: "
+        f"assign={ASSIGN_CONCURRENCY} page={PAGE_CONCURRENCY} "
+        f"research={RESEARCH_CONCURRENCY} judge={JUDGE_CONCURRENCY}"
+    )
+    print(
+        "[WikiGen] prompt limits: "
+        f"research_context={research_context} "
+        f"coverage_page_chars={COVERAGE_PAGE_CHAR_LIMIT}"
+    )
+    print(
+        "[WikiGen] LLM cache: "
+        "enabled unless WIKI_LLM_CACHE=0; "
+        "low-risk stages use non-thinking; page writing retries thinking "
+        "then falls back to non-thinking"
+    )
 
     docs = load_embed_corpus(embed_root, output_root)
     all_chunks = [chunk for doc in docs for chunk in doc.chunks]
@@ -378,7 +415,9 @@ async def async_main() -> None:
             subagent_concurrency=RESEARCH_CONCURRENCY,
         )
         plans_by_slug.update({plan.slug: plan for plan in plans})
-        print(f"[WikiGen] {doc.doc_id}: assignments={len(doc_assignments)} page_plans={len(plans)}")
+        print(
+            f"[WikiGen] {doc.doc_id}: assignments={len(doc_assignments)} page_plans={len(plans)}"
+        )
 
         doc_pages = await generate_pages_bounded(
             llm=gen_llm,
@@ -459,9 +498,11 @@ async def async_main() -> None:
             "assignment_count": len(assignments),
             "page_count": len(pages),
             "catalog_count": len(catalog),
+            "llm_cache": get_llm_cache_stats(),
         },
     )
 
+    print(f"[WikiGen] LLM cache stats: {get_llm_cache_stats()}")
     print(f"[WikiGen] done: {len(pages)} page(s), {len(catalog)} catalog entry(s)")
 
 

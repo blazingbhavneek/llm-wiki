@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
-import os
 
 from pydantic import BaseModel, Field
+
 
 # region TIMESTAMPS
 def now_iso() -> str:
@@ -15,6 +16,7 @@ def now_iso() -> str:
 
 
 # endregion TIMESTAMPS
+
 
 # region SETTINGS
 @dataclass
@@ -136,7 +138,9 @@ class Settings:
             subagent_max_reads=int(
                 env("WIKI_SUBAGENT_MAX_READS", cls.subagent_max_reads)
             ),
-            enable_mermaid=env("WIKI_ENABLE_MERMAID", "1" if cls.enable_mermaid else "0")
+            enable_mermaid=env(
+                "WIKI_ENABLE_MERMAID", "1" if cls.enable_mermaid else "0"
+            )
             not in {"0", "false", "False", ""},
             mermaid_repair_attempts=int(
                 env("WIKI_MERMAID_REPAIR_ATTEMPTS", cls.mermaid_repair_attempts)
@@ -153,6 +157,7 @@ class Settings:
 
 # endregion SETTINGS
 
+
 # region ENUMS
 class NodeType(str, Enum):
     endogenous = "endogenous"
@@ -167,6 +172,7 @@ class NodeStatus(str, Enum):
 
 
 # endregion ENUMS
+
 
 # region CORE GRAPH MODELS
 class Node(BaseModel):
@@ -204,6 +210,7 @@ class Edge(BaseModel):
 
 # endregion CORE GRAPH MODELS
 
+
 # region LLM EXCHANGE MODELS
 class EdgeSuggestion(BaseModel):
     target_node_id: str
@@ -230,6 +237,7 @@ class EntityMatch(BaseModel):
 
 
 # endregion LLM EXCHANGE MODELS
+
 
 # region QUERY AND METRICS
 class QueryResult(BaseModel):

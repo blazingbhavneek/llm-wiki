@@ -1,23 +1,31 @@
 # Volatile Qualifier
 
-The `volatile` keyword in CUDA C++ is supported primarily to maintain compatibility with ISO C++ standards [CUDA_C_Programming_Guide:L16763-L16846]. However, its remaining non-deprecated uses are largely inapplicable to GPU architectures [CUDA_C_Programming_Guide:L16763-L16846].
+Limitations of the volatile keyword in CUDA, emphasizing its unsuitability for inter-thread synchronization and MMIO, with alternatives like cuda::atomic_ref and inline PTX.
 
-## Behavior and Limitations
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-Reads and writes to `volatile`-qualified objects are compiled into one or more `.volatile` PTX instructions [CUDA_C_Programming_Guide:L16763-L16846]. These operations are **not atomic** and do **not** guarantee the following:
+## Source CUDA_C_Programming_Guide:L16763-L16846
 
-*   **Ordering of memory operations:** The hardware does not guarantee that memory operations occur in the order specified by the code [CUDA_C_Programming_Guide:L16763-L16846].
-*   **Deterministic instruction counts:** The number of memory operations performed by the hardware does not necessarily match the number of PTX instructions issued [CUDA_C_Programming_Guide:L16763-L16846].
+Citation: [CUDA_C_Programming_Guide:L16763-L16846]
 
-Due to these limitations, CUDA C++ `volatile` is incorrect for inter-thread synchronization or Memory Mapped I/O (MMIO) [CUDA_C_Programming_Guide:L16763-L16846].
+````text
 
-## Recommended Alternatives
+## 18.5.3.3 Volatile Qualifier
 
-### Inter-Thread Synchronization
+Note: The volatile keyword is supported to maintain compatibility with ISO C++; however, few if any of its remaining non-deprecated uses apply to GPUs.
 
-For inter-thread synchronization, use atomic operations which provide synchronization guarantees and offer significantly better performance than volatile operations [CUDA_C_Programming_Guide:L16763-L16846].
+Reads and writes to volatile qualified objects are not atomic, and are compiled to one or more .volatile instructions which do NOT guarantee:
 
-**Using `cuda::atomic_ref` or `cuda::atomic`:**
+▶ ordering of memory operations, or
+
+▶ that the number of memory operations performed by the HW matches the number of PTX instructions.
+
+That is, CUDA C++ volatile is not suitable for:
+
+Inter-Thread Synchronization: use atomic operations via cuda::atomic\_ref, cuda::atomic, or Atomic Functions instead. Atomic memory operations provide inter-thread synchronization guarantees and deliver much better performance than volatile operations. CUDA C++ volatile operations do not provide any inter-thread synchronization guarantees and are therefore not correct for inter-thread synchronization. The following example shows how to pass a message across two threads using atomic operations.
+
+cuda::atomic\_ref
 
 ```cpp
 __global__ void kernel(int* flag, int* data) {
@@ -34,9 +42,26 @@ __global__ void kernel(int* flag, int* data) {
 }
 ```
 
-**Using Atomic Functions (`atomicAdd`, `atomicExch`):**
+## cuda::atomic
 
 ```cpp
+__global__ void kernel(cuda::atomic<int, cuda::thread_scope_device>*
+flag, int* data) {
+  if (threadIdx.x == 0) {
+    // Consumer: blocks until flag is set by producer, then reads data
+    while(flag->load(cuda::memory_order_acquire) == 0);
+    if (*data != 42) __trap(); // Errors if wrong data read
+  } else if (threadIdx.x == 1) {
+    // Producer: writes data then sets flag
+    *data = 42;
+    flag->store(1, cuda::memory_order_release);
+  }
+}
+```
+
+Atomic Functions (atomicAdd and atomicExch)
+
+```lisp
 __global__ void kernel(int* flag, int* data) {
     if (threadIdx.x == 0) {
         // Consumer: blocks until flag is set by producer, then reads data
@@ -52,21 +77,20 @@ __global__ void kernel(int* flag, int* data) {
 }
 ```
 
-### Memory Mapped I/O (MMIO)
+Memory Mapped IO (MMIO): use PTX MMIO operations via inline PTX instead. PTX MMIO operations strictly preserve the number of memory accesses performed. CUDA C++ volatile operations do not preserve the number of memory accesses performed, and may perform more or less accesses than requested in a non-deterministic way, making them incorrect for MMIO. The following example shows how to read and write from a register using PTX mmio operations.
 
-For MMIO operations, use PTX MMIO operations via inline assembly. PTX MMIO operations strictly preserve the number of memory accesses performed, whereas `volatile` operations may perform more or fewer accesses than requested in a non-deterministic manner [CUDA_C_Programming_Guide:L16763-L16846].
-
-**Example using inline PTX:**
-
-```cpp
+```javascript
 __global__ void kernel(int* mmio_reg0, int* mmio_reg1) {
     // Write to MMIO register:
     int value = 13;
-    asm volatile("st.relaxed.mmio.sys.u32 [%0], %1;" :: "l"(mmio_reg0), "r"(value) : "memory");
+    asm volatile("st.relaxed.mmio.sys.u32 [%0], %1;" :: "l"(mmio_reg0), "r
+    "value) : "memory");
 
     // Read MMIO register:
-    asm volatile("ld.relaxed.mmio.sys.u32 %0, [%1];" : "=r"(value) : "l"(mmio_reg1) : "memory");
+    asm volatile("ld.relaxed.mmio.sys.u32 %0, [%1];" : "=r"(value) : "l
+    "mmio_reg1) : "memory");
 
     if (value != 42) __trap(); // Errors if wrong data read
 }
 ```
+````

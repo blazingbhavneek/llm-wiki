@@ -1,20 +1,22 @@
 # Implicit Synchronization
 
-Implicit synchronization is a mechanism in CUDA that restricts the concurrency of operations across different streams. Specifically, two operations from different streams cannot run concurrently if any CUDA operation on the NULL stream is submitted in between them [CUDA_C_Programming_Guide:L2243-L2246].
+Operations from different streams cannot run concurrently if a CUDA operation on the NULL stream is submitted between them, unless non-blocking streams are used. Guidelines recommend issuing independent operations first and delaying synchronization.
 
-## Exceptions
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-The restriction on concurrency does not apply if the streams involved are non-blocking streams. Non-blocking streams are created using the `cudaStreamNonBlocking` flag [CUDA_C_Programming_Guide:L2246-L2247].
+## Source CUDA_C_Programming_Guide:L2243-L2252
 
-## Best Practices
+Citation: [CUDA_C_Programming_Guide:L2243-L2252]
 
-To improve the potential for concurrent kernel execution, applications should adhere to the following guidelines:
+````text
+## 6.2.8.5.4 Implicit Synchronization
 
-*   **Ordering of Operations**: All independent operations should be issued before dependent operations [CUDA_C_Programming_Guide:L2249-L2250].
-*   **Synchronization Timing**: Synchronization of any kind should be delayed as long as possible [CUDA_C_Programming_Guide:L2251-L2252].
+Two operations from diferent streams cannot run concurrently if any CUDA operation on the NULL stream is submitted in-between them, unless the streams are non-blocking streams (created with the cudaStreamNonBlocking flag).
 
-## Related Concepts
+Applications should follow these guidelines to improve their potential for concurrent kernel execution:
 
-*   NULL Stream
-*   Non-blocking Streams
-*   Stream Concurrency
+▶ All independent operations should be issued before dependent operations,
+
+▶ Synchronization of any kind should be delayed as long as possible.
+````

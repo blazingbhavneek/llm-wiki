@@ -172,7 +172,9 @@ class ViewBuilder:
             "page_count": len(pages),
             "orphan_count": len(orphans),
             "sources": [d.to_json() for d in ordered_docs],
-            "orphans": [p.to_json() for p in sorted(orphans, key=lambda p: p.title.lower())],
+            "orphans": [
+                p.to_json() for p in sorted(orphans, key=lambda p: p.title.lower())
+            ],
         }
 
     def write(self) -> dict[str, Any]:
@@ -216,7 +218,11 @@ class ViewBuilder:
                 line_end = max((r["line_end"] for r in refs), default=line_start)
                 pages[slug] = PageRef(
                     slug=slug,
-                    title=str(meta.get("title") or self._title_from_markdown(text) or md_file.stem),
+                    title=str(
+                        meta.get("title")
+                        or self._title_from_markdown(text)
+                        or md_file.stem
+                    ),
                     summary=str(meta.get("summary") or ""),
                     path=md_file.relative_to(self.root).as_posix(),
                     kind=kind,
@@ -237,7 +243,9 @@ class ViewBuilder:
         end = ref.get("line_end")
         if not isinstance(start, int):
             return False
-        target = self._section_for(start, end if isinstance(end, int) else start, sections)
+        target = self._section_for(
+            start, end if isinstance(end, int) else start, sections
+        )
         bucket = target.pages if target is not None else doc.unsectioned
         if all(p.slug != page.slug for p in bucket):
             bucket.append(page)
@@ -298,9 +306,11 @@ class ViewBuilder:
             doc_id=doc_id,
             name=str(name),
             title=self._humanize(str(name)),
-            line_count=int(coverage.get("source_line_count") or 0)
-            if isinstance(coverage, dict)
-            else 0,
+            line_count=(
+                int(coverage.get("source_line_count") or 0)
+                if isinstance(coverage, dict)
+                else 0
+            ),
             sections=sections,
         )
         return doc, sections
@@ -389,7 +399,11 @@ class ViewBuilder:
     def _load_page_metadata(self) -> dict[str, dict[str, Any]]:
         payload = self._read_json(self.root / "_planning" / "page_metadata.json", {})
         pages = payload.get("pages", {}) if isinstance(payload, dict) else {}
-        return {k: v for k, v in pages.items() if isinstance(v, dict)} if isinstance(pages, dict) else {}
+        return (
+            {k: v for k, v in pages.items() if isinstance(v, dict)}
+            if isinstance(pages, dict)
+            else {}
+        )
 
     def _load_page_sources(self) -> dict[str, list[dict[str, Any]]]:
         payload = self._read_json(self.root / "_planning" / "page_sources.json", {})

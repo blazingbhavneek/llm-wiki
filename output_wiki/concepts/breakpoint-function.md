@@ -1,19 +1,18 @@
 # Breakpoint Function
 
-The `__brkpt()` function is used to suspend the execution of a kernel function. It can be called from any device thread to trigger a breakpoint [CUDA_C_Programming_Guide:L11166-L11168].
+The __brkpt() function can be called from any device thread to suspend the execution of a kernel function.
 
-## Syntax
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-```c
-void __brkpt();
-```
+## Source CUDA_C_Programming_Guide:L11166-L11171
 
-## Related Functions
+Citation: [CUDA_C_Programming_Guide:L11166-L11171]
 
-### __trap()
+````text
+## 10.34. Breakpoint Function
 
-A related function, `__trap()`, can be used to initiate a trap operation. Like `__brkpt()`, it can be called from any device thread [CUDA_C_Programming_Guide:L11158-L11160]. However, while `__brkpt()` suspends execution, calling `__trap()` causes the execution of the kernel to be aborted and an interrupt to be raised in the host program [CUDA_C_Programming_Guide:L11161-L11162].
+Execution of a kernel function can be suspended by calling the \_\_brkpt() function from any device thread.
 
-```c
-void __trap();
-```
+void \_\_brkpt();
+````

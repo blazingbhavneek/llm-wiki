@@ -1,0 +1,552 @@
+# OpenMP-API-Specification Source Lines 30530-31069
+
+Fallback page created to preserve source coverage.
+
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
+
+## Source OpenMP-API-Specification:L30530-L31069
+
+Citation: [OpenMP-API-Specification:L30530-L31069]
+
+````text
+## 41.5 Parallel Region Handle Routines
+
+## 41.5.1 ompd\_get\_curr\_parallel\_handle Routine
+
+<table><tr><td colspan="2">Name: ompd_get_curr_parallel_handleCategory: function</td><td colspan="2">Properties: C-only, OMPD</td></tr><tr><td colspan="4">Return Type and Arguments</td></tr><tr><td>Name</td><td colspan="2">Type</td><td>Properties</td></tr><tr><td></td><td colspan="2">rc</td><td>default</td></tr><tr><td>thread_handle</td><td colspan="2">thread_handle</td><td>opaque, pointer</td></tr><tr><td>parallel_handle</td><td colspan="2">parallel_handle</td><td>opaque, pointer-to-pointer</td></tr></table>
+
+## Prototypes
+
+C
+
+ompd\_rc\_t ompd\_get\_curr\_parallel\_handle( ompd\_thread\_handle\_t <sub>\*</sub>thread\_handle, ompd\_parallel\_handle\_t <sub>\*\*</sub>parallel\_handle);
+
+C
+
+## Semantics
+
+The ompd\_get\_curr\_parallel\_handle routine enables a tool to obtain a pointer to the parallel handle for the innermost parallel region that is associated with an OpenMP thread. This routine yields meaningful results only if the referenced OpenMP thread is stopped. The parallel handle is owned by the tool and it must be released by calling ompd\_rel\_parallel\_handle.
+
+The thread\_handle argument is an opaque handle for a thread and selects the thread on which to operate. On return, the parallel\_handle argument is set to a handle for the parallel region that the associated thread is currently executing, if any.
+
+In addition to the return codes permitted for all OMPD routines, this routine returns ompd\_rc\_unavailable if the thread is not currently part of a team.
+
+## Cross References
+
+• ompd\_rel\_parallel\_handle Routine, see Section 41.8.2
+
+• OMPD parallel\_handle Type, see Section 39.18.2
+
+• OMPD rc Type, see Section 39.9
+
+• OMPD thread\_handle Type, see Section 39.18.4
+
+## 41.5.2 ompd\_get\_enclosing\_parallel\_handle Routine
+
+<table><tr><td>Name: ompd_get_enclosing_parallel_handle Category: function</td><td>Properties: C-only, OMPD</td></tr></table>
+
+## Return Type and Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td></td><td>rc</td><td>default</td></tr><tr><td>parallel_handle</td><td>parallel_handle</td><td>opaque, pointer</td></tr><tr><td>enclosing_parallel_handle</td><td>parallel_handle</td><td>opaque, pointer-to-pointer</td></tr></table>
+
+## Prototypes
+
+C
+
+ompd\_rc\_t ompd\_get\_enclosing\_parallel\_handle( ompd\_parallel\_handle\_t <sub>\*</sub>parallel\_handle, ompd\_parallel\_handle\_t \*\*enclosing\_parallel\_handle);
+
+C
+
+## Semantics
+
+The ompd\_get\_enclosing\_parallel\_handle routine enables a tool to obtain a pointer to the parallel handle for the parallel region that encloses the parallel region that parallel\_handle specifies. This routine yields meaningful results only if at least one thread in the team that is executing the parallel region is stopped. A pointer to the parallel handle for the enclosing region is returned in the location to which enclosing\_parallel\_handle points. After a call to this routine, the tool owns the handle; the tool must release the handle with ompd\_rel\_parallel\_handle when it is no longer required. The parallel\_handle argument is an opaque handle for a parallel region that selects the parallel region on which to operate.
+
+In addition to the return codes permitted for all OMPD routines, this routine returns ompd\_rc\_unavailable if no enclosing parallel region exists.
+
+## Cross References
+
+• ompd\_rel\_parallel\_handle Routine, see Section 41.8.2
+
+• OMPD parallel\_handle Type, see Section 39.18.2
+
+• OMPD rc Type, see Section 39.9
+
+## 41.5.3 ompd\_get\_task\_parallel\_handle Routine
+
+<table><tr><td>Name: ompd_get_task_parallel_handleCategory: function</td><td>Properties: C-only, OMPD</td></tr></table>
+
+## Return Type and Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td></td><td>rc</td><td>default</td></tr><tr><td>task_handle</td><td>task_handle</td><td>pointer</td></tr><tr><td>task_parallel_handle</td><td>parallel_handle</td><td>pointer-to-pointer</td></tr></table>
+
+## Prototypes
+
+ompd\_rc\_t ompd\_get\_task\_parallel\_handle(
+
+ompd\_task\_handle\_t <sub>\*</sub>task\_handle,
+
+ompd\_parallel\_handle\_t <sub>\*\*</sub>task\_parallel\_handle);
+
+## Semantics
+
+The ompd\_get\_task\_parallel\_handle routine enables a tool to obtain a pointer to the parallel handle for the parallel region that encloses the task region that task\_handle specifies. This routine yields meaningful results only if at least one thread in the team that is executing the parallel region is stopped. A pointer to the parallel handle is returned in the location to which task\_parallel\_handle points. The tool owns that parallel handle, which it must release with ompd\_rel\_parallel\_handle.
+
+## Cross References
+
+• ompd\_rel\_parallel\_handle Routine, see Section 41.8.2
+
+• OMPD parallel\_handle Type, see Section 39.18.2
+
+• OMPD rc Type, see Section 39.9
+
+• OMPD task\_handle Type, see Section 39.18.3
+
+## 41.6 Task Handle Routines
+
+## 41.6.1 ompd\_get\_curr\_task\_handle Routine
+
+<table><tr><td>Name: ompd_get_curr_task_handleCategory: function</td><td>Properties: C-only, OMPD</td></tr></table>
+
+## Return Type and Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td></td><td>rc</td><td>default</td></tr><tr><td>thread_handle</td><td>thread_handle</td><td>opaque, pointer</td></tr><tr><td>task_handle</td><td>task_handle</td><td>opaque, pointer-to-pointer</td></tr></table>
+
+## Prototypes
+
+C
+
+ompd\_rc\_t ompd\_get\_curr\_task\_handle( ompd\_thread\_handle\_t <sub>\*</sub>thread\_handle, ompd\_task\_handle\_t <sub>\*\*</sub>task\_handle);
+
+C
+
+## Semantics
+
+The ompd\_get\_curr\_task\_handle routine obtains a pointer to the task handle for the current task region that is associated with an OpenMP thread. This routine yields meaningful results only if the thread for which the handle is provided is stopped. The task handle must be released with ompd\_rel\_task\_handle. The thread\_handle argument is an opaque handle that selects the thread on which to operate. On return, the task\_handle argument points to a location that points to a handle for the task that the thread is currently executing. In addition to the return codes permitted for all OMPD routines, this routine returns ompd\_rc\_unavailable if the thread is currently not executing a task.
+
+## Cross References
+
+• ompd\_rel\_task\_handle Routine, see Section 41.8.3
+
+• OMPD rc Type, see Section 39.9
+
+• OMPD task\_handle Type, see Section 39.18.3
+
+• OMPD thread\_handle Type, see Section 39.18.4
+
+## 41.6.2 ompd\_get\_generating\_task\_handle Routine
+
+<table><tr><td>Name: ompd_get_generating_task_handleCategory: function</td><td>Properties: C-only, OMPD</td></tr></table>
+
+## Return Type and Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td></td><td>rc</td><td>default</td></tr><tr><td>task_handle</td><td>task_handle</td><td>pointer</td></tr><tr><td>generating_task_handle</td><td>task_handle</td><td>pointer-to-pointer</td></tr></table>
+
+## Prototypes
+
+ompd\_rc\_t ompd\_get\_generating\_task\_handle(
+
+ompd\_task\_handle\_t <sub>\*</sub>task\_handle,
+
+ompd\_task\_handle\_t \*\*generating\_task\_handle);
+
+C
+
+## Semantics
+
+The ompd\_get\_generating\_task\_handle routine obtains a pointer to the task handle of the generating task region. The generating task is the task that was active when the task specified by task\_handle was created. This routine yields meaningful results only if the thread that is executing the task that task\_handle specifies is stopped while executing the task. The generating task handle must be released with ompd\_rel\_task\_handle. On return, the generating\_task\_handle argument points to a location that points to a handle for the generating task. In addition to the return codes permitted for all OMPD routines, this routine returns ompd\_rc\_unavailable if no generating task region exists.
+
+## Cross References
+
+• ompd\_rel\_task\_handle Routine, see Section 41.8.3
+
+• OMPD rc Type, see Section 39.9
+
+• OMPD task\_handle Type, see Section 39.18.3
+
+## 41.6.3 ompd\_get\_scheduling\_task\_handle Routine
+
+<table><tr><td>Name: ompd_get_scheduling_task_handleCategory: function</td><td>Properties: C-only, OMPD</td></tr></table>
+
+## Return Type and Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td></td><td>rc</td><td>default</td></tr><tr><td>task_handle</td><td>task_handle</td><td>pointer</td></tr><tr><td>scheduling_task_handle</td><td>task_handle</td><td>pointer-to-pointer</td></tr></table>
+
+## Prototypes
+
+C
+
+ompd\_rc\_t ompd\_get\_scheduling\_task\_handle(
+
+ompd\_task\_handle\_t <sub>\*</sub>task\_handle,
+
+ompd\_task\_handle\_t \*\*scheduling\_task\_handle);
+
+C
+
+## Semantics
+
+The ompd\_get\_scheduling\_task\_handle routine obtains a task handle for the task that was active when the task that task\_handle represents was scheduled. An implicit task does not have a scheduling task. This routine yields meaningful results only if the thread that is executing the task that task\_handle specifies is stopped while executing the task. On return, the scheduling\_task\_handle argument points to a location that points to a handle for the task that is still on the stack of execution on the same thread and was deferred in favor of executing the selected task. This task handle must be released with ompd\_rel\_task\_handle. In addition to the return codes permitted for all OMPD routines, this routine returns ompd\_rc\_unavailable if no scheduling task exists.
+
+## Cross References
+
+• ompd\_rel\_task\_handle Routine, see Section 41.8.3
+
+• OMPD rc Type, see Section 39.9
+
+• OMPD task\_handle Type, see Section 39.18.3
+
+## 41.6.4 ompd\_get\_task\_in\_parallel Routine
+
+<table><tr><td>Name: ompd_get_task_in_parallelCategory: function</td><td>Properties: C-only, OMPD</td></tr></table>
+
+Return Type and Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td></td><td>rc</td><td>default</td></tr><tr><td>parallel_handle</td><td>parallel_handle</td><td>opaque, pointer</td></tr><tr><td>thread_num</td><td>integer</td><td>default</td></tr><tr><td>task_handle</td><td>task_handle</td><td>opaque, pointer-to-pointer</td></tr></table>
+
+## Prototypes
+
+C
+
+ompd\_rc\_t ompd\_get\_task\_in\_parallel( ompd\_parallel\_handle\_t <sub>\*</sub>parallel\_handle, int thread\_num, ompd\_task\_handle\_t <sub>\*\*</sub>task\_handle);
+
+C
+
+## Semantics
+
+The ompd\_get\_task\_in\_parallel routine obtains handles for the implicit tasks that are associated with a parallel region. A successful invocation of ompd\_get\_task\_in\_parallel returns a pointer to a task handle in the location to which task\_handle points. This routine yields meaningful results only if all OpenMP threads in the parallel region are stopped. The parallel\_handle argument is an opaque handle that selects the parallel region on which to operate. The thread\_num argument selects the implicit task of the team to be returned. The thread\_num argument is equal to the thread-num-var ICV value of the selected implicit task. This routine returns ompd\_rc\_bad\_input if the thread\_num argument is greater than or equal to the team-size-var ICV or negative.
+
+## Cross References
+
+• ompd\_get\_icv\_from\_scope Routine, see Section 41.11.2
+
+• OMPD parallel\_handle Type, see Section 39.18.2
+
+• OMPD rc Type, see Section 39.9
+
+• OMPD task\_handle Type, see Section 39.18.3
+
+41.6.5 ompd\_get\_task\_function Routine
+
+<table><tr><td>Name: ompd_get_task_functionCategory: function</td><td>Properties: C-only, OMPD</td></tr></table>
+
+## Return Type and Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td></td><td>rc</td><td>default</td></tr><tr><td>task_handle</td><td>task_handle</td><td>opaque, pointer</td></tr><tr><td>entry_point</td><td>address</td><td>pointer</td></tr></table>
+
+## Prototypes
+
+C
+
+ompd\_rc\_t ompd\_get\_task\_function(ompd\_task\_handle\_t <sub>\*</sub>task\_handle, ompd\_address\_t <sub>\*</sub>entry\_point);
+
+C
+
+## Semantics
+
+The ompd\_get\_task\_function routine returns the entry point of the code that corresponds to the body of code that the task executes. This routine returns meaningful results only if the thread that is executing the task that task\_handle specifies is stopped while executing the task. That argument is an opaque handle that selects the task on which to operate. On return, the entry\_point argument is set to an address that describes the beginning of application code that executes the task region.
+
+## Cross References
+
+• OMPD address Type, see Section 39.2
+
+• OMPD rc Type, see Section 39.9
+
+• OMPD task\_handle Type, see Section 39.18.3
+
+## 41.6.6 ompd\_get\_task\_frame Routine
+
+<table><tr><td>Name: ompd_get_task_frameCategory: function</td><td>Properties: C-only, OMPD</td></tr></table>
+
+## Return Type and Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td></td><td>rc</td><td>default</td></tr><tr><td>task_handle</td><td>task_handle</td><td>pointer</td></tr><tr><td>exit_frame</td><td>frame_info</td><td>pointer</td></tr><tr><td>enter_frame</td><td>frame_info</td><td>pointer</td></tr></table>
+
+## Prototypes
+
+ompd\_rc\_t ompd\_get\_task\_frame(ompd\_task\_handle\_t <sub>\*</sub>task\_handle, ompd\_frame\_info\_t <sub>\*</sub>exit\_frame, ompd\_frame\_info\_t <sub>\*</sub>enter\_frame);
+
+C
+
+## Semantics
+
+The ompd\_get\_task\_frame routine extracts the frame pointers of a task. An OpenMP implementation maintains an object of frame OMPT type for every implicit task and explicit task. The ompd\_get\_task\_frame routine extracts the enter\_frame and exit\_frame fields of the frame object of the task that task\_handle identifies. This routine yields meaningful results only if the thread that is executing the task that task\_handle specifies is stopped while executing the task.
+
+On return, the exit\_frame argument points to a frame\_info object that has the frame information with the same semantics as the exit\_frame field in the frame object that is associated with the specified task. On return, the enter\_frame argument points to a frame\_info object that has the frame information with the same semantics as the enter\_frame field in the frame object that is associated with the specified task.
+
+## Cross References
+
+• OMPD address Type, see Section 39.2
+
+• OMPT frame Type, see Section 33.15
+
+• OMPD frame\_info Type, see Section 39.7
+
+• OMPD rc Type, see Section 39.9
+
+• OMPD task\_handle Type, see Section 39.18.3
+
+## 41.7 Handle Comparing Routines
+
+This section describes handle-comparing routines, which are routines that have the handle-comparing property and, thus, enable the comparison of two handles. The internal structure of handles is opaque to tools. While tools can easily compare pointers to handles, they cannot determine whether handles at two diferent addresses refer to the same underlying context and instead must use a handle-comparing routine.
+
+On success, a handle-comparing routine returns, in the location to which its cmp\_value argument points, a signed integer value that indicates how the underlying contexts compare. A value less than, equal to, or greater than 0 indicates that the context to which <handle-type>\_handle\_1 corresponds is, respectively, less than, equal to, or greater than that to which <handle-type>\_handle\_2 corresponds. The <handle-type>\_handle\_1 and <handle-type>\_handle\_2 arguments are handles that correspond to the type of handle that the routine compares. In each handle-comparing routine, <handle-type> is replaced with the name of the type of handle that the routine compares. For all types of handles, the means by which two handles are ordered is implementation defined.
+
+41.7.1 ompd\_parallel\_handle\_compare Routine
+
+<table><tr><td colspan="2">Name: ompd_parallel_handle_compareCategory: function</td><td colspan="2">Properties: C-only, handle-comparing, OMPD</td></tr><tr><td colspan="4">Return Type and Arguments</td></tr><tr><td>Name</td><td colspan="2">Type</td><td>Properties</td></tr><tr><td></td><td colspan="2">rc</td><td>default</td></tr><tr><td>parallel_handle_1</td><td colspan="2">parallel_handle</td><td>opaque, pointer</td></tr><tr><td>parallel_handle_2</td><td colspan="2">parallel_handle</td><td>opaque, pointer</td></tr><tr><td>cmp_value</td><td colspan="2">integer</td><td>pointer</td></tr></table>
+
+## Prototypes
+
+C
+
+ompd\_rc\_t ompd\_parallel\_handle\_compare(
+
+ompd\_parallel\_handle\_t <sub>\*</sub>parallel\_handle\_1,
+
+ompd\_parallel\_handle\_t \*parallel\_handle\_2, int \*cmp\_value);
+
+C
+
+## Semantics
+
+The ompd\_parallel\_handle\_compare routine compares two parallel handles. The parallel\_handle\_1 and parallel\_handle\_2 arguments are parallel handles that correspond to parallel regions.
+
+## Cross References
+
+• OMPD parallel\_handle Type, see Section 39.18.2
+
+• OMPD rc Type, see Section 39.9
+
+## 41.7.2 ompd\_task\_handle\_compare Routine
+
+<table><tr><td>Name: ompd_task_handle_compareCategory: function</td><td>Properties: C-only, handle-comparing, OMPD</td></tr></table>
+
+## Return Type and Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td></td><td>rc</td><td>default</td></tr><tr><td>task_handle_1</td><td>task_handle</td><td>opaque, pointer</td></tr><tr><td>task_handle_2</td><td>task_handle</td><td>opaque, pointer</td></tr><tr><td>cmp_value</td><td>integer</td><td>pointer</td></tr></table>
+
+## Prototypes
+
+C
+
+ompd\_rc\_t ompd\_task\_handle\_compare(
+
+ompd\_task\_handle\_t <sub>\*</sub>task\_handle\_1,
+
+ompd\_task\_handle\_t \*task\_handle\_2, int \*cmp\_value);
+
+C
+
+## Semantics
+
+The ompd\_task\_handle\_compare routine compares two task handles. The task\_handle\_1 and task\_handle\_2 arguments are task handles that correspond to tasks.
+
+## Cross References
+
+• OMPD rc Type, see Section 39.9
+
+• OMPD task\_handle Type, see Section 39.18.3
+
+## 41.7.3 ompd\_thread\_handle\_compare Routine
+
+<table><tr><td>Name: ompd_thread_handle_compareCategory: function</td><td>Properties: C-only, handle-comparing, OMPD</td></tr></table>
+
+## Return Type and Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td></td><td>rc</td><td>default</td></tr><tr><td>thread_handle_1</td><td>thread_handle</td><td>opaque, pointer</td></tr><tr><td>thread_handle_2</td><td>thread_handle</td><td>opaque, pointer</td></tr><tr><td>cmp_value</td><td>integer</td><td>pointer</td></tr></table>
+
+## Prototypes
+
+C
+
+ompd\_rc\_t ompd\_thread\_handle\_compare(
+
+ompd\_thread\_handle\_t <sub>\*</sub>thread\_handle\_1,
+
+ompd\_thread\_handle\_t \*thread\_handle\_2, int \*cmp\_value);
+
+C
+
+## Semantics
+
+The ompd\_thread\_handle\_compare routine compares two native thread handles. The thread\_handle\_1 and thread\_handle\_2 arguments are native thread handles that correspond to native threads.
+
+## Cross References
+
+• OMPD rc Type, see Section 39.9
+
+• OMPD thread\_handle Type, see Section 39.18.4
+
+## 41.8 Handle Releasing Routines
+
+This section describes handle-releasing routines, which are routines that have the handle-releasing property and, thus, release a handle owned by a tool. When a tool finishes with a handle that a handle argument identifies, it should release it with the corresponding handle-releasing routine so the OMPD library can release any resources that it has related to the corresponding context.
+
+## Restrictions
+
+Restrictions to handle-releasing routines are as follows:
+
+• A context must not be used after its corresponding handle is released.
+
+## 41.8.1 ompd\_rel\_address\_space\_handle Routine
+
+<table><tr><td>Name: ompd_rel_address_space_handleCategory: function</td><td>Properties: C-only, handle-releasing, OMPD</td></tr></table>
+
+## Return Type and Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td></td><td>rc</td><td>default</td></tr><tr><td>handle</td><td>address_space_handle</td><td>opaque, pointer</td></tr></table>
+
+## Prototypes
+
+C
+
+ompd\_rc\_t ompd\_rel\_address\_space\_handle( ompd\_address\_space\_handle\_t <sub>\*</sub>handle);
+
+C
+
+## Semantics
+
+A tool calls ompd\_rel\_address\_space\_handle to release an address space handle.
+
+## Cross References
+
+• OMPD address\_space\_handle Type, see Section 39.18.1
+
+• OMPD rc Type, see Section 39.9
+
+## 41.8.2 ompd\_rel\_parallel\_handle Routine
+
+<table><tr><td>Name: ompd_rel_parallel_handleCategory: function</td><td>Properties: C-only, handle-releasing, OMPD</td></tr></table>
+
+## Return Type and Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td></td><td>rc</td><td>default</td></tr><tr><td>parallel_handle</td><td>parallel_handle</td><td>opaque, pointer</td></tr></table>
+
+## Prototypes
+
+ompd\_rc\_t ompd\_rel\_parallel\_handle(
+
+ompd\_parallel\_handle\_t <sub>\*</sub>parallel\_handle);
+
+C
+
+## Semantics
+
+A tool calls ompd\_rel\_parallel\_handle to release a parallel handle.
+
+## Cross References
+
+• OMPD parallel\_handle Type, see Section 39.18.2
+
+• OMPD rc Type, see Section 39.9
+
+## 41.8.3 ompd\_rel\_task\_handle Routine
+
+<table><tr><td>Name: ompd_rel_task_handleCategory: function</td><td>Properties: C-only, handle-releasing, OMPD</td></tr></table>
+
+## Return Type and Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td></td><td>rc</td><td>default</td></tr><tr><td>task_handle</td><td>task_handle</td><td>opaque, pointer</td></tr></table>
+
+## Prototypes
+
+ompd\_rc\_t ompd\_rel\_task\_handle(ompd\_task\_handle\_t <sub>\*</sub>task\_handle);
+
+C
+
+## Semantics
+
+A tool calls ompd\_rel\_task\_handle to release a task handle.
+
+## Cross References
+
+• OMPD rc Type, see Section 39.9
+
+• OMPD task\_handle Type, see Section 39.18.3
+
+## 41.8.4 ompd\_rel\_thread\_handle Routine
+
+<table><tr><td>Name: ompd_rel_thread_handleCategory: function</td><td>Properties: C-only, handle-releasing, OMPD</td></tr></table>
+
+## Return Type and Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td></td><td>rc</td><td>default</td></tr><tr><td>thread_handle</td><td>thread_handle</td><td>opaque, pointer</td></tr></table>
+
+## Prototypes
+
+ompd\_rc\_t ompd\_rel\_thread\_handle(
+
+ompd\_thread\_handle\_t <sub>\*</sub>thread\_handle);
+
+C
+
+## Semantics
+
+A tool calls ompd\_rel\_thread\_handle to release a native thread handle.
+
+Cross References
+
+• OMPD rc Type, see Section 39.9
+
+• OMPD thread\_handle Type, see Section 39.18.4
+
+## 41.9 Querying Thread States
+
+## 41.9.1 ompd\_enumerate\_states Routine
+
+<table><tr><td>Name: ompd_enumerate_statesCategory: function</td><td>Properties: C-only, OMPD</td></tr></table>
+
+## Return Type and Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td></td><td>rc</td><td>default</td></tr><tr><td>address_space_handle</td><td>address_space_handle</td><td>opaque, pointer</td></tr><tr><td>current_state</td><td>word</td><td>default</td></tr><tr><td>next_state</td><td>word</td><td>pointer</td></tr><tr><td>next_state_name</td><td>const char</td><td>intent(out), pointer-to-pointer</td></tr><tr><td>more_endums</td><td>word</td><td>pointer</td></tr></table>
+
+## Prototypes
+
+ompd\_rc\_t ompd\_enumerate\_states( ompd\_address\_space\_handle\_t <sub>\*</sub>address\_space\_handle, ompd\_word\_t current\_state, ompd\_word\_t \*next\_state, const char \*\*next\_state\_name, ompd\_word\_t \*more\_enums);
+
+## Semantics
+
+An OpenMP implementation may support only a subset of the states that the state OMPT type defines. In addition, an OpenMP implementation may support implementation defined states. The ompd\_enumerate\_states routine enumerates the thread states that an OpenMP implementation supports.
+
+When the current\_state argument is a thread state that an OpenMP implementation supports, the routine assigns the value and string name of the next thread state in the enumeration to the locations to which the next\_state and next\_state\_name arguments point. On return, the tool owns the next\_state\_name string. The OMPD library allocates storage for the string with the alloc\_memory callback that the tool provides. The tool is responsible for releasing the storage. On return, the location to which the more\_enums argument points has the value 1 whenever one or more states are left in the enumeration. On return, the location to which the more\_enums argument points has the value 0 when current\_state is the last state in the enumeration.
+
+The address\_space\_handle argument identifies the address space. The current\_state argument must be a thread state that the OpenMP implementation supports. To begin enumerating the supported states, a tool should pass ompt\_state\_undefined as the value of current\_state. Subsequent calls to ompd\_enumerate\_states by the tool should pass the value that the routine returned in the next\_state argument. This routine returns ompd\_rc\_bad\_input if an unknown value is provided in current\_state.
+
+## Cross References
+
+• OMPD address\_space\_handle Type, see Section 39.18.1
+
+• OMPD rc Type, see Section 39.9
+
+• OMPT state Type, see Section 33.31
+
+• OMPD word Type, see Section 39.17
+
+## 41.9.2 ompd\_get\_state Routine
+
+<table><tr><td>Name: ompd_get_stateCategory: function</td><td>Properties: C-only, OMPD</td></tr></table>
+
+## Return Type and Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td></td><td>rc</td><td>default</td></tr><tr><td>thread_handle</td><td>thread_handle</td><td>opaque, pointer</td></tr><tr><td>state</td><td>word</td><td>pointer</td></tr><tr><td>wait_id</td><td>wait_id</td><td>pointer</td></tr></table>
+
+## Prototypes
+
+ompd\_rc\_t ompd\_get\_state(ompd\_thread\_handle\_t <sub>\*</sub>thread\_handle, ompd\_word\_t <sub>\*</sub>state, ompd\_wait\_id\_t <sub>\*</sub>wait\_id);
+
+## Semantics
+
+The ompd\_get\_state routine returns the state of an OpenMP thread. This routine yields meaningful results only if the referenced thread is stopped. The thread\_handle argument identifies the thread. The state argument represents the state of that thread as represented by a value that ompd\_enumerate\_states returns. On return, if the wait\_id argument is a non-null value then it points to a handle that corresponds to the wait\_id wait identifier of the thread. If the thread state is not one of the specified wait states, the value to which wait\_id points is undefined.
+
+## Cross References
+
+• ompd\_enumerate\_states Routine, see Section 41.9.1
+
+• OMPD rc Type, see Section 39.9
+
+• OMPD thread\_handle Type, see Section 39.18.4
+
+• OMPD wait\_id Type, see Section 39.16
+
+• OMPD word Type, see Section 39.17
+````

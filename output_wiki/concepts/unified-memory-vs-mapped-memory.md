@@ -1,14 +1,16 @@
 # Difference between Unified Memory and Mapped Memory
 
-The primary distinction between Unified Memory and Mapped Memory lies in the guarantee of memory access support across different systems.
+Explains the core difference: Mapped Memory lacks guaranteed support for all memory operations (e.g., atomics) across systems, while Unified Memory guarantees portability for these operations.
 
-CUDA Mapped Memory does not guarantee that all kinds of memory accesses, such as atomics, are supported on all systems. In contrast, Unified Memory provides this guarantee. However, the limited set of memory operations that are guaranteed to be portably supported by CUDA Mapped Memory is available on more systems than those supporting Unified Memory [CUDA_C_Programming_Guide:L21101-L21104].
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-## Key Differences
+## Source CUDA_C_Programming_Guide:L21101-L21104
 
-*   **Unified Memory**: Guarantees support for all kinds of memory accesses (including atomics) across systems.
-*   **Mapped Memory**: Does not guarantee support for all memory operations (e.g., atomics) on all systems. It supports a limited set of portably guaranteed operations but has broader system availability.
+Citation: [CUDA_C_Programming_Guide:L21101-L21104]
 
-## Availability
+````text
+## 24.1.2.4 Diference between Unified Memory and Mapped Memory
 
-Mapped Memory is available on a wider range of systems compared to Unified Memory, making it a more portable option for basic memory operations, albeit with fewer guarantees regarding advanced memory access types like atomics [CUDA_C_Programming_Guide:L21101-L21104].
+The main diference between Unified Memory and Mapped Memory is that CUDA Mapped Memory does not guarantee that all kinds of memory accesses (for example atomics) are supported on all systems, while Unified Memory does. The limited set of memory operations that are guaranteed to be portably supported by CUDA Mapped Memory is available on more systems than Unified Memory.
+````

@@ -24,7 +24,6 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-
 # ---------------------------------------------------------------------
 # Runtime config (hardcoded, mirrors wiki_new.models style)
 # ---------------------------------------------------------------------
@@ -35,11 +34,11 @@ OUTPUT_ROOT = "/run/media/blaze/Common/Code/llm-wiki/output_embed"
 PHASE = "all"  # all | generate
 
 # Chat LLM (boundary confirmation + enrichment).
-BASE_URL = os.environ.get("OPENAI_BASE_URL", "http://194.14.47.19:23149/v1")
+BASE_URL = os.environ.get("OPENAI_BASE_URL", "http://180.21.170.235:42383/v1")
 API_KEY = os.environ.get("OPENAI_API_KEY", "local")
 
-GEN_MODEL = "nvidia/Qwen3.6-35B-A3B-NVFP4"
-VERIFY_MODEL = "nvidia/Qwen3.6-35B-A3B-NVFP4"
+GEN_MODEL = os.environ.get("WIKI_GEN_MODEL", "nvidia/Qwen3.6-35B-A3B-NVFP4")
+VERIFY_MODEL = os.environ.get("WIKI_VERIFY_MODEL", GEN_MODEL)
 
 TEMPERATURE = 0.0
 TIMEOUT = 300
@@ -91,15 +90,21 @@ EMBED_BASE_URL = os.environ.get(
     os.environ.get("OPENAI_EMBED_BASE_URL", "http://localhost:8080/v1"),
 )
 EMBED_API_KEY = os.environ.get("WIKI_EMBED_API_KEY", "local")
-EMBED_MODEL = os.environ.get("WIKI_EMBED_MODEL", "/run/media/blaze/Common/Code/llm-wiki/Qwen/Qwen3-Embedding-0.6B")
-HF_EMBED_MODEL = os.environ.get("WIKI_HF_EMBED_MODEL", "/run/media/blaze/Common/Code/llm-wiki/Qwen/Qwen3-Embedding-0.6B")
+EMBED_MODEL = os.environ.get(
+    "WIKI_EMBED_MODEL",
+    "/run/media/blaze/Common/Code/llm-wiki/Qwen/Qwen3-Embedding-0.6B",
+)
+HF_EMBED_MODEL = os.environ.get(
+    "WIKI_HF_EMBED_MODEL",
+    "/run/media/blaze/Common/Code/llm-wiki/Qwen/Qwen3-Embedding-0.6B",
+)
 HF_DEVICE = os.environ.get("WIKI_HF_DEVICE", "cuda:0")
 
 
 def build_embedder():
     """Construct the shared Embedder using the hardcoded backend config."""
-    from graph.models import Settings
     from embeddings.embedder import Embedder
+    from graph.models import Settings
 
     settings = Settings(
         embed_backend=EMBED_BACKEND,

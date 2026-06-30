@@ -85,10 +85,13 @@ class FakeLlm:
         out: list[EdgeSuggestion] = []
         for c in candidates:
             if node_kw & set(c.keywords):
-                out.append(EdgeSuggestion(
-                    target_node_id=c.id, label=label,
-                    summary="shares keywords",
-                ))
+                out.append(
+                    EdgeSuggestion(
+                        target_node_id=c.id,
+                        label=label,
+                        summary="shares keywords",
+                    )
+                )
         return out
 
     def check_entity_duplicate(self, node: Node, candidates: list[Node]) -> EntityMatch:

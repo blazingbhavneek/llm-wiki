@@ -44,7 +44,6 @@ if SQLModel is not None:
         key: str = Field(primary_key=True)
         value: str
 
-
     class NodeRow(SQLModel, table=True):
         __tablename__ = "nodes"
 
@@ -66,7 +65,6 @@ if SQLModel is not None:
         created_at: str
         updated_at: str
 
-
     class EdgeRow(SQLModel, table=True):
         __tablename__ = "edges"
 
@@ -81,14 +79,12 @@ if SQLModel is not None:
         expired_at: str | None = None
         source_episode_ids_json: str = "[]"
 
-
     class SourceRow(SQLModel, table=True):
         __tablename__ = "sources"
 
         document_name: str = Field(primary_key=True)
         source_hash: str
         ingested_at: str
-
 
     class SourceVersionRow(SQLModel, table=True):
         __tablename__ = "source_versions"
@@ -138,13 +134,11 @@ class SQLModelDatabase(BaseDatabase):
         for column, ddl in additions.items():
             if column not in existing:
                 self.connection.execute(f"ALTER TABLE nodes ADD COLUMN {column} {ddl}")
-        self.connection.executescript(
-            """
+        self.connection.executescript("""
             CREATE INDEX IF NOT EXISTS idx_nodes_source_version ON nodes(source_version);
             CREATE INDEX IF NOT EXISTS idx_nodes_source_material_hash ON nodes(source_material_hash);
             CREATE INDEX IF NOT EXISTS idx_nodes_entity ON nodes(entity);
-            """
-        )
+            """)
 
     def _ensure_edge_columns(self) -> None:
         existing = {
@@ -166,13 +160,11 @@ class SQLModelDatabase(BaseDatabase):
         self._load_vec_extension()
 
     def _create_fts_table(self) -> None:
-        self.connection.execute(
-            """
+        self.connection.execute("""
             CREATE VIRTUAL TABLE IF NOT EXISTS nodes_fts USING fts5(
                 node_id UNINDEXED, text
             )
-            """
-        )
+            """)
         self.connection.commit()
 
     def _load_vec_extension(self) -> None:
@@ -265,7 +257,8 @@ class SQLModelDatabase(BaseDatabase):
     def delete_node(self, node_id: str) -> None:
         with Session(self.engine) as session:
             edge_stmt = select(EdgeRow).where(
-                (EdgeRow.source_node_id == node_id) | (EdgeRow.target_node_id == node_id)
+                (EdgeRow.source_node_id == node_id)
+                | (EdgeRow.target_node_id == node_id)
             )
             for edge in session.exec(edge_stmt).all():
                 session.delete(edge)
@@ -289,7 +282,9 @@ class SQLModelDatabase(BaseDatabase):
         self, document_name: str, active_only: bool = False
     ) -> list[Node]:
         with Session(self.engine) as session:
-            stmt = select(NodeRow).where(NodeRow.original_document_name == document_name)
+            stmt = select(NodeRow).where(
+                NodeRow.original_document_name == document_name
+            )
             if active_only:
                 stmt = stmt.where(NodeRow.status == NodeStatus.active.value)
             stmt = stmt.order_by(NodeRow.updated_at.desc())

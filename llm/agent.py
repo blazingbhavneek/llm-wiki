@@ -18,7 +18,9 @@ from .llm import LlmClient
 class ToolLoopResult(BaseModel):
     """Neutral result of a tool loop. No LLM-library types cross this boundary."""
 
-    finished_args: dict[str, Any] | None = None  # args of the terminal finish tool, if called
+    finished_args: dict[str, Any] | None = (
+        None  # args of the terminal finish tool, if called
+    )
     content: str = ""  # free-text answer when the model stops without finish
     steps: int = 0
 
@@ -78,7 +80,9 @@ class AgentClient(LlmClient):
                     finished = args
                     break
                 observation = dispatch(name, args)
-                messages.append(ToolMessage(content=observation, tool_call_id=call.get("id")))
+                messages.append(
+                    ToolMessage(content=observation, tool_call_id=call.get("id"))
+                )
             if finished is not None:
                 return ToolLoopResult(finished_args=finished, steps=steps)
 

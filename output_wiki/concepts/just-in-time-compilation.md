@@ -1,15 +1,22 @@
 # Just-in-Time Compilation
 
-Just-in-Time (JIT) compilation is the process by which the CUDA device driver compiles PTX code to binary code at runtime [CUDA_C_Programming_Guide:L1141-L1150]. This mechanism increases application load time but provides significant benefits, including the ability to leverage new compiler improvements introduced in subsequent device driver updates and the capability to run applications on devices that did not exist at the time the application was originally compiled [CUDA_C_Programming_Guide:L1141-L1150].
+Explains how PTX code is compiled to binary at runtime by the device driver, the benefits of JIT compilation, the compute cache mechanism, and its invalidation policy.
 
-## Compute Cache
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-When the device driver performs JIT compilation for an application, it automatically caches the generated binary code to avoid repeating the compilation process in subsequent invocations of the application [CUDA_C_Programming_Guide:L1141-L1150]. This cache is referred to as the compute cache [CUDA_C_Programming_Guide:L1141-L1150]. The compute cache is automatically invalidated when the device driver is upgraded, ensuring that applications can benefit from the improvements in the new JIT compiler built into the updated driver [CUDA_C_Programming_Guide:L1141-L1150].
+## Source CUDA_C_Programming_Guide:L1141-L1150
 
-## Runtime Compilation with NVRTC
+Citation: [CUDA_C_Programming_Guide:L1141-L1150]
 
-As an alternative to using `nvcc` to compile CUDA C++ device code, the NVIDIA Runtime Compilation (NVRTC) library can be used to compile CUDA C++ device code to PTX at runtime [CUDA_C_Programming_Guide:L1141-L1150]. NVRTC serves as a runtime compilation library for CUDA C++ [CUDA_C_Programming_Guide:L1141-L1150].
+````text
+## 6.1.1.2 Just-in-Time Compilation
 
-## Configuration
+Any PTX code loaded by an application at runtime is compiled further to binary code by the device driver. This is called just-in-time compilation. Just-in-time compilation increases application load time, but allows the application to benefit from any new compiler improvements coming with each new device driver. It is also the only way for applications to run on devices that did not exist at the time the application was compiled, as detailed in Application Compatibility.
 
-Environment variables are available to control JIT compilation behavior [CUDA_C_Programming_Guide:L1141-L1150].
+When the device driver just-in-time compiles some PTX code for some application, it automatically caches a copy of the generated binary code in order to avoid repeating the compilation in subsequent invocations of the application. The cache - referred to as compute cache - is automatically invalidated when the device driver is upgraded, so that applications can benefit from the improvements in the new just-in-time compiler built into the device driver.
+
+Environment variables are available to control just-in-time compilation as described in CUDA Environment Variables
+
+As an alternative to using nvcc to compile CUDA C++ device code, NVRTC can be used to compile CUDA C++ device code to PTX at runtime. NVRTC is a runtime compilation library for CUDA C++; more information can be found in the NVRTC User guide.
+````

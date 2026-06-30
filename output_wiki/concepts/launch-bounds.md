@@ -1,41 +1,98 @@
-# __launch_bounds__
+# 10.38. Launch Bounds
 
-The `__launch_bounds__` qualifier is used in the definition of a `__global__` function to provide the compiler with additional information regarding launch constraints. This information aids the compiler's heuristics in minimizing register usage while keeping register spilling and instruction count to a minimum, thereby optimizing performance [CUDA_C_Programming_Guide:L11603-L11603].
+Covers the __launch_bounds__() qualifier, its parameters, compiler heuristics for register usage optimization, and architecture-specific handling via __CUDA_ARCH__.
 
-## Parameters
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-The qualifier accepts the following parameters:
+## Source CUDA_C_Programming_Guide:L11600-L11685
 
-*   **maxThreadsPerBlock**: Specifies the maximum number of threads per block with which the application will ever launch the kernel. This compiles to the `.maxntid` PTX directive [CUDA_C_Programming_Guide:L11614-L11614].
-*   **minBlocksPerMultiprocessor** (Optional): Specifies the desired minimum number of resident blocks per multiprocessor. This compiles to the `.minnctapersm` PTX directive [CUDA_C_Programming_Guide:L11616-L11616].
-*   **maxBlocksPerCluster** (Optional): Specifies the desired maximum number of thread blocks per cluster with which the application will ever launch the kernel. This compiles to the `.maxclusterrank` PTX directive [CUDA_C_Programming_Guide:L11618-L11618].
+Citation: [CUDA_C_Programming_Guide:L11600-L11685]
 
-## Optimization Behavior
+````text
 
-When launch bounds are specified, the compiler derives an upper limit $L$ on the number of registers the kernel should use. This limit ensures that `minBlocksPerMultiprocessor` blocks (or a single block if `minBlocksPerMultiprocessor` is not specified) of `maxThreadsPerBlock` threads can reside on the multiprocessor [CUDA_C_Programming_Guide:L11620-L11620]. The compiler then optimizes register usage as follows:
+As discussed in detail in Multiprocessor Level, the fewer registers a kernel uses, the more threads and thread blocks are likely to reside on a multiprocessor, which can improve performance.
 
-*   If the initial register usage is higher than $L$, the compiler reduces it until it is less than or equal to $L$, usually at the expense of increased local memory usage and/or a higher number of instructions [CUDA_C_Programming_Guide:L11622-L11622].
-*   If `maxThreadsPerBlock` is specified but `minBlocksPerMultiprocessor` is not, the compiler uses `maxThreadsPerBlock` to determine register usage thresholds for transitions between $n$ and $n+1$ resident blocks, applying similar heuristics as when no launch bounds are specified [CUDA_C_Programming_Guide:L11626-L11626].
-*   If both `minBlocksPerMultiprocessor` and `maxThreadsPerBlock` are specified, the compiler may increase register usage up to $L$ to reduce the number of instructions and better hide single-thread instruction latency [CUDA_C_Programming_Guide:L11628-L11628].
+Therefore, the compiler uses heuristics to minimize register usage while keeping register spilling (see Device Memory Accesses) and instruction count to a minimum. An application can optionally aid these heuristics by providing additional information to the compiler in the form of launch bounds that are specified using the \_\_launch\_bounds\_\_() qualifier in the definition of a \_\_global\_\_ function:
 
-## Constraints and Errors
+```lisp
+__global__ void
+__launch_bounds__(maxThreadsPerBlock, minBlocksPerMultiprocessor, maxBlocksPerCluster)
+MyKernel(...)
+{
+    ...
+}
+```
 
-Specifying launch bounds enforces runtime constraints. A kernel will fail to launch if it is executed with more threads per block than its `maxThreadsPerBlock` bound [CUDA_C_Programming_Guide:L11630-L11630]. Similarly, a kernel will fail to launch if it is executed with more thread blocks per cluster than its `maxBlocksPerCluster` bound [CUDA_C_Programming_Guide:L11632-L11632].
+maxThreadsPerBlock specifies the maximum number of threads per block with which the application will ever launch MyKernel(); it compiles to the .maxntidPTX directive.
 
-## Best Practices
+▶ minBlocksPerMultiprocessor is optional and specifies the desired minimum number of resident blocks per multiprocessor; it compiles to the .minnctapersmPTX directive.
 
-Per-thread resources required by a CUDA kernel might limit the maximum block size in an unwanted way. To maintain forward compatibility with future hardware and toolkits, and to ensure that at least one thread block can run on a Streaming Multiprocessor (SM), developers should include the single argument `__launch_bounds__(maxThreadsPerBlock)` specifying the largest block size the kernel will be launched with [CUDA_C_Programming_Guide:L11634-L11634]. Failure to do so could lead to "too many resources requested for launch" errors [CUDA_C_Programming_Guide:L11634-L11634]. Providing the two-argument version `__launch_bounds__(maxThreadsPerBlock, minBlocksPerMultiprocessor)` can improve performance in some cases, though the right value for `minBlocksPerMultiprocessor` should be determined using detailed per-kernel analysis [CUDA_C_Programming_Guide:L11634-L11634].
+maxBlocksPerCluster is optional and specifies the desired maximum number thread blocks per cluster with which the application will ever launch MyKernel(); it compiles to the . maxclusterrankPTX directive.
 
-Optimal launch bounds for a given kernel usually differ across major architecture revisions. Developers typically handle this in device code using the `__CUDA_ARCH__` macro [CUDA_C_Programming_Guide:L11636-L11636].
+If launch bounds are specified, the compiler first derives from them the upper limit L on the number of registers the kernel should use to ensure that minBlocksPerMultiprocessor blocks (or a single block if minBlocksPerMultiprocessor is not specified) of maxThreadsPerBlock threads can reside on the multiprocessor (see Hardware Multithreading for the relationship between the number of registers used by a kernel and the number of registers allocated per block). The compiler then optimizes register usage in the following way:
 
-### Host Code Considerations
+▶ If the initial register usage is higher than L, the compiler reduces it further until it becomes less or equal to L, usually at the expense of more local memory usage and/or higher number of instructions;
 
-When invoking a kernel with the maximum number of threads per block specified in `__launch_bounds__()`, it is tempting to use the same value for the execution configuration. However, `__CUDA_ARCH__` is undefined in host code [CUDA_C_Programming_Guide:L11664-L11664]. Consequently, relying on architecture-specific macros in host code may result in incorrect launch configurations (e.g., launching with 256 threads per block regardless of the actual architecture) [CUDA_C_Programming_Guide:L11664-L11664].
+▶ If the initial register usage is lower than L
 
-The number of threads per block in the execution configuration should instead be determined:
-*   At compile time using a macro that does not depend on `__CUDA_ARCH__` [CUDA_C_Programming_Guide:L11666-L11666].
-*   Or at runtime based on the compute capability [CUDA_C_Programming_Guide:L11673-L11673].
+▶ If maxThreadsPerBlock is specified and minBlocksPerMultiprocessor is not, the compiler uses maxThreadsPerBlock to determine the register usage thresholds for the transitions between n and n+1 resident blocks (i.e., when using one less register makes room for an additional resident block as in the example of Multiprocessor Level) and then applies similar heuristics as when no launch bounds are specified;
 
-## Verification
+▶ If both minBlocksPerMultiprocessor and maxThreadsPerBlock are specified, the compiler may increase register usage as high as L to reduce the number of instructions and better hide single thread instruction latency.
 
-Register usage can be reported by the `--ptxas-options=-v` compiler option. The number of resident blocks can be derived from the occupancy reported by the CUDA profiler [CUDA_C_Programming_Guide:L11684-L11684].
+A kernel will fail to launch if it is executed with more threads per block than its launch bound max-ThreadsPerBlock.
+
+A kernel will fail to launch if it is executed with more thread blocks per cluster than its launch bound maxBlocksPerCluster.
+
+Per thread resources required by a CUDA kernel might limit the maximum block size in an unwanted way. In order to maintain forward compatibility to future hardware and toolkits and to ensure that at least one thread block can run on an SM, developers should include the single argument \_\_launch\_bounds\_\_(maxThreadsPerBlock) which specifies the largest block size that the kernel will be launched with. Failure to do so could lead to “too many resources requested for launch” errors. Providing the two argument version of \_\_launch\_bounds\_\_(maxThreadsPerBlock, minBlocksPerMultiprocessor) can improve performance in some cases. The right value for min-BlocksPerMultiprocessor should be determined using a detailed per kernel analysis.
+
+Optimal launch bounds for a given kernel will usually difer across major architecture revisions. The sample code below shows how this is typically handled in device code using the \_\_CUDA\_ARCH\_\_ macro introduced in Application Compatibility.
+
+```lisp
+#define THREADS_PER_BLOCK          256
+#if __CUDA_ARCH__ >= 200
+    #define MY_KERNEL_MAX_THREADS (2 * THREADS_PER_BLOCK)
+    #define MY_KERNEL_MIN_BLOCKS 3
+#else
+    #define MY_KERNEL_MAX_THREADS THREADS_PER_BLOCK
+    #define MY_KERNEL_MIN_BLOCKS 2
+#endif
+
+// Device code
+__global__ void
+__launch_bounds__(MY_KERNEL_MAX_THREADS, MY_KERNEL_MIN_BLOCKS)
+MyKernel(...)
+{
+    ...
+}
+```
+
+In the common case where MyKernel is invoked with the maximum number of threads per block (specified as the first parameter of \_\_launch\_bounds\_\_()), it is tempting to use MY\_KERNEL\_MAX\_THREADS as the number of threads per block in the execution configuration:
+
+```txt
+// Host code
+MyKernel<<<blocksPerGrid, MY_KERNEL_MAX_THREADS>>>(...);
+```
+
+This will not work however since \_\_CUDA\_ARCH\_\_ is undefined in host code as mentioned in Application Compatibility, so MyKernel will launch with 256 threads per block even when \_\_CUDA\_ARCH\_\_ is greater or equal to 200. Instead the number of threads per block should be determined:
+
+▶ Either at compile time using a macro that does not depend on \_\_CUDA\_ARCH\_\_, for example
+
+```txt
+// Host code
+MyKernel<<<blocksPerGrid, THREADS_PER_BLOCK>>>(...);
+```
+
+▶ Or at runtime based on the compute capability
+
+```c
+// Host code
+cudaGetDeviceProperties(&deviceProp, device);
+int threadsPerBlock =
+    (deviceProp.major >= 2 ?
+        2 * THREADS_PER_BLOCK : THREADS_PER_BLOCK);
+MyKernel<<<blocksPerGrid, threadsPerBlock>>>(...);
+```
+
+Register usage is reported by the --ptxas-options=-v compiler option. The number of resident blocks can be derived from the occupancy reported by the CUDA profiler (see Device Memory Accesses for a definition of occupancy).
+````

@@ -1,12 +1,27 @@
 # Friend Functions
 
-In CUDA C++, specific restrictions apply when declaring `__global__` functions or function templates as friends within a class or struct. A `__global__` function or function template cannot be defined inside a friend declaration.
+Restrictions on defining __global__ functions or templates in friend declarations.
 
-While declaring a `__global__` function as a friend is permitted (provided it is not defined at that point), attempting to provide the function body within the friend declaration results in a compilation error.
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-## Example
+## Source CUDA_C_Programming_Guide:L17237-L17264
 
-The following code illustrates valid and invalid friend declarations for `__global__` functions:
+Citation: [CUDA_C_Programming_Guide:L17237-L17264]
+
+````text
+
+It is not allowed to take the address of a \_\_device\_\_ function in host code.
+
+## 18.5.10.6 Function Recursion
+
+\_\_global\_\_ functions do not support recursion.
+
+## 18.5.10.7 Friend Functions
+
+A \_\_global\_\_ function or function template cannot be defined in a friend declaration.
+
+Example:
 
 ```c
 struct S1_t {
@@ -23,8 +38,4 @@ struct S1_t {
   friend __global__
   void foo4(void) { } // error: definition in friend declaration
 };
-```
-
-In the example above, `foo1` and `foo2` are valid because they are merely declared as friends without providing their implementation. `foo3` and `foo4` cause errors because they attempt to define the `__global__` function body directly within the friend declaration.
-
-[CUDA_C_Programming_Guide:L17243-L17266]
+````

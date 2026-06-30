@@ -1,37 +1,40 @@
-# CUDA Floating-Point Standard
+# Floating-Point Standard
 
-All CUDA compute devices follow the IEEE 754-2008 standard for binary floating-point arithmetic, but with several specific deviations regarding rounding modes, exception handling, NaN behavior, and atomic operations [CUDA_C_Programming_Guide:L19524-L19551].
+IEEE 754-2008 compliance details, deviations, rounding modes, NaN handling, flush-to-zero behavior, compiler flags, and atomic operation specifics for NVIDIA GPUs.
 
-## Rounding Modes
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-CUDA does not support dynamically configurable rounding modes at the hardware level. However, most floating-point operations support multiple IEEE rounding modes, which are exposed via device intrinsics [CUDA_C_Programming_Guide:L19524-L19551].
+## Source CUDA_C_Programming_Guide:L19524-L19551
 
-## Exception Handling
+Citation: [CUDA_C_Programming_Guide:L19524-L19551]
 
-There is no mechanism in CUDA to detect that a floating-point exception has occurred. All operations behave as if IEEE-754 exceptions are always masked, delivering the masked response defined by IEEE-754 in the event of an exceptional condition [CUDA_C_Programming_Guide:L19524-L19551].
+````text
+## 20.3. Floating-Point Standard
 
-## NaN Behavior
+All compute devices follow the IEEE 754-2008 standard for binary floating-point arithmetic with the following deviations:
 
-*   **Signaling NaNs (SNaN):** While SNaN encodings are supported, they are not signaling and are handled as quiet NaNs (QNaN) [CUDA_C_Programming_Guide:L19524-L19551].
-*   **Single-Precision NaN Propagation:** The result of a single-precision floating-point operation involving one or more input NaNs is the quiet NaN with the bit pattern `0x7fffff80` (often referred to as the canonical quiet NaN) [CUDA_C_Programming_Guide:L19524-L19551].
-*   **Double-Precision Absolute Value and Negation:** These operations are not compliant with IEEE-754 regarding NaNs; instead of generating a NaN, the input NaN is passed through unchanged [CUDA_C_Programming_Guide:L19524-L19551].
-*   **fmin/fmax Functions:** In accordance with the IEEE-754R standard, if one input to `fminf()`, `fmin()`, `fmaxf()`, or `fmax()` is NaN and the other is not, the result is the non-NaN parameter [CUDA_C_Programming_Guide:L19524-L19551].
+▶ There is no dynamically configurable rounding mode; however, most of the operations support multiple IEEE rounding modes, exposed via device intrinsics.
 
-## Flush-to-Zero (FTZ) and Denormals
+There is no mechanism for detecting that a floating-point exception has occurred and all operations behave as if the IEEE-754 exceptions are always masked, and deliver the masked response as defined by IEEE-754 if there is an exceptional event. For the same reason, while SNaN encodings are supported, they are not signaling and are handled as quiet.
 
-To ensure IEEE compliance, code should be compiled with `-ftz=false`, `-prec-div=true`, and `-prec-sqrt=true` (which are the default settings) [CUDA_C_Programming_Guide:L19524-L19551].
+▶ The result of a single-precision floating-point operation involving one or more input NaNs is the quiet NaN of bit pattern 0x7ffff.
 
-However, atomic operations have specific behaviors regardless of the `-ftz` compiler flag:
+▶ Double-precision floating-point absolute value and negation are not compliant with IEEE-754 with respect to NaNs; these are passed through unchanged.
 
-*   **Global Memory:** Atomic single-precision floating-point adds on global memory always operate in flush-to-zero mode, behaving equivalent to `FADD.F32.FTZ.RN` [CUDA_C_Programming_Guide:L19524-L19551].
-*   **Shared Memory:** Atomic single-precision floating-point adds on shared memory always operate with denormal support, behaving equivalent to `FADD.F32.RN` [CUDA_C_Programming_Guide:L19524-L19551].
+Code must be compiled with -ftz=false, -prec-div=true, and -prec-sqrt=true to ensure IEEE compliance (this is the default setting; see the nvcc user manual for description of these compilation flags).
 
-## Integer Conversion and Division
+Regardless of the setting of the compiler flag -ftz,
 
-*   **Floating-Point to Integer Conversion:** IEEE-754 leaves the behavior undefined when a floating-point value falls outside the range of the integer format. CUDA compute devices clamp the result to the end of the supported range, which differs from x86 architecture behavior [CUDA_C_Programming_Guide:L19524-L19551].
-*   **Integer Division by Zero and Overflow:** IEEE-754 leaves the behavior of integer division by zero and integer overflow undefined. CUDA provides no mechanism to detect these exceptions. Integer division by zero yields an unspecified, machine-specific value [CUDA_C_Programming_Guide:L19524-L19551].
+atomic single-precision floating-point adds on global memory always operate in flush-to-zero mode, i.e., behave equivalent to FADD.F32.FTZ.RN,
 
-## References
+▶ atomic single-precision floating-point adds on shared memory always operate with denormal support, i.e., behave equivalent to FADD.F32.RN.
 
-*   [CUDA_C_Programming_Guide:L19524-L19551] CUDA C++ Programming Guide, Section 20.3. Floating-Point Standard.
-*   NVIDIA Precision, Performance, Floating-Point, and IEEE 754 Compliance: https://developer.nvidia.com/content/precision-performance-floating-point-and-ieee-754-compliance-nvidia-gpus [CUDA_C_Programming_Guide:L19524-L19551]
+In accordance to the IEEE-754R standard, if one of the input parameters to fminf(), fmin(), fmaxf(), or fmax() is NaN, but not the other, the result is the non-NaN parameter.
+
+The conversion of a floating-point value to an integer value in the case where the floating-point value falls outside the range of the integer format is left undefined by IEEE-754. For compute devices, the behavior is to clamp to the end of the supported range. This is unlike the x86 architecture behavior.
+
+The behavior of integer division by zero and integer overflow is left undefined by IEEE-754. For compute devices, there is no mechanism for detecting that such integer operation exceptions have occurred. Integer division by zero yields an unspecified, machine-specific value.
+
+https://developer.nvidia.com/content/precision-performance-floating-point-and-ieee-754-compliance-nvidia-gpus includes more information on the floating point accuracy and compliance of NVIDIA GPUs.
+````

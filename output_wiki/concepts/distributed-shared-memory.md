@@ -1,93 +1,101 @@
 # Distributed Shared Memory
 
-Distributed Shared Memory (DSM) is a feature introduced in compute capability 9.0 that allows threads in a thread block cluster to access the shared memory of all participating thread blocks within that cluster [CUDA_C_Programming_Guide:L1851-L1971]. It provides a partitioned shared memory address space where threads can read, write, or perform atomics on local or remote block memory [CUDA_C_Programming_Guide:L1851-L1971]. The total size of the distributed shared memory is the number of blocks per cluster multiplied by the shared memory size per block [CUDA_C_Programming_Guide:L1851-L1971].
+Shared memory partitioned across thread blocks within a cluster (compute capability 9.0+), enabling cross-block read/write/atomic operations via cooperative_groups API.
 
-## Overview and Address Space
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-Thread block clusters provide the ability for threads within a cluster to access the shared memory of all participating thread blocks [CUDA_C_Programming_Guide:L1851-L1971]. This partitioned shared memory is called Distributed Shared Memory, and the corresponding address space is called the Distributed shared memory address space [CUDA_C_Programming_Guide:L1851-L1971]. Threads that belong to a thread block cluster can read, write, or perform atomics in the distributed address space, regardless of whether the address belongs to the local thread block or a remote thread block [CUDA_C_Programming_Guide:L1851-L1971].
+## Source CUDA_C_Programming_Guide:L1851-L1971
 
-While DSM allows access to remote block memory, shared memory size specifications (static or dynamic) remain per thread block [CUDA_C_Programming_Guide:L1851-L1971]. The size of the distributed shared memory is calculated as the number of thread blocks per cluster multiplied by the size of shared memory per thread block [CUDA_C_Programming_Guide:L1851-L1971].
+Citation: [CUDA_C_Programming_Guide:L1851-L1971]
 
-## Synchronization and Lifecycle
+````text
+## 6.2.5. Distributed Shared Memory
 
-Accessing data in distributed shared memory requires all the thread blocks in the cluster to exist [CUDA_C_Programming_Guide:L1851-L1971]. A user can guarantee that all thread blocks have started executing using `cluster.sync()` from the Cluster Group API [CUDA_C_Programming_Guide:L1851-L1971]. 
+Thread block clusters introduced in compute capability 9.0 provide the ability for threads in a thread block cluster to access shared memory of all the participating thread blocks in a cluster. This partitioned shared memory is called Distributed Shared Memory, and the corresponding address space is called Distributed shared memory address space. Threads that belong to a thread block cluster, can read, write or perform atomics in the distributed address space, regardless whether the address belongs to the local thread block or a remote thread block. Whether a kernel uses distributed shared memory or not, the shared memory size specifications, static or dynamic is still per thread block. The size of distributed shared memory is just the number of thread blocks per cluster multiplied by the size of shared memory per thread block.
 
-Users must ensure that distributed shared memory operations complete before any thread block exits to prevent race conditions with remote readers [CUDA_C_Programming_Guide:L1851-L1971]. For example, if a remote thread block is trying to read a given thread block’s shared memory, the user needs to ensure that the shared memory read by the remote thread block is completed before the local thread block exits [CUDA_C_Programming_Guide:L1851-L1971].
+Accessing data in distributed shared memory requires all the thread blocks to exist. A user can guarantee that all thread blocks have started executing using cluster.sync() from Cluster Group API. The user also needs to ensure that all distributed shared memory operations happen before the exit of a thread block, e.g., if a remote thread block is trying to read a given thread block’s shared memory, user needs to ensure that the shared memory read by remote thread block is completed before it can exit.
 
-## Use Cases: Histogram Computation
+CUDA provides a mechanism to access to distributed shared memory, and applications can benefit from leveraging its capabilities. Lets look at a simple histogram computation and how to optimize it on the GPU using thread block cluster. A standard way of computing histograms is do the computation in the shared memory of each thread block and then perform global memory atomics. A limitation of this approach is the shared memory capacity. Once the histogram bins no longer fit in the shared memory, a user needs to directly compute histograms and hence the atomics in the global memory. With distributed shared memory, CUDA provides an intermediate step, where a depending on the histogram bins size, histogram can be computed in shared memory, distributed shared memory or global memory directly.
 
-DSM provides an intermediate optimization step between local shared memory and global memory for operations like histogram computation [CUDA_C_Programming_Guide:L1851-L1971]. A standard way of computing histograms is to perform the computation in the shared memory of each thread block and then perform global memory atomics [CUDA_C_Programming_Guide:L1851-L1971]. A limitation of this approach is shared memory capacity; once the histogram bins no longer fit in the shared memory, the user needs to directly compute histograms and perform atomics in global memory [CUDA_C_Programming_Guide:L1851-L1971]. With distributed shared memory, CUDA provides an intermediate step where, depending on the histogram bins size, the histogram can be computed in shared memory, distributed shared memory, or global memory directly [CUDA_C_Programming_Guide:L1851-L1971].
+The CUDA kernel example below shows how to compute histograms in shared memory or distributed shared memory, depending on the number of histogram bins.
 
-### Example Kernel
+#include <cooperative\_groups.h>
 
-The following example demonstrates computing histograms using DSM. The kernel initializes shared memory, synchronizes the cluster, performs atomic updates to distributed shared memory bins, and then reduces the results to global memory [CUDA_C_Programming_Guide:L1851-L1971].
+(continues on next page)
 
-```cpp
-#include <cooperative_groups.h>
+![](images/e1334a3febc7e0d25358cafece9064c499665ac9c604e6ba7cf66df22bcefb55.jpg)  
+Figure 9: Matrix Multiplication with Shared Memory
 
+```lisp
 // Distributed Shared memory histogram kernel
 __global__ void clusterHist_kernel(int *bins, const int nbins, const int bins_per_block, const int *__restrict__ input,
 size_t array_size)
 {
-    extern __shared__ int smem[];
-    namespace cg = cooperative_groups;
-    int tid = cg::this_grid().thread_rank();
+extern __shared__ int smem[];
+namespace cg = cooperative_groups;
+int tid = cg::this_grid().thread_rank();
 
-    // Cluster initialization, size and calculating local bin offsets.
-    cg::cluster_group cluster = cg::this_cluster();
-    unsigned int clusterBlockRank = cluster.block_rank();
-    int cluster_size = cluster.dim_blocks().x;
+// Cluster initialization, size and calculating local bin offsets.
+cg::cluster_group cluster = cg::this_cluster();
+unsigned int clusterBlockRank = cluster.block_rank();
+int cluster_size = cluster.dim_blocks().x;
 
-    for (int i = threadIdx.x; i < bins_per_block; i += blockDim.x)
-    {
-        smem[i] = 0; //Initialize shared memory histogram to zeros
-    }
+for (int i = threadIdx.x; i < bins_per_block; i += blockDim.x)
+{
+    smem[i] = 0; //Initialize shared memory histogram to zeros
+}
 
-    // cluster synchronization ensures that shared memory is initialized to zero in
-    // all thread blocks in the cluster. It also ensures that all thread blocks
-    // have started executing and they exist concurrently.
-    cluster.sync();
+// cluster synchronization ensures that shared memory is initialized to zero in
+// all thread blocks in the cluster. It also ensures that all thread blocks
+// have started executing and they exist concurrently.
+cluster.sync();
 
-    for (int i = tid; i < array_size; i += blockDim.x * gridDim.x)
-    {
-        int ldata = input[i];
+for (int i = tid; i < array_size; i += blockDim.x * gridDim.x)
+{
+    int ldata = input[i];
 
-        //Find the right histogram bin.
-        int binid = ldata;
-        if (ldata < 0)
-            binid = 0;
-        else if (ldata >= nbins)
-            binid = nbins - 1;
+    //Find the right histogram bin.
+    int binid = ldata;
+    if (ldata < 0)
+        binid = 0;
+    else if (ldata >= nbins)
+        binid = nbins - 1;
 
-        //Find destination block rank and offset for computing
-        //distributed shared memory histogram
-        int dst_block_rank = (int)(binid / bins_per_block);
-        int dst_offset = binid % bins_per_block;
+    //Find destination block rank and offset for computing
+    //distributed shared memory histogram
+    int dst_block_rank = (int)(binid / bins_per_block);
+    int dst_offset = binid % bins_per_block;
 
-        //Pointer to target block shared memory
-        int *dst_smem = cluster.map_shared_rank(smem, dst_block_rank);
+    //Pointer to target block shared memory
+    int *dst_smem = cluster.map_shared_rank(smem, dst_block_rank);
 
-        //Perform atomic update of the histogram bin
-        atomicAdd(dst_smem + dst_offset, 1);
-    }
+    //Perform atomic update of the histogram bin
+    atomicAdd(dst_smem + dst_offset, 1);
+}
 
-    // cluster synchronization is required to ensure all distributed shared
-    // memory operations are completed and no thread block exits while
-    // other thread blocks are still accessing distributed shared memory
-    cluster.sync();
+// cluster synchronization is required to ensure all distributed shared
+// memory operations are completed and no thread block exits while
+// other thread blocks are still accessing distributed shared memory
+cluster.sync();
 
-    // Perform global memory histogram, using the local distributed memory histogram
-    int *lbins = bins + cluster.block_rank() * bins_per_block;
-    for (int i = threadIdx.x; i < bins_per_block; i += blockDim.x)
-    {
-        atomicAdd(&lbins[i], smem[i]);
-    }
+// Perform global memory histogram, using the local distributed memory histogram
+int *lbins = bins + cluster.block_rank() * bins_per_block;
+for (int i = threadIdx.x; i < bins_per_block; i += blockDim.x)
+{
+```
+
+(continues on next page)
+
+```txt
+atomicAdd(&lbins[i], smem[i]);
+}
 }
 ```
 
-## Launch Configuration
+(continued from previous page)
 
-Launching a DSM kernel involves configuring `cudaLaunchConfig_t` with dynamic shared memory size per block and setting the cluster dimension via `cudaLaunchAttributeClusterDimension` [CUDA_C_Programming_Guide:L1851-L1971]. The cluster size depends on the amount of distributed shared memory required [CUDA_C_Programming_Guide:L1851-L1971]. If the histogram is small enough to fit in the shared memory of just one block, the user can launch the kernel with a cluster size of 1 [CUDA_C_Programming_Guide:L1851-L1971].
+The above kernel can be launched at runtime with a cluster size depending on the amount of distributed shared memory required. If histogram is small enough to fit in shared memory of just one block, user can launch kernel with cluster size 1. The code snippet below shows how to launch a cluster kernel dynamically based depending on shared memory requirements.
 
 ```cpp
 // Launch via extensible launch
@@ -98,7 +106,7 @@ Launching a DSM kernel involves configuring `cudaLaunchConfig_t` with dynamic sh
 
     // cluster_size depends on the histogram size.
     // ( cluster_size == 1 ) implies no distributed shared memory, just thread block
-    // local shared memory
+    local shared memory
     int cluster_size = 2; // size 2 is an example here
     int nbins_per_block = nbins / cluster_size;
 
@@ -118,7 +126,8 @@ Launching a DSM kernel involves configuring `cudaLaunchConfig_t` with dynamic sh
     config.numAttrs = 1;
     config.attrs = attribute;
 
-    cudaLaunchKernelEx(&config, clusterHist_kernel, bins, nbins, bins_per_block, input,
+    cudaLaunchKernelEx(&config, clusterHist_kernel, bins, nbins, nbins_per_block, input,
         array_size);
 }
 ```
+````

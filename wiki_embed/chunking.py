@@ -21,12 +21,7 @@ import re
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from wiki_new.llm import structured_ainvoke
-from wiki_new.planning import ConceptFilePlan, validate_safe_internal_boundary
-from wiki_new.utils import is_fence_line, is_tableish_line, numbered_source_lines, slugify
-
 from wiki_embed.models import (
-    BoundaryDecision,
     EMBED_BATCH,
     EMBED_CONCURRENCY,
     MAX_LINES,
@@ -36,8 +31,16 @@ from wiki_embed.models import (
     SEM_PERCENTILE,
     TARGET_LINES,
     USE_LLM_CONFIRM,
+    BoundaryDecision,
 )
-
+from wiki_new.llm import structured_ainvoke
+from wiki_new.planning import ConceptFilePlan, validate_safe_internal_boundary
+from wiki_new.utils import (
+    is_fence_line,
+    is_tableish_line,
+    numbered_source_lines,
+    slugify,
+)
 
 _DATA_IMAGE_URI_RE = re.compile(
     r"data:image/[a-zA-Z0-9.+-]+;base64,[A-Za-z0-9+/=\r\n]+",
@@ -248,7 +251,12 @@ async def _refine_boundary(
 
     try:
         raw = await structured_ainvoke(
-            llm, BoundaryDecision, messages, max_output_tokens=160
+            llm,
+            BoundaryDecision,
+            messages,
+            max_output_tokens=160,
+            phase="wiki_embed.boundary_refine",
+            enable_thinking=False,
         )
         decision = BoundaryDecision.model_validate(raw)
     except Exception as exc:  # noqa: BLE001
@@ -341,11 +349,15 @@ async def segment_source(
     def _pick_dip(lo: int, hi: int) -> int:
         """Best cut line in [lo, hi]: strongest semantic dip, else a block
         boundary near hi, else hi itself (hard cut)."""
-        in_range = [
-            (gap_dist[i], gap_lines[i])
-            for i in range(len(gap_lines))
-            if lo <= gap_lines[i] <= hi
-        ] if semantic else []
+        in_range = (
+            [
+                (gap_dist[i], gap_lines[i])
+                for i in range(len(gap_lines))
+                if lo <= gap_lines[i] <= hi
+            ]
+            if semantic
+            else []
+        )
         if in_range:
             return max(in_range)[1]
         block_bnds = [ln for ln in gap_lines if lo <= ln <= hi]

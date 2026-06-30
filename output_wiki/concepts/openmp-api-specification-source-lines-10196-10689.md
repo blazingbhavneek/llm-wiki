@@ -1,0 +1,506 @@
+# OpenMP-API-Specification Source Lines 10196-10689
+
+Fallback page created to preserve source coverage.
+
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
+
+## Source OpenMP-API-Specification:L10196-L10689
+
+Citation: [OpenMP-API-Specification:L10196-L10689]
+
+````text
+## 7.6.14 declare\_reduction Directive
+
+<table><tr><td>Name:declare_reductionCategory:declarative</td><td>Association:unassociatedProperties:pure</td></tr></table>
+
+## Arguments
+
+declare\_reduction(reduction-specifier)
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>reduction-specifier</td><td>OpenMP reduction specifier</td><td>default</td></tr></table>
+
+## Clauses
+
+combiner, initializer
+
+## Additional information
+
+The declare\_reduction directive may alternatively be specified with declare reduction as the directive-name.
+
+The syntax reduction-identifier : typename-list : combiner-expr, where combiner is an OpenMP combiner expression, may alternatively be used for reduction-specifier. The combiner clause must not be specified if this syntax is used. This syntax has been deprecated.
+
+## Semantics
+
+The declare\_reduction directive declares a reduction identifier that can be used in a reduction clause as a user-defined reduction. The directive argument reduction-specifier uses the following syntax:
+
+reduction-identifier : typename-list
+
+where reduction-identifier is a reduction identifier and typename-list is a type-name list.
+
+The specified reduction identifier and type-name list identify the declare\_reduction directive. The reduction identifier can later be used in a reduction clause that uses variables of the types specified in the type-name list. If the directive specifies several types then the behavior is as if a declare\_reduction directive was specified for each type. The visibility and accessibility of a user-defined reduction are the same as those of a variable declared at the same location in the program.
+
+The declare\_reduction directive can also appear at the locations in a program where a static data member could be declared. In this case, the visibility and accessibility of the declaration are the same as those of a static data member declared at the same location in the program.
+
+The enclosing context of the combiner expression specified by the combiner clause and of the initializer expression specified by the initializer clause is that of the
+
+declare\_reduction directive. The combiner expression and the initializer expression must be correct in the base language, as if they were the body of a procedure defined at the same location in the program.
+
+## Fortran
+
+If a type with a deferred or assumed length type parameter is specified in a
+
+declare\_reduction directive, the reduction identifier of that directive can be used in a reduction clause with any variable of the same type and the same kind parameter, regardless of the length type parameters with which the variable is declared.
+
+If the specified reduction identifier is the same as the name of a user-defined operator or an extended operator, or the same as a generic name that is one of the allowed intrinsic procedures, and if the operator or procedure name appears in an accessibility statement in the same module, the accessibility of the corresponding declare\_reduction directive is determined by the accessibility attribute of the statement.
+
+If the specified reduction identifier is the same as a generic name that is one of the allowed intrinsic procedures and is accessible, and if it has the same name as a derived type in the same module, the accessibility of the corresponding declare\_reduction directive is determined by the accessibility of the generic name according to the base language.
+
+Fortran
+
+## Restrictions
+
+Restrictions to the declare\_reduction directive are as follows:
+
+• A reduction identifier must not be re-declared in the current scope for the same type or for a type that is compatible according to the base language rules.
+
+• The type-name list must not declare new types.
+
+C / C++
+
+• A type name in a declare\_reduction directive must not be a function type, an array type, a reference type, or a type qualified with const, volatile or restrict.
+
+C / C++
+
+Fortran
+
+• If the length type parameter is specified for a type, it must be a constant, a colon (:) or an asterisk (\*).
+
+• If a type with a deferred or assumed length parameter is specified in a declare\_reduction directive, no other declare\_reduction directive with the same type, the same kind parameters and the same reduction identifier is allowed in the same scope.
+
+Fortran
+
+## Cross References
+
+• combiner Clause, see Section 7.6.15
+
+• OpenMP Combiner Expressions, see Section 7.6.2.1
+
+• OpenMP Initializer Expressions, see Section 7.6.2.2
+
+• OpenMP Reduction and Induction Identifiers, see Section 7.6.1
+
+• initializer Clause, see Section 7.6.16
+
+## 7.6.15 combiner Clause
+
+<table><tr><td>Name: combiner</td><td>Properties: unique, required</td></tr></table>
+
+Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>combiner-expr</td><td>expression of combiner type</td><td>default</td></tr></table>
+
+Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+declare\_reduction
+
+## Semantics
+
+This clause specifies combiner-expr as the combiner expression for a user-defined reduction.
+
+## Cross References
+
+• declare\_reduction Directive, see Section 7.6.14
+
+• OpenMP Combiner Expressions, see Section 7.6.2.1
+
+## 7.6.16 initializer Clause
+
+<table><tr><td>Name: initializer</td><td>Properties: unique</td></tr></table>
+
+Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>initializer-expr</td><td>expression of initializer type</td><td>default</td></tr></table>
+
+## Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+declare\_reduction
+
+## Semantics
+
+This clause specifies initializer-expr as the initializer expression for a user-defined reduction.
+
+## Cross References
+
+• declare\_reduction Directive, see Section 7.6.14
+
+• OpenMP Initializer Expressions, see Section 7.6.2.2
+
+## 7.6.17 declare\_induction Directive
+
+<table><tr><td>Name:declare_inductionCategory:declarative</td><td>Association:unassociatedProperties:pure</td></tr></table>
+
+## Arguments
+
+declare\_induction(induction-specifier)
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>induction-specifier</td><td>OpenMP induction specifier</td><td>default</td></tr></table>
+
+## Clauses
+
+collector, inductor
+
+## Semantics
+
+The declare\_induction directive declares an induction identifier that can be used in an induction clause as a user-defined induction. The directive argument induction-specifier uses the following syntax:
+
+```txt
+induction-identifier : type-specifier-list
+```
+
+where type-specifier-list is defined as follows:
+
+```txt
+type-specifier-list := type-specifier | type-specifier , type-specifier-list
+type-specifier := typename-list-item | typename-pair
+typename-pair := ( typename-list-item , typename-list-item )
+```
+
+and where induction-identifier is the specified induction identifier and typename-list-item is a type-name list item
+
+The induction identifier identifies the declare\_induction directive. The induction identifier can be used in an induction clause that lists induction variables of the types specified in the type-specifier-list, with corresponding step expressions of the same type if the type-specifier-list does not specify a typename-pair. If the type-specifier-list specifies a typename-pair then the induction identifier can be used in an induction clause that lists that pair, in which case the induction variable and omp\_var must be of the first type specified in the typename-pair while the corresponding step expression and omp\_step must be of the second type in the typename-pair. The type of omp\_idx is the type used for the iteration count of the collapsed iteration space of the collapsed loops of the construct on which the induction clause appears.
+
+The visibility and accessibility of a user-defined induction are the same as those of a variable declared at the same location in the program.
+
+The declare\_induction directive can also appear at the locations in a program where a static data member could be declared. In this case, the visibility and accessibility of the declaration are the same as those of a static data member declared at the same location in the program.
+
+C++
+
+The enclosing context of the inductor expression specified by the inductor clause and of the collector expression specified by the collector clause is that of the declare\_induction directive. The inductor expression and the collector expression must be correct in the base language, as if they were the body of a procedure defined at the same location in the program.
+
+## Fortran
+
+If the induction identifier is the same as the name of a user-defined operator or an extended operator, or the same as a generic name that is one of the allowed intrinsic procedures, and if the operator or procedure name appears in an accessibility statement in the same module, the accessibility of the corresponding declare\_induction directive is determined by the accessibility attribute of the statement.
+
+If the induction identifier is the same as a generic name that is one of the allowed intrinsic procedures and is accessible, and if it has the same name as a derived type in the same module, the accessibility of the corresponding declare\_induction directive is determined by the accessibility of the generic name according to the base language.
+
+Fortran
+
+## Restrictions
+
+Restrictions to the declare\_induction directive are as follows:
+
+• An induction identifier must not be re-declared in the current scope for the same type or for a type that is compatible according to the base language rules.
+
+• A type-name list item in the type-specifier-list must not declare a new type.
+
+C / C++
+
+• A type name in a declare\_induction directive must not be a function type, an array type, a reference type, or a type qualified with const, volatile or restrict.
+
+C / C++
+
+Fortran
+
+• A type name in a declare\_induction directive must not be an enum type or an enumeration type.
+
+Fortran
+
+## Cross References
+
+• collector Clause, see Section 7.6.19
+
+• OpenMP Collector Expressions, see Section 7.6.2.4
+
+• OpenMP Inductor Expressions, see Section 7.6.2.3
+
+• OpenMP Loop-Iteration Spaces and Vectors, see Section 6.4.3
+
+• OpenMP Reduction and Induction Identifiers, see Section 7.6.1
+
+• inductor Clause, see Section 7.6.18
+
+## 7.6.18 inductor Clause
+
+<table><tr><td>Name: inductor</td><td>Properties: unique, required</td></tr></table>
+
+## Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>inductor-expr</td><td>expression of inductor type</td><td>default</td></tr></table>
+
+Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+declare\_induction
+
+## Semantics
+
+This clause specifies inductor-expr as the inductor expression for a user-defined induction.
+
+## Cross References
+
+• declare\_induction Directive, see Section 7.6.17
+
+• OpenMP Inductor Expressions, see Section 7.6.2.3
+
+## 7.6.19 collector Clause
+
+<table><tr><td>Name: collector</td><td>Properties: unique, required</td></tr></table>
+
+Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>collector-expr</td><td>expression of collector type</td><td>default</td></tr></table>
+
+Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+declare\_induction
+
+## Semantics
+
+This clause specifies collector-expr as the collector expression for a user-defined induction, which ensures that a collector is available for use in the closed form of the induction operation.
+
+## Cross References
+
+• declare\_induction Directive, see Section 7.6.17
+
+• OpenMP Collector Expressions, see Section 7.6.2.4
+
+## 7.7 scan Directive
+
+<table><tr><td>Name: scanCategory: subsidiary</td><td>Association: separatingProperties: pure</td></tr></table>
+
+## Separated directives
+
+do, for, simd
+
+## Clauses
+
+exclusive, inclusive, init\_complete
+
+Clause set
+
+<table><tr><td>Properties: unique, required, exclusive</td><td>Members: exclusive, inclusive, init_complete</td></tr></table>
+
+## Semantics
+
+The scan directive is a subsidiary directive that separates the final-loop-body of an enclosing simd construct or worksharing-loop construct (or a composite construct that combines them) into structured block sequences that represent diferent phases of a scan computation. The use of scan directives results in a structured block sequence that serves as an input phase, a structured block sequence that serves as a scan phase, and, optionally, a structured block sequence that serves as an initialization phase. The optional initialization phase begins the collapsed iteration by initializing private variables that can be used in the input phase, the input phase contains all computations that update the list item in the collapsed iteration, and the scan phase ensures that any statement that reads the list item uses the result of the scan computation for that collapsed iteration. Thus, the scan directive specifies that a scan computation updates each list item on each collapsed iteration of the enclosing canonical loop nest that is associated with the separated construct.
+
+The clause that is specified on the scan directive determines the phases of the scan computation that correspond to the structured block sequences that precede and follow the directive.
+
+The result of a scan computation for a given collapsed iteration is calculated according to the last generalized prefix sum $\left( \mathrm { P R E S U M _ { \mathrm { 1 a s t } } } \right)$ applied over the sequence of values given by the value of the original list item prior to the afected loops and all preceding updates to the new list item in the collapsed iteration space. The operation $\mathtt { P R E S U M _ { \mathrm { 1 a s t } } } ( o p , a _ { 1 } , . . . , a _ { \mathrm { N } } )$ is defined for a given binary operator op and a sequence of N values $a _ { 1 } , . . . , a _ { \mathrm { N } }$ as follows:
+
+• if $N = 1 , a _ { 1 }$
+
+$$
+\begin{array}{l} \bullet \text {if} N > 1, o p (\text {PRESUM} _ {\text {last}} (o p, a _ {1}, \dots , a _ {\mathrm{j}}), \text {PRESUM} _ {\text {last}} (o p, a _ {\mathrm{k}}, \dots , a _ {\mathrm{N}})), \\ 1 \leq j + 1 = k \leq N. \end{array}
+$$
+
+At the beginning of the input phase of each collapsed iteration, the new list item is either initialized with the value of the initializer expression of the reduction-identifier specified by the reduction clause on the separated construct or with the value of the list item in the scan phase of some collapsed iteration. The update value of a new list item is, for a given collapsed iteration, the value the new list item would have on completion of its input phase if it were initialized with the value of the initializer expression.
+
+Let orig-val be the value of the original list item on entry to the separated construct. Let combiner be the combiner expression for the reduction-identifier specified by the reduction clause on the construct. Let $u _ { \mathrm { i } }$ be the update value of a list item for collapsed iteration i. For list items that appear in an inclusive clause on the scan directive, at the beginning of the scan phase for collapsed iteration i the new list item is assigned the result of the operation $\mathtt { P R E S U M _ { l a s t } } ($ ( combiner, orig-val, $u _ { 0 } , \ldots , u _ { \mathrm { i } } )$ . For list items that appear in an exclusive clause on the scan directive, at the beginning of the scan phase for collapsed iteration i = 0 the list item is assigned the value orig-val, and at the beginning of the scan phase for collapsed iteration $i > 0$ the list item is assigned the result of the operation $\mathtt { P R E S U M _ { \mathrm { 1 a s t } } } ( $ ( combiner, orig-val, $u _ { 0 } , \ldots , u _ { \mathrm { i - 1 } } )$
+
+For list items that appear in an inclusive clause, at the end of the separated construct, the original list item is assigned the value of the private copy from the last collapsed iteration of the afected loops of the separated construct. For list items that appear in an exclusive clause, let k be the last collapsed iteration of the afected loops of the separated construct. At the end of the separated construct, the original list item is assigned the result of the operation PRESUM<sub>last</sub>( combiner, orig-val, u , . . . , u ).
+
+## Restrictions
+
+Restrictions to the scan directive are as follows:
+
+• The separated construct must have at most one scan directive with an inclusive or exclusive clause as a separating directive.
+
+• The separated construct must have at most one scan directive with an init\_complete clause as a separating directive.
+
+• If specified, a scan directive with an init\_complete clause must precede a scan directive with an exclusive clause that is a subsidiary directive of the same construct.
+
+• The afected loops of the separated construct must all be perfectly nested loops.
+
+• Each list item that appears in the inclusive or exclusive clause must appear in a reduction clause with the inscan modifier on the separated construct.
+
+• Each list item that appears in a reduction clause with the inscan modifier on the separated construct must appear in a clause on the scan separating directive.
+
+• Cross-iteration dependences across diferent collapsed iterations of the separated construct must not exist, except for dependences for the list items specified in an inclusive or exclusive clause.
+
+• Intra-iteration dependences from a statement in the structured block sequence that immediately precedes a scan directive with an inclusive or exclusive clause to a statement in the structured block sequence that follows that scan directive must not exist, except for dependences for the list items specified in that clause.
+
+• The private copy of a list item that appears in the inclusive or exclusive clause must not be modified in the scan phase.
+
+• Any list item that appears in an exclusive clause must not be modified or used in the initialization phase.
+
+• Statements in the initialization phase must only modify private variables. Any private variables modified in the initialization phase must not be used in the scan phase.
+
+## Cross References
+
+• do Construct, see Section 13.6.2
+
+• exclusive Clause, see Section 7.7.2
+
+• for Construct, see Section 13.6.1
+
+• inclusive Clause, see Section 7.7.1
+
+• init\_complete Clause, see Section 7.7.3
+
+• reduction Clause, see Section 7.6.10
+
+• simd Construct, see Section 12.4
+
+## 7.7.1 inclusive Clause
+
+<table><tr><td>Name: inclusive</td><td>Properties: innermost-leaf, unique</td></tr></table>
+
+Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>list</td><td>list of variable list item type</td><td>default</td></tr></table>
+
+Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+## scan
+
+## Semantics
+
+The inclusive clause is used on a scan directive to specify that an inclusive scan computation is performed for each list item of the argument list. The structured block sequence that precedes the directive serves as the input phase of the inclusive scan computation while the structured block sequence that follows the directive serves as the scan phase of the inclusive scan computation. The list items that appear in an inclusive clause may include array sections and array elements.
+
+## Cross References
+
+• scan Directive, see Section 7.7
+
+## 7.7.2 exclusive Clause
+
+<table><tr><td>Name: exclusive</td><td>Properties: innermost-leaf, unique</td></tr></table>
+
+Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>list</td><td>list of variable list item type</td><td>default</td></tr></table>
+
+Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+## scan
+
+## Semantics
+
+The exclusive clause is used on a scan directive to specify an exclusive scan computation is performed for each list item of the argument list. The structured block sequence that follows the directive serves as the input phase of the exclusive scan computation while the structured block sequence that precedes the directive serves as the scan phase of the exclusive scan computation. The list items that appear in an exclusive clause may include array sections and array elements.
+
+## Cross References
+
+• scan Directive, see Section 7.7
+
+## 7.7.3 init\_complete Clause
+
+<table><tr><td>Name: init_complete</td><td>Properties: innermost-leaf, unique</td></tr></table>
+
+Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>create_init_phase</td><td>expression of OpenMP logical type</td><td>constant, optional</td></tr></table>
+
+Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+## scan
+
+## Semantics
+
+The init\_complete clause is used on a scan directive to demarcate the end of the initialization phase of an exclusive scan computation. The structured block sequence that precedes the directive serves as the initialization phase of the exclusive scan computation while the structured block sequence that follows the directive serves as the scan phase of the exclusive scan computation. If create\_init\_phase is not specified, the efect is as if create\_init\_phase evaluates to true.
+
+## Cross References
+
+• scan Directive, see Section 7.7
+
+## 7.8 Data Copying Clauses
+
+This section describes the copyin clause and the copyprivate clause. These two clauses support copying data values from private variables or threadprivate variables of an implicit task or thread to the corresponding variables of other implicit tasks or threads in the team.
+
+7.8.1 copyin Clause
+
+<table><tr><td>Name: copyin</td><td>Properties: outermost-leaf, data copying</td></tr></table>
+
+## Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>list</td><td>list of variable list item type</td><td>default</td></tr></table>
+
+## Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+parallel
+
+## Semantics
+
+The copyin clause provides a mechanism to copy the value of a threadprivate variable of the primary thread to the threadprivate variable of each other member of the team that is executing the parallel region.
+
+C / C++
+
+The copy is performed after the team is formed and prior to the execution of the associated structured block. For variables of non-array type, the copy is by copy assignment. For an array of elements of non-array type, each element is copied as if by assignment from an element of the array of the primary thread to the corresponding element of the array of all other threads.
+
+C / C++
+
+C++
+
+For class types, the copy assignment operator is invoked. The order in which copy assignment operators for diferent variables of the same class type are invoked is unspecified.
+
+C++
+
+Fortran
+
+The copy is performed, as if by assignment, after the team is formed and prior to the execution of the associated structured block.
+
+Named variables that appear in a threadprivate common block may be specified. The whole common block does not need to be specified.
+
+On entry to any parallel region, the copy of each thread of a variable that is afected by a copyin clause for the parallel region will acquire the type parameters, allocation, association, and definition status of the copy of the primary thread, according to the following rules:
+
+• If the original list item has the POINTER attribute, each copy receives the same association status as that of the copy of the primary thread as if by pointer assignment.
+
+• If the original list item does not have the POINTER attribute, each copy becomes defined with the value of the copy of the primary thread as if by intrinsic assignment unless the list item has a type bound procedure as a defined assignment. If the original list item does not have the POINTER attribute but has the allocation status of unallocated, each copy will have the same status.
+
+• If the original list item is unallocated or unassociated, each copy inherits the declared type parameters and the default type parameter values from the original list item.
+
+Fortran
+
+## Restrictions
+
+Restrictions to the copyin clause are as follows:
+
+• A list item that appears in a copyin clause must be threadprivate.
+
+C++
+
+• A variable of class type (or array thereof) that appears in a copyin clause requires an accessible, unambiguous copy assignment operator for the class type.
+
+C++
+
+Fortran
+
+• A common block name that appears in a copyin clause must be declared to be a common block in the same scoping unit in which the copyin clause appears.
+
+Fortran
+
+## Cross References
+
+• parallel Construct, see Section 12.1
+````

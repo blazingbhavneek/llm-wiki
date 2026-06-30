@@ -1,39 +1,34 @@
 # Stream Priorities
 
-Stream priorities allow applications to influence the order in which tasks are executed by the GPU scheduler. Priorities are specified at stream creation and serve as hints to the scheduler rather than strict guarantees of execution order [CUDA_C_Programming_Guide:L2299-L2319].
+Stream priorities can be set at creation using cudaStreamCreateWithPriority(). The GPU scheduler uses these as hints to prioritize higher-priority tasks, but they do not preempt running tasks or guarantee strict ordering.
 
-## API Reference
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-### Retrieving Priority Range
+## Source CUDA_C_Programming_Guide:L2299-L2320
 
-The range of allowable priorities for a device can be queried using `cudaDeviceGetStreamPriorityRange()`. The function returns the least and greatest priority values, ordered as `[ greatest priority, least priority ]` [CUDA_C_Programming_Guide:L2299-L2319].
+Citation: [CUDA_C_Programming_Guide:L2299-L2320]
+
+````text
+## 6.2.8.5.7 Stream Priorities
+
+The relative priorities of streams can be specified at creation using cudaStreamCreateWithPriority(). The range of allowable priorities, ordered as [ greatest priority, least priority ] can be obtained using the cudaDeviceGetStreamPriorityRange() function. At runtime, the GPU scheduler utilizes stream priorities to determine task execution order, but these priorities serve as hints rather than guarantees. When selecting work to launch, pending tasks in higher-priority streams take precedence over those in lower-priority streams. Higher-priority tasks do not preempt already running lower-priority tasks. The GPU does not reassess work queues during task execution, and increasing a stream’s priority will not interrupt ongoing work. Stream priorities influence task execution without enforcing strict ordering, so users can leverage stream priorities to influence task execution without relying on strict ordering guarantees.
+
+The following code sample obtains the allowable range of priorities for the current device, and creates streams with the highest and lowest available priorities.
 
 ```cpp
+// get the range of stream priorities for this device
 int leastPriority, greatestPriority;
 cudaDeviceGetStreamPriorityRange(&leastPriority, &greatestPriority);
+// create streams with highest and lowest available priorities
+cudaStream_t st_high, st_low;
 ```
 
-### Creating Streams with Priority
+(continues on next page)
 
-Streams are created with a specific priority using `cudaStreamCreateWithPriority()`. This function takes the stream pointer, flags, and the priority value [CUDA_C_Programming_Guide:L2299-L2319].
-
-```cpp
-cudaStream_t st_high, st_low;
-cudaStreamCreateWithPriority(&st_high, cudaStreamNonBlocking, greatestPriority);
+```txt
+(continued from previous page)
+cudaStreamCreateWithPriority(&st_high, cudaStreamNonBlocking, greatestPriority));
 cudaStreamCreateWithPriority(&st_low, cudaStreamNonBlocking, leastPriority);
 ```
-
-## Execution Behavior
-
-The GPU scheduler utilizes stream priorities to determine task execution order among pending tasks [CUDA_C_Programming_Guide:L2299-L2319].
-
-*   **Precedence**: When selecting work to launch, pending tasks in higher-priority streams take precedence over those in lower-priority streams [CUDA_C_Programming_Guide:L2299-L2319].
-*   **No Preemption**: Higher-priority tasks do not preempt already running lower-priority tasks [CUDA_C_Programming_Guide:L2299-L2319].
-*   **Static Scheduling**: The GPU does not reassess work queues during task execution. Consequently, increasing a stream’s priority will not interrupt ongoing work [CUDA_C_Programming_Guide:L2299-L2319].
-
-Stream priorities influence task execution without enforcing strict ordering, allowing users to leverage priorities to bias scheduling decisions while relying on the scheduler's heuristic nature [CUDA_C_Programming_Guide:L2299-L2319].
-
-## See Also
-
-*   `cudaStreamCreateWithPriority`
-*   `cudaDeviceGetStreamPriorityRange`
+````

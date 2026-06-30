@@ -1,26 +1,34 @@
-# Stream Overlap
+# Stream Overlap Behavior
 
-Stream overlap refers to the ability of a GPU device to execute operations from different CUDA streams concurrently. The extent of this overlap is determined by both the hardware capabilities of the device and the specific sequence in which commands are issued to the streams.
+Execution overlap between streams depends on command order and device support for overlapping data transfers and kernel execution. Proper ordering can hide launch latency and enable concurrent execution.
 
-## Factors Influencing Overlap
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-The amount of execution overlap between two streams depends on the order in which the commands are issued to each stream and whether or not the device supports [Overlap of Data Transfer and Kernel Execution](concept/kernel-data-overlap), [Concurrent Kernel Execution](concept/concurrent-kernels), and/or [Concurrent Data Transfers](concept/concurrent-transfers) [CUDA_C_Programming_Guide:L2253-L2274].
+## Source CUDA_C_Programming_Guide:L2253-L2274
 
-### Device Capabilities
+Citation: [CUDA_C_Programming_Guide:L2253-L2274]
 
-1.  **Concurrent Data Transfers**: On devices that support concurrent data transfers, memory operations from different streams can overlap with each other. For example, a memory copy from host to device in one stream can overlap with a memory copy from device to host in another stream [CUDA_C_Programming_Guide:L2253-L2274].
-2.  **Overlap of Data Transfer and Kernel Execution**: If the device supports this feature, memory transfers can overlap with kernel execution. This allows a kernel in one stream to execute while a memory transfer in another stream is ongoing [CUDA_C_Programming_Guide:L2253-L2274].
-3.  **Concurrent Kernel Execution**: Devices that support this feature can execute kernels from different streams simultaneously [CUDA_C_Programming_Guide:L2253-L2274].
+````text
+## 6.2.8.5.5 Overlapping Behavior
 
-### Impact of Command Order
+The amount of execution overlap between two streams depends on the order in which the commands are issued to each stream and whether or not the device supports overlap of data transfer and kernel execution (see Overlap of Data Transfer and Kernel Execution), concurrent kernel execution (see Concurrent Kernel Execution), and/or concurrent data transfers (see Concurrent Data Transfers).
 
-The order in which commands are issued significantly affects overlap, particularly on devices with limited concurrency capabilities.
+For example, on devices that do not support concurrent data transfers, the two streams of the code sample of Creation and Destruction of Streams do not overlap at all because the memory copy from host to device is issued to stream[1] after the memory copy from device to host is issued to stream[0], so it can only start once the memory copy from device to host issued to stream[0] has completed. If the code is rewritten the following way (and assuming the device supports overlap of data transfer and kernel execution)
 
-*   **Devices without Concurrent Data Transfers**: On such devices, streams may not overlap at all if the command order forces serialization. For instance, if a memory copy from device to host is issued to stream[0] and a memory copy from host to device is issued to stream[1] *after* the first copy, the second copy can only start once the first has completed [CUDA_C_Programming_Guide:L2253-L2274].
-*   **Optimized Command Order**: By restructuring code to issue all host-to-device transfers first, followed by kernel launches, and then device-to-host transfers, overlap can be maximized. In this pattern, a host-to-device transfer in stream[1] can overlap with a kernel launch in stream[0] (assuming the device supports overlap of data transfer and kernel execution) [CUDA_C_Programming_Guide:L2253-L2274].
+```txt
+for (int i = 0; i < 2; ++i)
+    cudaMemcpyAsync(inputDevPtr + i * size, hostPtr + i * size,
+                   size, cudaMemcpyHostToDevice, stream[i]);
+for (int i = 0; i < 2; ++i)
+    MyKernel<<<100, 512, 0, stream[i]>>>
+        (outputDevPtr + i * size, inputDevPtr + i * size, size);
+for (int i = 0; i < 2; ++i)
+    cudaMemcpyAsync(hostPtr + i * size, outputDevPtr + i * size,
+                   size, cudaMemcpyDeviceToHost, stream[i]);
+```
 
-## Example Scenario
+then the memory copy from host to device issued to stream[1] overlaps with the kernel launch issued to stream[0].
 
-Consider a code sample involving two streams where memory copies and kernels are launched. If the device supports concurrent data transfers, the memory copy from host to device issued to stream[1] can overlap with both the memory copy from device to host issued to stream[0] and the kernel launch issued to stream[0] (assuming the device also supports overlap of data transfer and kernel execution) [CUDA_C_Programming_Guide:L2253-L2274].
-
-Conversely, if the device does not support concurrent data transfers, these operations may not overlap at all due to the serialization imposed by the command order [CUDA_C_Programming_Guide:L2253-L2274].
+On devices that do support concurrent data transfers, the two streams of the code sample of Creation and Destruction of Streams do overlap: The memory copy from host to device issued to stream[1] overlaps with the memory copy from device to host issued to stream[0] and even with the kernel launch issued to stream[0] (assuming the device supports overlap of data transfer and kernel execution).
+````

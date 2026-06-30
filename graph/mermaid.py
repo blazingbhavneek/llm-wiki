@@ -33,7 +33,7 @@ MERMAID_INSTRUCTION = (
     "フェンス付きコードブロック内に含めてください。\n"
     "- 図が本当に役立つ場合にのみ追加してください。そうでない場合は省略してください。\n"
     "- シンプルな ASCII ノード ID（n1、n2、proc_a など）を使用し、空白、句読点、"
-    "長いテキストは引用符付きラベル内に入れてください: n1[\"Linear layer\"] --> n2[\"GEMM\"]。\n"
+    '長いテキストは引用符付きラベル内に入れてください: n1["Linear layer"] --> n2["GEMM"]。\n'
     "- mermaid ブロックには Mermaid 構文のみを含めてください（説明文や箇条書きは含めないこと）。"
 )
 
@@ -136,9 +136,7 @@ def repair_answer_mermaid(
 
         all_ok = all_ok and ok
         fixed_codes.append(code)
-        new_answer = new_answer.replace(
-            original_block, f"```mermaid\n{code}\n```", 1
-        )
+        new_answer = new_answer.replace(original_block, f"```mermaid\n{code}\n```", 1)
 
     if all_ok:
         emit({"type": "diagram_ready", "answer": new_answer, "mermaid": fixed_codes})

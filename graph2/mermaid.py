@@ -27,7 +27,7 @@ MERMAID_INSTRUCTION = (
     "fenced block as part of your answer.\n"
     "- Only add a diagram when it genuinely helps; skip it otherwise.\n"
     "- Use simple ASCII node IDs (n1, n2, proc_a) and put any spaces/punctuation/"
-    "long text inside quoted labels: n1[\"Linear layer\"] --> n2[\"GEMM\"].\n"
+    'long text inside quoted labels: n1["Linear layer"] --> n2["GEMM"].\n'
     "- The mermaid block must contain ONLY Mermaid syntax (no prose/bullets)."
 )
 
@@ -133,9 +133,7 @@ def repair_answer_mermaid(
 
         all_ok = all_ok and ok
         fixed_codes.append(code)
-        new_answer = new_answer.replace(
-            original_block, f"```mermaid\n{code}\n```", 1
-        )
+        new_answer = new_answer.replace(original_block, f"```mermaid\n{code}\n```", 1)
 
     if all_ok:
         emit({"type": "diagram_ready", "answer": new_answer, "mermaid": fixed_codes})

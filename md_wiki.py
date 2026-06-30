@@ -10,7 +10,5 @@ Run:
 
 from wiki_gen.phases import main
 
-
 if __name__ == "__main__":
     main()
-

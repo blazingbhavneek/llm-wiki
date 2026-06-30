@@ -9,12 +9,12 @@ edges, document subgraphs, and reusable synthetic Markdown nodes.
 """
 
 from .models import (
-    NodeClass,
-    Node,
+    CompiledDocument,
+    CompiledSourcePage,
     Edge,
     Evidence,
-    CompiledSourcePage,
-    CompiledDocument,
+    Node,
+    NodeClass,
 )
 from .store import Store
 

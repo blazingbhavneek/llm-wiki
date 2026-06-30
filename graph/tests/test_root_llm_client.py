@@ -94,7 +94,11 @@ def test_llm_client_checks_models_and_retries(monkeypatch: pytest.MonkeyPatch) -
 
     assert reply == "ok"
     assert FakeChatOpenAI.instances[0].calls == 3
-    assert [message.content for message in client.message_history] == ["system", "hello", "ok"]
+    assert [message.content for message in client.message_history] == [
+        "system",
+        "hello",
+        "ok",
+    ]
 
 
 def test_llm_client_fails_fast_when_models_check_fails(

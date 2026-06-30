@@ -17,8 +17,10 @@ from __future__ import annotations
 
 import logging
 import re
+from typing import TYPE_CHECKING
 
-from graph.models import Settings
+if TYPE_CHECKING:
+    from graph_big.models import Settings
 
 log = logging.getLogger(__name__)
 
@@ -254,7 +256,7 @@ class Embedder:
         chunk_count = max(1, min(chunk_count, len(lines)))
         size = max(1, (len(lines) + chunk_count - 1) // chunk_count)
         return [
-            "\n".join(lines[index:index + size])
+            "\n".join(lines[index : index + size])
             for index in range(0, len(lines), size)
         ]
 

@@ -62,7 +62,9 @@ class MarkdownIngest:
     # endregion PUBLIC API
 
     # region LAYOUT DISPATCH
-    def _load_old_manifest_output(self, out_path: Path) -> tuple[list[Node], list[Edge]]:
+    def _load_old_manifest_output(
+        self, out_path: Path
+    ) -> tuple[list[Node], list[Edge]]:
         manifest_path = out_path / "manifest.json"
 
         self._log("-" * 80)
@@ -83,7 +85,9 @@ class MarkdownIngest:
         files = manifest.get("files", [])
         self._log(f"Manifest file record count: {len(files)}")
 
-        by_filename = {record["filename"]: record for record in files if record.get("filename")}
+        by_filename = {
+            record["filename"]: record for record in files if record.get("filename")
+        }
         nodes: list[Node] = []
         sections: dict[str, list[str]] = {}
 
@@ -128,7 +132,9 @@ class MarkdownIngest:
             self._log("Continuing with empty metadata/coverage fallback")
 
         if not docs_dir.exists():
-            self._log(f"ERROR: no manifest.json and no docs directory found in {out_path}")
+            self._log(
+                f"ERROR: no manifest.json and no docs directory found in {out_path}"
+            )
             raise FileNotFoundError(
                 f"no manifest.json and no docs directory found in {out_path}"
             )
@@ -156,9 +162,7 @@ class MarkdownIngest:
         self._log(f"coverage file_count: {coverage.get('file_count')}")
 
         metadata_by_name = {
-            item.get("name"): item
-            for item in metadata_files
-            if item.get("name")
+            item.get("name"): item for item in metadata_files if item.get("name")
         }
         coverage_by_name = {
             item.get("filename"): item
@@ -232,9 +236,8 @@ class MarkdownIngest:
 
         title = record.get("title") or meta.get("title", "")
         summary = record.get("summary") or meta.get("summary", "")
-        ranges = (
-            self._parse_ranges(record.get("source_ranges"))
-            or self._parse_ranges(meta.get("source_lines"))
+        ranges = self._parse_ranges(record.get("source_ranges")) or self._parse_ranges(
+            meta.get("source_lines")
         )
         section = str(Path(filename).parent)
         cluster = self._humanize(Path(filename).parent.name)
@@ -286,7 +289,9 @@ class MarkdownIngest:
         body = body.strip()
 
         self._log(f"[new:{index}/{total}] Raw text length: {len(text)}")
-        self._log(f"[new:{index}/{total}] Body length after frontmatter split: {len(body)}")
+        self._log(
+            f"[new:{index}/{total}] Body length after frontmatter split: {len(body)}"
+        )
         self._log(f"[new:{index}/{total}] Frontmatter keys: {sorted(meta.keys())}")
 
         if not body:
@@ -294,7 +299,9 @@ class MarkdownIngest:
             return None
 
         canonical_name = self._canonical_doc_name(md_file.name)
-        self._log(f"[new:{index}/{total}] Canonical metadata filename: {canonical_name}")
+        self._log(
+            f"[new:{index}/{total}] Canonical metadata filename: {canonical_name}"
+        )
         self._log(
             f"[new:{index}/{total}] metadata.json match: {'yes' if metadata_rec else 'no'}"
         )

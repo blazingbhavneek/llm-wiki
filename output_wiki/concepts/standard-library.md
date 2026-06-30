@@ -1,7 +1,17 @@
 # Standard Library
 
-Standard libraries are only supported in host code, but not in device code, unless specified otherwise [CUDA_C_Programming_Guide:L16882-L16885].
+Standard libraries supported only in host code unless specified otherwise.
 
-## Scope
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-This restriction applies to the standard library implementations within the CUDA C++ programming environment. Developers must ensure that standard library features are utilized in host-side execution contexts unless specific exceptions are documented [CUDA_C_Programming_Guide:L16882-L16885].
+## Source CUDA_C_Programming_Guide:L16882-L16885
+
+Citation: [CUDA_C_Programming_Guide:L16882-L16885]
+
+````text
+
+## 18.5.8. Standard Library
+
+Standard libraries are only supported in host code, but not in device code, unless specified otherwise.
+````

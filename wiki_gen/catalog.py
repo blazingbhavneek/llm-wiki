@@ -3,10 +3,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from wiki_new.utils import slugify, write_json
-
 from wiki_gen.models import GeneratedPage, PageType, WikiCatalogEntry
-
+from wiki_new.utils import slugify, write_json
 
 PAGE_DIR_BY_TYPE: dict[PageType, str] = {
     "entity": "entities",
@@ -17,7 +15,9 @@ PAGE_DIR_BY_TYPE: dict[PageType, str] = {
 TYPE_BY_PAGE_DIR = {v: k for k, v in PAGE_DIR_BY_TYPE.items()}
 
 
-def slug_to_path(output_root: Path, slug: str, page_type: PageType | None = None) -> Path:
+def slug_to_path(
+    output_root: Path, slug: str, page_type: PageType | None = None
+) -> Path:
     if "/" in slug:
         prefix, stem = slug.split("/", 1)
     else:
@@ -47,7 +47,11 @@ def path_to_slug(output_root: Path, path: Path) -> tuple[str, PageType] | None:
         return None
 
     stem = Path(filename).stem
-    prefix = "entity" if page_type == "entity" else "summary" if page_type == "summary" else "concept"
+    prefix = (
+        "entity"
+        if page_type == "entity"
+        else "summary" if page_type == "summary" else "concept"
+    )
     return f"{prefix}/{stem}", page_type
 
 
@@ -121,7 +125,9 @@ def shortlist_catalog(
     query = _tokens(text)
     scored: list[tuple[int, WikiCatalogEntry]] = []
     for entry in catalog:
-        haystack = " ".join([entry.slug, entry.title, entry.summary, " ".join(entry.aliases)])
+        haystack = " ".join(
+            [entry.slug, entry.title, entry.summary, " ".join(entry.aliases)]
+        )
         score = len(query & _tokens(haystack))
         if score > 0:
             scored.append((score, entry))
@@ -148,7 +154,9 @@ def render_catalog_for_prompt(entries: list[WikiCatalogEntry]) -> str:
     return "\n".join(lines)
 
 
-def write_catalog(output_root: Path, pages: list[GeneratedPage] | None = None) -> list[WikiCatalogEntry]:
+def write_catalog(
+    output_root: Path, pages: list[GeneratedPage] | None = None
+) -> list[WikiCatalogEntry]:
     entries = load_catalog(output_root)
     if pages:
         by_slug = {entry.slug: entry for entry in entries}
@@ -169,4 +177,3 @@ def write_catalog(output_root: Path, pages: list[GeneratedPage] | None = None) -
         {"pages": [entry.model_dump() for entry in entries]},
     )
     return entries
-

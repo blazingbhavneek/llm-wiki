@@ -1,0 +1,606 @@
+# OpenMP-API-Specification Source Lines 18120-18713
+
+Fallback page created to preserve source coverage.
+
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
+
+## Source OpenMP-API-Specification:L18120-L18713
+
+Citation: [OpenMP-API-Specification:L18120-L18713]
+
+````text
+# 17.8 OpenMP Memory Ordering
+
+This sections describes constructs and clauses that support ordering of memory operations.
+
+## 17.8.1 memory-order Clauses
+
+## Clause groups
+
+<table><tr><td>Properties: exclusive, unique</td><td>Members:Clausesacq_rel, acquire, relaxed, release, seq_cst</td></tr></table>
+
+## Directives
+
+atomic, flush
+
+## Semantics
+
+The memory-order clause group defines a set of clauses that indicate the memory ordering requirements for the visibility of the efects of the constructs on which they may be specified.
+
+## Cross References
+
+• atomic Construct, see Section 17.8.5
+
+• flush Construct, see Section 17.8.6
+
+• OpenMP Memory Consistency, see Section 1.3.6
+
+## 17.8.1.1 acq\_rel Clause
+
+<table><tr><td>Name: acq_rel</td><td>Properties: unique</td></tr></table>
+
+Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>use-semantics</td><td>expression of OpenMP logical type</td><td>constant, optional</td></tr></table>
+
+Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+atomic, flush
+
+## Semantics
+
+If use\_semantics evaluates to true, the acq\_rel clause specifies for the construct to use acquire/release memory ordering semantics. If use\_semantics evaluates to false, the efect is as if the acq\_rel clause is not specified. If use\_semantics is not specified, the efect is as if use\_semantics evaluates to true.
+
+## Cross References
+
+• atomic Construct, see Section 17.8.5
+
+• flush Construct, see Section 17.8.6
+
+• OpenMP Memory Consistency, see Section 1.3.6
+
+## 17.8.1.2 acquire Clause
+
+<table><tr><td colspan="2">Name: acquire</td><td colspan="2">Properties: unique</td></tr><tr><td colspan="4">Arguments</td></tr><tr><td>Name</td><td colspan="2">Type</td><td>Properties</td></tr><tr><td>use_semantics</td><td colspan="2">expression of OpenMP logical type</td><td>constant, optional</td></tr><tr><td colspan="4">Modifiers</td></tr><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+atomic, flush
+
+## Semantics
+
+If use\_semantics evaluates to true, the acquire clause specifies for the construct to use acquire memory ordering semantics. If use\_semantics evaluates to false, the efect is as if the acquire clause is not specified. If use\_semantics is not specified, the efect is as if use\_semantics evaluates to true.
+
+## Cross References
+
+• atomic Construct, see Section 17.8.5
+
+• flush Construct, see Section 17.8.6
+
+• OpenMP Memory Consistency, see Section 1.3.6
+
+Arguments  
+Modifiers  
+17.8.1.3 relaxed Clause
+
+<table><tr><td>Name: relaxed</td><td>Properties: unique</td></tr></table>
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>use_semantics</td><td>expression of OpenMP logical type</td><td>constant, optional</td></tr></table>
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+atomic, flush
+
+## Semantics
+
+If use\_semantics evaluates to true, the relaxed clause specifies for the construct to use relaxed memory ordering semantics. If use\_semantics evaluates to false, the efect is as if the relaxed clause is not specified. If use\_semantics is not specified, the efect is as if use\_semantics evaluates to true.
+
+## Cross References
+
+• atomic Construct, see Section 17.8.5
+
+• flush Construct, see Section 17.8.6
+
+• OpenMP Memory Consistency, see Section 1.3.6
+
+## 17.8.1.4 release Clause
+
+<table><tr><td>Name: release</td><td>Properties: unique</td></tr></table>
+
+Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>use_semantics</td><td>expression of OpenMP logical type</td><td>constant, optional</td></tr></table>
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+atomic, flush
+
+## Semantics
+
+If use\_semantics evaluates to true, the release clause specifies for the construct to use release memory ordering semantics. If use\_semantics evaluates to false, the efect is as if the release clause is not specified. If use\_semantics is not specified, the efect is as if use\_semantics evaluates to true.
+
+## Cross References
+
+• atomic Construct, see Section 17.8.5
+
+• flush Construct, see Section 17.8.6
+
+• OpenMP Memory Consistency, see Section 1.3.6
+
+## 17.8.1.5 seq\_cst Clause
+
+<table><tr><td colspan="2">Name: seq_cst</td><td colspan="2">Properties: unique</td></tr><tr><td colspan="4">Arguments</td></tr><tr><td>Name</td><td colspan="2">Type</td><td>Properties</td></tr><tr><td>use_semantics</td><td colspan="2">expression of OpenMP logical type</td><td>constant, optional</td></tr><tr><td colspan="4">Modifiers</td></tr><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+atomic, flush
+
+## Semantics
+
+If use\_semantics evaluates to true, the seq\_cst clause specifies for the construct to use sequentially consistent memory ordering semantics. If use\_semantics evaluates to false, the efect is as if the seq\_cst clause is not specified. If use\_semantics is not specified, the efect is as if use\_semantics evaluates to true.
+
+## Cross References
+
+• atomic Construct, see Section 17.8.5
+
+• flush Construct, see Section 17.8.6
+
+• OpenMP Memory Consistency, see Section 1.3.6
+
+## 17.8.2 atomic Clauses
+
+## Clause groups
+
+<table><tr><td>Properties: exclusive, unique</td><td>Members:Clausesread, update, write</td></tr></table>
+
+## Directives
+
+atomic
+
+## Semantics
+
+The atomic clause group defines a set of clauses that defines the semantics for which a directive enforces atomicity. If a construct accepts the atomic clause group and no member of the clause group is specified, the efect is as if the update clause is specified.
+
+## Cross References
+
+• atomic Construct, see Section 17.8.5
+
+## 17.8.2.1 read Clause
+
+<table><tr><td>Name: read</td><td>Properties: innermost-leaf, unique</td></tr></table>
+
+Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>use_semantics</td><td>expression of OpenMP logical type</td><td>constant, optional</td></tr></table>
+
+Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+atomic
+
+## Semantics
+
+If use\_semantics evaluates to true, the read clause specifies that the atomic construct has atomic read semantics, which read the value of the shared variable atomically. If use\_semantics evaluates to false, the efect is as if the read clause is not specified. If use\_semantics is not specified, the efect is as if use\_semantics evaluates to true.
+
+## Cross References
+
+• atomic Construct, see Section 17.8.5
+
+17.8.2.2 update Clause
+
+<table><tr><td>Name: update</td><td>Properties: innermost-leaf, unique</td></tr></table>
+
+Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>use_semantics</td><td>expression of OpenMP logical type</td><td>constant, optional</td></tr></table>
+
+Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+atomic
+
+## Semantics
+
+If use\_semantics evaluates to true, the update clause specifies that the atomic construct has atomic update semantics, which read and write the value of the shared variable atomically. If use\_semantics evaluates to false, the efect is as if the update clause is not specified. If use\_semantics is not specified, the efect is as if use\_semantics evaluates to true.
+
+## Cross References
+
+• atomic Construct, see Section 17.8.5
+
+## 17.8.2.3 write Clause
+
+<table><tr><td>Name: write</td><td>Properties: innermost-leaf, unique</td></tr></table>
+
+Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>use_semantics</td><td>expression of OpenMP logical type</td><td>constant, optional</td></tr></table>
+
+Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+atomic
+
+## Semantics
+
+If use\_semantics evaluates to true, the write clause specifies that the atomic construct has atomic write semantics, which write the value of the shared variable atomically. If use\_semantics evaluates to false, the efect is as if the write clause is not specified. If use\_semantics is not specified, the efect is as if use\_semantics evaluates to true.
+
+Cross References
+
+• atomic Construct, see Section 17.8.5
+
+## 17.8.3 extended-atomic Clauses
+
+## Clause groups
+
+<table><tr><td>Properties: unique</td><td>Members:Clausescapture, compare, fail, weak</td></tr></table>
+
+## Directives
+
+atomic
+
+## Semantics
+
+The extended-atomic clause group defines a set of clauses that extend the atomicity semantics specified by members of the atomic clause group.
+
+## Restrictions
+
+Restrictions to the extended-atomic clause group are as follows:
+
+• The compare clause may not be specified such that use\_semantics evaluates to false if the weak clause is specified such that use\_semantics evaluates to true.
+
+## Cross References
+
+• atomic Construct, see Section 17.8.5
+
+• atomic Clauses, see Section 17.8.2
+
+## 17.8.3.1 capture Clause
+
+<table><tr><td>Name: capture</td><td>Properties: innermost-leaf, unique</td></tr></table>
+
+## Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>use_semantics</td><td>expression of OpenMP logical type</td><td>constant, optional</td></tr></table>
+
+Arguments  
+Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+atomic
+
+## Semantics
+
+If use\_semantics evaluates to true, the capture clause extends the semantics of the atomic construct to have atomic captured update semantics, which capture the value of the shared variable being updated atomically. If use\_semantics evaluates to false, the value is not captured. If use\_semantics is not specified, the efect is as if use\_semantics evaluates to true.
+
+## Cross References
+
+• atomic Construct, see Section 17.8.5
+
+## 17.8.3.2 compare Clause
+
+<table><tr><td>Name: compare</td><td>Properties: innermost-leaf, unique</td></tr></table>
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>use_semantics</td><td>expression of OpenMP logical type</td><td>constant, optional</td></tr></table>
+
+Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+atomic
+
+## Semantics
+
+If use\_semantics evaluates to true, the compare clause extends the semantics of the atomic construct with atomic conditional update semantics so the atomic update is performed conditionally. If use\_semantics evaluates to false, the atomic update is performed unconditionally. If use\_semantics is not specified, the efect is as if use\_semantics evaluates to true.
+
+## Cross References
+
+• atomic Construct, see Section 17.8.5
+
+Arguments  
+17.8.3.3 fail Clause
+
+<table><tr><td>Name: fail</td><td>Properties: innermost-leaf, unique</td></tr></table>
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>memorder</td><td>Keyword: acquire, relaxed, seq_cst</td><td>default</td></tr></table>
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+atomic
+
+## Semantics
+
+The fail clause extends the semantics of the atomic construct to specify the memory ordering requirements for any comparison performed by any atomic conditional update that fails. Its argument overrides any other specified memory ordering. If an atomic construct has atomic conditional update semantics and the fail clause is not specified, the efect is as if the fail clause is specified with a default argument that depends on the efective memory ordering. If the efective memory ordering is acq\_rel, the default argument is acquire. If the efective memory ordering is release, the default argument is relaxed. For any other efective memory ordering, the default argument is equal to that efective memory ordering. If the atomic construct does not have atomic conditional update semantics, the fail clause has no efect.
+
+## Restrictions
+
+Restrictions to the fail clause are as follows:
+
+• memorder may not be acq\_rel or release.
+
+## Cross References
+
+• atomic Construct, see Section 17.8.5
+
+• memory-order Clauses, see Section 17.8.1
+
+## 17.8.3.4 weak Clause
+
+<table><tr><td>Name: weak</td><td>Properties: innermost-leaf, unique</td></tr></table>
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>use_semantics</td><td>expression of OpenMP logical type</td><td>constant, optional</td></tr></table>
+
+Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+atomic
+
+## Semantics
+
+If use\_semantics evaluates to true, the weak clause has the same efect as the compare clause and, in addition, the atomic construct has weak comparison semantics, which mean that the comparison may spuriously fail, evaluating to not equal even when the values are equal. If use\_semantics evaluates to false, the semantics of the atomic construct are not extended. If use\_semantics is not specified, the efect is as if use\_semantics evaluates to true.
+
+Note – Allowing for spurious failure by specifying a weak clause can result in performance gains on some systems when using compare-and-swap in a loop. For cases where a single compare-and-swap would otherwise be suficient, using a loop over a weak compare-and-swap is unlikely to improve performance.
+
+## Cross References
+
+• atomic Construct, see Section 17.8.5
+
+## 17.8.4 memscope Clause
+
+<table><tr><td>Name: memscope</td><td>Properties: unique</td></tr></table>
+
+Arguments
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>scope-specifier</td><td>Keyword: all, cgroup, device</td><td>default</td></tr></table>
+
+Modifiers
+
+<table><tr><td>Name</td><td>Modifies</td><td>Type</td><td>Properties</td></tr><tr><td>directive-name-modifier</td><td>all arguments</td><td>Keyword: directive-name (a directive name)</td><td>unique</td></tr></table>
+
+## Directives
+
+atomic, flush
+
+## Semantics
+
+The memscope clause determines the binding thread set of the region that corresponds to the construct on which it is specified.
+
+If the scope-specifier is device, the binding thread set consists of all threads on the device. If the scope-specifier is cgroup, the binding thread set consists of all threads that are executing tasks in the contention group. If the scope-specifier is all, the binding thread set consists of all threads on all devices.
+
+Unless otherwise stated, the thread-set of any flushes that are performed in an atomic or flush region is the same as the binding thread set of the region, as determined by the memscope clause.
+
+## Restrictions
+
+The restrictions for the memscope clause are as follows:
+
+• The binding thread set defined by the scope-specifier of the memscope clause on an atomic construct must be a subset of the atomic scope of the atomically accessed memory.
+
+• The binding thread set defined by the scope-specifier of the memscope clause on an atomic construct must be a subset of all threads that are executing tasks in the contention group if the size of the atomically accessed storage location is not 8, 16, 32, or 64 bits.
+
+## Cross References
+
+• atomic Construct, see Section 17.8.5
+
+• flush Construct, see Section 17.8.6
+
+## 17.8.5 atomic Construct
+
+<table><tr><td>Name: atomicCategory: executable</td><td>Association: block : atomicProperties: mutual-exclusion, order-concurrent-nestable, simdizable</td></tr></table>
+
+## Clause groups
+
+atomic, extended-atomic, memory-order
+
+## Clauses
+
+hint, memscope
+
+## Binding
+
+The memscope clause determines the binding thread set for an atomic region. If the memscope clause is not present, the behavior is as if the memscope clause appeared on the construct with the device scope-specifier.
+
+## Semantics
+
+This section refers to the symbols defined for atomic structured blocks. The atomic construct ensures that a specific storage location is accessed atomically so that possible simultaneous reads and writes by multiple threads do not result in indeterminate values. An atomic region enforces exclusive access with respect to other atomic regions that access the same storage location x among all threads in the binding thread set without regard to the teams to which the threads belong.
+
+An atomic construct with the read clause results in an atomic read of the storage location designated by x. An atomic construct with the write clause results in an atomic write of the storage location designated by x. An atomic construct with the update clause results in an atomic update of the storage location designated by x using the designated operator or intrinsic. Only the read and write of the storage location designated by x are performed mutually atomically. The evaluation of expr or expr-list need not be atomic with respect to the read or write of the storage location designated by x. No task scheduling points are allowed between the read and the write of the storage location designated by x.
+
+If the capture clause is present, the atomic update is an atomic captured update — an atomic update to the storage location designated by x using the designated operator or intrinsic while also capturing the original or final value of the storage location designated by x with respect to the atomic update. The original or final value of the storage location designated by x is written in the storage location designated by v based on the base language semantics of atomic structured blocks of the atomic construct. Only the read and write of the storage location designated by x are performed mutually atomically. Neither the evaluation of expr or expr-list, nor the write to the storage location designated by v, need be atomic with respect to the read or write of the storage location designated by x.
+
+If the compare clause is present, the atomic update is an atomic conditional update. For forms that use an equality comparison, the operation is an atomic compare-and-swap. It atomically compares the value of x to e and writes the value of d into the storage location designated by x if they are equal. Based on the base language semantics of the associated atomic structured block, the original or final value of the storage location designated by x is written to the storage location designated by v, which is allowed to be the same storage location as designated by e, or the result of the comparison is written to the storage location designated by r. Only the read and write of the storage location designated by x are performed mutually atomically. Neither the evaluation of either e or d nor writes to the storage locations designated by v and r need be atomic with respect to the read or write of the storage location designated by x.
+
+## C / C++
+
+If the compare clause is present, forms that use ordop are logically an atomic maximum or minimum, but they may be implemented with a compare-and-swap loop with short-circuiting. For forms where statement is cond-expr-stmt, if the result of the condition implies that the value of x does not change then the update may not occur.
+
+If a memory-order clause is present, or implicitly provided by a requires directive, it specifies the efective memory ordering. Otherwise the efect is as if the relaxed memory-order clause is specified.
+
+The atomic construct may be used to enforce memory consistency between threads, based on the guarantees provided by Section 1.3.6. A strong flush on the storage location designated by x is performed on entry to and exit from the atomic operation, ensuring that the set of all atomic operations applied to the same storage location in a race-free program has a total completion order. If the write or update clause is specified, the atomic operation is not an atomic conditional update for which the comparison fails, and the efective memory ordering is release, acq\_rel, or seq\_cst, the strong flush on entry to the atomic operation is also a release flush. If the read or update clause is specified and the efective memory ordering is acquire, acq\_rel, or seq\_cst then the strong flush on exit from the atomic operation is also an acquire flush. Therefore, if the efective memory ordering is not relaxed, release flushes and/or acquire flushes are implied and permit synchronization between the threads without the use of explicit flush directives.
+
+For all forms of the atomic construct, any combination of two or more of these atomic constructs enforces mutually exclusive access to the storage locations designated by x among threads in the binding thread set. To avoid data races, all accesses of the storage locations designated by x that could potentially occur in parallel must be protected with an atomic construct.
+
+atomic regions do not guarantee exclusive access with respect to any accesses outside of atomic regions to the same storage location x even if those accesses occur during a critical or ordered region, while a lock is owned by the executing task, or during the execution of a reduction clause.
+
+However, other OpenMP synchronization can ensure the desired exclusive access. For example, a barrier that follows a series of atomic updates to x guarantees that subsequent accesses do not form a data race with the atomic accesses.
+
+A compliant implementation may enforce exclusive access between atomic regions that update diferent storage locations. The circumstances under which this occurs are implementation defined
+
+If the storage location designated by x is not size-aligned (that is, if the byte alignment of x is not a multiple of the size of x), then the behavior of the atomic region is implementation defined.
+
+## Execution Model Events
+
+The atomic-acquiring event occurs in the thread that encounters the atomic construct on entry to the atomic region before initiating synchronization for the region. The atomic-acquired event occurs in the thread that encounters the atomic construct after it enters the region, but before it executes the atomic structured block of the atomic region. The atomic-released event occurs in the thread that encounters the atomic construct after it completes any synchronization on exit from the atomic region.
+
+![](images/1b5e2669d0cfe185b15bbed2e3dfcd56b3820eeac0aab83ea1dd8c8d02c85b59.jpg)
+
+## Tool Callbacks
+
+A thread dispatches a registered mutex\_acquire callback for each occurrence of an atomic-acquiring event in that thread. A thread dispatches a registered mutex\_acquired callback for each occurrence of an atomic-acquired event in that thread. A thread dispatches a registered mutex\_released callback with ompt\_mutex\_atomic as the kind argument if practical, although a less specific kind may be used, for each occurrence of an atomic-released event in that thread. These callbacks occurs in the task that encounters the atomic construct.
+
+## Restrictions
+
+Restrictions to the atomic construct are as follows:
+
+• Constructs may not be encountered during execution of an atomic region.
+
+• If a capture or compare clause is specified, the atomic clause must be update.
+
+• If a capture clause is specified but the compare clause is not specified, an update-capture structured block must be associated with the construct.
+
+• If both capture and compare clauses are specified, a conditional-update-capture structured block must be associated with the construct.
+
+• If a compare clause is specified but the capture clause is not specified, a conditional-update structured block must be associated with the construct.
+
+• If a write clause is specified, a write structured block must be associated with the construct.
+
+• If a read clause is specified, a read structured block must be associated with the construct.
+
+• If the atomic clause is read then the memory-order clause must not be release.
+
+• If the atomic clause is write then the memory-order clause must not be acquire.
+
+• The weak clause may only appear if the resulting atomic operation is an atomic conditional update for which the comparison tests for equality.
+
+• All atomic accesses to the storage locations designated by x throughout the OpenMP program are required to have a compatible type.
+
+• The fail clause may only appear if the resulting atomic operation is an atomic conditional update.
+
+C / C++
+
+Fortran
+
+• All atomic accesses to the storage locations designated by x throughout the OpenMP program are required to have the same type and type parameters.
+
+• The fail clause may only appear if the resulting atomic operation is an atomic conditional update or an atomic update where intrinsic-procedure-name is either MAX or MIN.
+
+Fortran
+
+## Cross References
+
+• barrier Construct, see Section 17.3.1
+
+• critical Construct, see Section 17.2
+
+• flush Construct, see Section 17.8.6
+
+• Lock Routines, see Chapter 28
+
+• OpenMP Atomic Structured Blocks, see Section 6.3.3
+
+• hint Clause, see Section 17.1
+
+• memscope Clause, see Section 17.8.4
+
+• OMPT mutex Type, see Section 33.20
+
+• mutex\_acquire Callback, see Section 34.7.8
+
+• mutex\_acquired Callback, see Section 34.7.12
+
+• mutex\_released Callback, see Section 34.7.13
+
+• ordered Construct, see Section 17.10
+
+• requires Directive, see Section 10.5
+
+## 17.8.6 flush Construct
+
+<table><tr><td>Name: flushCategory:executable</td><td>Association: unassociatedProperties:default</td></tr></table>
+
+## Arguments
+
+flush(list)
+
+<table><tr><td>Name</td><td>Type</td><td>Properties</td></tr><tr><td>list</td><td>list of variable list item type</td><td>optional</td></tr></table>
+
+## Clause groups
+
+memory-order
+
+## Clauses
+
+memscope
+
+## Binding
+
+The memscope clause determines the binding thread set for a flush region. If the memscope clause is not present the behavior is as if the memscope clause appeared on the construct with the device scope-specifier.
+
+## Semantics
+
+The flush construct executes the flush OpenMP operation. This operation makes the temporary view of the memory of a thread consistent with the memory and enforces an order on the memory operations of the variables explicitly specified or implied. Execution of a flush region afects the memory and it afects the temporary view of the memory of the encountering thread. It does not afect the temporary view of other threads. Other threads in the thread-set must themselves execute a flush in order to be guaranteed to observe the efects of the flush of the encountering thread. See the memory model description in Section 1.3 and the memscope clause description in Section 17.8.4 for more details on thread-sets.
+
+If neither a memory-order clause nor a list argument appears on a flush construct then the behavior is as if the memory-order clause is seq\_cst.
+
+A flush construct with the seq\_cst clause, executed on a given thread, operates as if all storage locations that are accessible to the thread are flushed by a strong flush; that is, the flush has the strong flush property. A flush construct with a list applies a strong flush to the items in the list, and the flush does not complete until the operation is complete for all specified list items. An implementation may implement a flush construct with a list by ignoring the list and treating it the same as a flush construct with the seq\_cst clause.
+
+If no list items are specified, the flush operation has the release flush property and/or the acquire flush property:
+
+• If the memory-order clause is seq\_cst or acq\_rel, the flush is both a release flush and an acquire flush.
+
+• If the memory-order clause is release, the flush is a release flush.
+
+• If the memory-order clause is acquire, the flush is an acquire flush.
+
+![](images/8e7c8ead2ba840f39954b0c33c794959c9096b55f1ca88047b142d575977de66.jpg)
+
+If a pointer is present in the list, the pointer itself is flushed, not the storage locations to which the pointer refers.
+
+A flush construct without a list corresponds to a call to atomic\_thread\_fence, where the argument is given by the identifier that results from prefixing memory\_order\_ to the memory-order clause name.
+
+For a flush construct without a list, the generated flush region implicitly performs the corresponding call to atomic\_thread\_fence. The behavior of an explicit call to atomic\_thread\_fence that occurs in an OpenMP program and does not have the argument memory\_order\_consume is as if the call is replaced by its corresponding flush construct.
+
+## Fortran
+
+If the list item or a subobject of the list item has the POINTER attribute, the allocation or association status of the POINTER item is flushed, but the pointer target is not. If the list item is of type C\_PTR, the variable is flushed, but the storage location that corresponds to that address is not flushed. If the list item or the subobject of the list item has the ALLOCATABLE attribute and has an allocation status of allocated, the allocated variable is flushed; otherwise the allocation status is flushed.
+
+## Fortran
+
+## Execution Model Events
+
+The flush event occurs in a thread that encounters the flush construct.
+
+## Tool Callbacks
+
+A thread dispatches a registered flush callback for each occurrence of a flush event in that thread.
+
+## Restrictions
+
+Restrictions to the flush construct are as follows:
+
+• If a memory-order clause is specified, the list argument must not be specified.
+
+• The memory-order clause must not be relaxed.
+
+## Cross References
+
+• flush Callback, see Section 34.7.15
+
+• memscope Clause, see Section 17.8.4
+````

@@ -45,6 +45,7 @@ Package `wiki/` — lossless Markdown wiki generator. Module layout
 
 Entrypoint: ../md.py is a thin shim that calls wiki.phases.main.
 """
+
 from __future__ import annotations
 
 import json
@@ -53,10 +54,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
-
 # ---------------------------------------------------------------------
 # General helpers
 # ---------------------------------------------------------------------
+
 
 def range_to_markdown(
     source_lines: list[str],
@@ -107,9 +108,12 @@ def full_chunk_range(source_start: int, source_end: int) -> list[int]:
     return [source_start, source_end]
 
 
-def split_chunk_ranges(source_start: int, source_end: int) -> tuple[list[int], list[int]]:
+def split_chunk_ranges(
+    source_start: int, source_end: int
+) -> tuple[list[int], list[int]]:
     midpoint = source_start + ((source_end - source_start) // 2)
     return [source_start, midpoint], [midpoint + 1, source_end]
+
 
 def utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -182,7 +186,9 @@ def get_next_file_index(out_dir: Path) -> int:
     return max_index + 1
 
 
-def make_unique_filename(out_dir: Path, index: int, filename_hint: str, title: str) -> str:
+def make_unique_filename(
+    out_dir: Path, index: int, filename_hint: str, title: str
+) -> str:
     filename = make_numbered_filename(index, filename_hint, title)
     path = out_dir / filename
 
@@ -220,7 +226,7 @@ def numbered_source_lines(lines: list[str], start_line_number: int) -> str:
         if "data:image/" in line:
             line = re.sub(r'src=["\']data:image/[^"\']+["\']', 'src=""', line)
         cleaned_lines.append(line)
-        
+
     return "\n".join(
         f"{start_line_number + i}: {line}" for i, line in enumerate(cleaned_lines)
     )
@@ -256,6 +262,7 @@ def extract_json_from_text(text: str) -> Any:
         return json.loads(text[first : last + 1])
 
     raise ValueError("Could not extract valid JSON from LLM response.")
+
 
 # ---------------------------------------------------------------------
 # Markdown chunking
@@ -320,12 +327,8 @@ def chunk_source_lines_preserving_tables(
         extra = 0
 
         while end < n and extra < max_extra:
-            cut_inside_table = (
-                end > start
-                and (
-                    is_tableish_line(lines[end - 1])
-                    or is_tableish_line(lines[end])
-                )
+            cut_inside_table = end > start and (
+                is_tableish_line(lines[end - 1]) or is_tableish_line(lines[end])
             )
 
             # Check if we are inside a fence or an image unit at the proposed cut point.
@@ -345,7 +348,10 @@ def chunk_source_lines_preserving_tables(
 
 
 def fixed_windows(lines: list[str], window_size: int = 25) -> list[tuple[int, int]]:
-    return [(i, min(i + window_size, len(lines))) for i in range(0, len(lines), window_size)]
+    return [
+        (i, min(i + window_size, len(lines))) for i in range(0, len(lines), window_size)
+    ]
+
 
 # ---------------------------------------------------------------------
 # Manifest helpers
@@ -365,7 +371,9 @@ def init_manifest(source_path: Path) -> dict[str, Any]:
     }
 
 
-def find_file_record(manifest: dict[str, Any], filename: str) -> Optional[dict[str, Any]]:
+def find_file_record(
+    manifest: dict[str, Any], filename: str
+) -> Optional[dict[str, Any]]:
     for record in manifest["files"]:
         if record["filename"] == filename:
             return record
@@ -408,8 +416,10 @@ def add_or_update_file_record(
                     last[1] = max(last[1], end)
                 else:
                     merged.append([start, end])
-                    print(f"[WARNING] Discontinuous source ranges in {filename}: {record['source_ranges']}")
-        
+                    print(
+                        f"[WARNING] Discontinuous source ranges in {filename}: {record['source_ranges']}"
+                    )
+
         record["_merged_source_ranges"] = merged
 
 

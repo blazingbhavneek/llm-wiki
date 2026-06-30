@@ -4,9 +4,6 @@ import asyncio
 import json
 from typing import Iterable
 
-from wiki_new.llm import structured_ainvoke
-from wiki_new.utils import slugify
-
 from wiki_gen.catalog import shortlist_catalog
 from wiki_gen.models import (
     ASSIGN_REPAIR_ATTEMPTS,
@@ -18,6 +15,8 @@ from wiki_gen.models import (
     WikiCatalogEntry,
 )
 from wiki_gen.prompts import build_assignment_prompt, build_assignment_repair_prompt
+from wiki_new.llm import structured_ainvoke
+from wiki_new.utils import slugify
 
 
 def _slug_for_assignment(chunk: SourceChunk, item: AssignmentSpan) -> str:
@@ -25,12 +24,22 @@ def _slug_for_assignment(chunk: SourceChunk, item: AssignmentSpan) -> str:
         return item.target_slug.strip()
 
     page_type = item.page_type or "concept"
-    title = item.title or chunk.title or f"{chunk.doc_id} lines {item.line_start}-{item.line_end}"
-    prefix = "entity" if page_type == "entity" else "summary" if page_type == "summary" else "concept"
+    title = (
+        item.title
+        or chunk.title
+        or f"{chunk.doc_id} lines {item.line_start}-{item.line_end}"
+    )
+    prefix = (
+        "entity"
+        if page_type == "entity"
+        else "summary" if page_type == "summary" else "concept"
+    )
     return f"{prefix}/{slugify(title)}"
 
 
-def _fallback_assignment(chunk: SourceChunk, start: int, end: int, reason: str) -> WikiAssignment:
+def _fallback_assignment(
+    chunk: SourceChunk, start: int, end: int, reason: str
+) -> WikiAssignment:
     title = f"{chunk.doc_id} Source Lines {start}-{end}"
     return WikiAssignment(
         doc_id=chunk.doc_id,
@@ -117,7 +126,9 @@ def normalize_assignments(
             )
         )
 
-    normalized.sort(key=lambda item: (item.line_start, item.line_end, item.target_slug or ""))
+    normalized.sort(
+        key=lambda item: (item.line_start, item.line_end, item.target_slug or "")
+    )
     return normalized
 
 
@@ -137,6 +148,8 @@ async def assign_chunk(
                 catalog=shortlist,
             ),
             max_output_tokens=3000,
+            phase=f"wiki_gen.assign.{chunk.doc_id}",
+            enable_thinking=True,
         )
         result = ChunkAssignmentResult.model_validate(raw)
     except Exception as exc:  # noqa: BLE001 - fallback preserves coverage
@@ -170,6 +183,8 @@ async def assign_chunk(
                     catalog=shortlist,
                 ),
                 max_output_tokens=3000,
+                phase=f"wiki_gen.assign_repair.{chunk.doc_id}",
+                enable_thinking=True,
             )
             repaired = ChunkAssignmentResult.model_validate(raw)
             assignments = normalize_assignments(chunk=chunk, result=repaired)
@@ -191,7 +206,9 @@ async def assign_chunk(
             )
         ]
 
-    assignments.sort(key=lambda item: (item.line_start, item.line_end, item.target_slug or ""))
+    assignments.sort(
+        key=lambda item: (item.line_start, item.line_end, item.target_slug or "")
+    )
     return assignments
 
 
@@ -206,7 +223,9 @@ async def assign_chunks_bounded(
 
     async def run(chunk: SourceChunk) -> list[WikiAssignment]:
         async with semaphore:
-            print(f"[Assign] {chunk.chunk_id} lines {chunk.line_start}-{chunk.line_end}")
+            print(
+                f"[Assign] {chunk.chunk_id} lines {chunk.line_start}-{chunk.line_end}"
+            )
             return await assign_chunk(llm=llm, chunk=chunk, catalog=catalog)
 
     nested = await asyncio.gather(*(run(chunk) for chunk in chunks))

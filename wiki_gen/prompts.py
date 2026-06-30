@@ -2,10 +2,9 @@ from __future__ import annotations
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from wiki_new.utils import numbered_source_lines
-
 from wiki_gen.catalog import render_catalog_for_prompt
 from wiki_gen.models import PagePlan, SourceChunk, WikiCatalogEntry
+from wiki_new.utils import numbered_source_lines
 
 
 def build_assignment_prompt(
@@ -123,9 +122,10 @@ def build_page_research_prompt(
     return [
         SystemMessage(
             content=(
-                "You are a wiki research subagent. You read ONE full original "
-                "document for ONE target wiki page, then report compact findings "
-                "to a lead page writer. You do not write the final page."
+                "You are a wiki research subagent. You read source-context "
+                "windows from ONE original document for ONE target wiki page, "
+                "then report compact findings to a lead page writer. You do not "
+                "write the final page."
             )
         ),
         HumanMessage(
@@ -134,17 +134,17 @@ def build_page_research_prompt(
                 f"Target page type: {plan.page_type}\n"
                 f"Target title: {plan.title}\n"
                 f"Assigned document: {doc_id}\n\n"
-                "Full original document context, with global line numbers:\n"
+                "Original-document context windows, with global line numbers:\n"
                 f"{document_context}\n\n"
                 "Assigned source evidence for this target page from this document:\n"
                 f"{assigned_source_blocks}\n\n"
                 "Research rules:\n"
-                "- Read the full original document context before reporting.\n"
-                "- Explain how the assigned evidence fits into the document's broader structure.\n"
+                "- Read the context windows before reporting.\n"
+                "- Explain how the assigned evidence fits into the surrounding source context.\n"
                 "- Return compact findings only; the lead page writer will write the page.\n"
                 "- Every fact you report must be supported by an assigned source evidence range.\n"
                 "- Use citations exactly like doc_id:Lstart-Lend. Do not cite chunk-local lines.\n"
-                "- Use full document context for framing, terminology, caveats, and clash detection, "
+                "- Use context windows for framing, terminology, caveats, and clash detection, "
                 "but do not introduce facts that are only present outside assigned evidence.\n"
                 "- Flag contradictions or scope clashes with existing target meaning if the document suggests them.\n"
             )
@@ -194,11 +194,11 @@ def build_page_generation_prompt(
         SystemMessage(
             content=(
                 "You are a wiki editor. Generate or update one global wiki page "
-                "from research reports produced by subagents that each read a full "
-                "original source document. Preserve useful existing content when it "
-                "is still supported. Every new factual claim must carry an inline "
-                "citation using the exact [doc_id:Lstart-Lend] reference from the "
-                "assigned source evidence."
+                "from research reports produced by subagents that each read "
+                "source-context windows from an original document. Preserve useful "
+                "existing content when it is still supported. Every new factual "
+                "claim must carry an inline citation using the exact "
+                "[doc_id:Lstart-Lend] reference from the assigned source evidence."
             )
         ),
         HumanMessage(
@@ -211,8 +211,8 @@ def build_page_generation_prompt(
                 f"{repair}\n"
                 "Existing page content:\n"
                 f"{existing}\n\n"
-                "Research subagent reports. Each subagent read one full original "
-                "document and compressed the relevant context for this page:\n"
+                "Research subagent reports. Each subagent compressed the relevant "
+                "source context for this page:\n"
                 f"{research_reports}\n\n"
                 "Assigned source evidence. These are the ranges this page is "
                 "responsible for representing and citing:\n"
@@ -238,7 +238,9 @@ def build_page_generation_prompt(
     ]
 
 
-def build_fact_check_prompt(*, page_slug: str, page_content: str, source_blocks: str) -> list:
+def build_fact_check_prompt(
+    *, page_slug: str, page_content: str, source_blocks: str
+) -> list:
     return [
         SystemMessage(
             content=(

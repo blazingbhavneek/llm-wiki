@@ -1,30 +1,236 @@
 # Shared Memory
 
-Shared memory is a user-managed cache located on the GPU device that is significantly faster than global memory [CUDA_C_Programming_Guide:L1626-L1650]. It is allocated using the `__shared__` memory space specifier and serves as scratchpad memory to minimize global memory accesses from a CUDA block [CUDA_C_Programming_Guide:L1626-L1650].
+Explains shared memory allocation using __shared__, its performance benefits over global memory, and provides detailed matrix multiplication examples demonstrating shared memory usage for tiling and synchronization.
 
-## Usage and Performance
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-Shared memory allows threads within a thread block to cooperate by sharing data. By loading data from global memory into shared memory, threads can reuse that data multiple times without incurring the latency and bandwidth costs of repeated global memory accesses [CUDA_C_Programming_Guide:L1626-L1650].
+## Source CUDA_C_Programming_Guide:L1627-L1850
 
-A common example of this optimization is matrix multiplication. In a naive implementation where each thread reads directly from global memory, matrix A is read `B.width` times and matrix B is read `A.height` times [CUDA_C_Programming_Guide:L1652-L1660]. By utilizing shared memory, the computation is blocked such that each thread block computes a sub-matrix of the result. The required sub-matrices of A and B are loaded into shared memory once per block [CUDA_C_Programming_Guide:L1690-L1700]. This reduces the number of global memory reads for A to `(B.width / block_size)` and for B to `(A.height / block_size)`, saving significant global memory bandwidth [CUDA_C_Programming_Guide:L1700-L1705].
+Citation: [CUDA_C_Programming_Guide:L1627-L1850]
 
-## Synchronization
+````text
+## 6.2.4. Shared Memory
 
-Because shared memory is accessible by all threads in a block, synchronization is required to ensure data consistency. The `__syncthreads()` function is used to synchronize all threads in a block [CUDA_C_Programming_Guide:L1730-L1735]. 
+As detailed in Variable Memory Space Specifiers shared memory is allocated using the \_\_shared\_\_ memory space specifier.
 
-In the optimized matrix multiplication kernel, `__syncthreads()` is called after threads have loaded their respective elements from the sub-matrices of A and B into shared memory. This ensures that all threads have finished writing to shared memory before any thread begins reading from it for computation [CUDA_C_Programming_Guide:L1730-L1735]. Another synchronization point is often placed after the computation phase to ensure that the preceding computation is complete before the block loads new sub-matrices for the next iteration of the loop [CUDA_C_Programming_Guide:L1735-L1740].
+Shared memory is expected to be much faster than global memory as mentioned in Thread Hierarchy and detailed in Shared Memory. It can be used as scratchpad memory (or software managed cache) to minimize global memory accesses from a CUDA block as illustrated by the following matrix multiplication example.
 
-## Implementation Details
+The following code sample is a straightforward implementation of matrix multiplication that does not take advantage of shared memory. Each thread reads one row of A and one column of B and computes the corresponding element of C as illustrated in Figure 8. A is therefore read B.width times from global memory and B is read A.height times.
 
-Shared memory arrays are declared with the `__shared__` qualifier. For example, in a matrix multiplication kernel with a block size of 16, shared memory arrays might be declared as:
+```txt
+// Matrices are stored in row-major order:
+// M(row, col) = *(M.elements + row * M.width + col)
+typedef struct {
+    int width;
+    int height;
+    float* elements;
+} Matrix;
 
-```cpp
-__shared__ float As[BLOCK_SIZE][BLOCK_SIZE];
-__shared__ float Bs[BLOCK_SIZE][BLOCK_SIZE];
+// Thread block size
+#define BLOCK_SIZE 16
+
+// Forward declaration of the matrix multiplication kernel
+__global__ void MatMulKernel(const Matrix, const Matrix, Matrix);
 ```
 
-Each thread within the block is responsible for loading one element of each sub-matrix into these shared memory arrays [CUDA_C_Programming_Guide:L1725-L1730]. After synchronization, each thread computes its assigned element of the result by iterating over the shared memory arrays [CUDA_C_Programming_Guide:L1735-L1740]. Finally, each thread writes its computed result back to global memory [CUDA_C_Programming_Guide:L1740-L1745].
+(continues on next page)
 
-## References
+(continued from previous page)
 
-- CUDA C Programming Guide, Section 6.2.4 Shared Memory [CUDA_C_Programming_Guide:L1626-L1850]
+```cpp
+// Matrix multiplication - Host code
+// Matrix dimensions are assumed to be multiples of BLOCK_SIZE
+void MatMul(const Matrix A, const Matrix B, Matrix C)
+{
+    // Load A and B to device memory
+    Matrix d_A;
+    d_A.width = A.width; d_A.height = A.height;
+    size_t size = A.width * A.height * sizeof(float);
+    cudaMalloc(&d_A.elements, size);
+    cudaMemcpy(d_A.elements, A.elements, size,
+        cudaMemcpyHostToDevice);
+    Matrix d_B;
+    d_B.width = B.width; d_B.height = B.height;
+    size = B.width * B.height * sizeof(float);
+    cudaMalloc(&d_B.elements, size);
+    cudaMemcpy(d_B.elements, B.elements, size,
+        cudaMemcpyHostToDevice);
+
+    // Allocate C in device memory
+    Matrix d_C;
+    d_C.width = C.width; d_C.height = C.height;
+    size = C.width * C.height * sizeof(float);
+    cudaMalloc(&d_C.elements, size);
+
+    // Invoke kernel
+    dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE);
+    dim3 dimGrid(B.width / dimBlock.x, A.height / dimBlock.y);
+    MatMulKernel<<<dimGrid, dimBlock>>>(d_A, d_B, d_C);
+
+    // Read C from device memory
+    cudaMemcpy(C.elements, d_C.elements, size,
+        cudaMemcpyDeviceToHost);
+
+    // Free device memory
+    cudaFree(d_A.elements);
+    cudaFree(d_B.elements);
+    cudaFree(d_C.elements);
+}
+
+// Matrix multiplication kernel called by MatMul()
+__global__ void MatMulKernel(Matrix A, Matrix B, Matrix C)
+{
+    // Each thread computes one element of C
+    // by accumulating results into Cvalue
+    float Cvalue = 0;
+    int row = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
+    for (int e = 0; e < A.width; ++e)
+        Cvalue += A.elements[row * A.width + e]
+            * B.elements[e * B.width + col];
+    C.elements[row * C.width + col] = Cvalue;
+}
+```
+
+The following code sample is an implementation of matrix multiplication that does take advantage of shared memory. In this implementation, each thread block is responsible for computing one square sub-matrix Csub of C and each thread within the block is responsible for computing one element of Csub. As illustrated in Figure 9, Csub is equal to the product of two rectangular matrices: the submatrix of A of dimension (A.width, block\_size) that has the same row indices as Csub, and the submatrix of B of dimension (block\_size, A.width )that has the same column indices as Csub. In order to fit into the device’s resources, these two rectangular matrices are divided into as many square matrices of dimension block\_size as necessary and Csub is computed as the sum of the products of these square matrices. Each of these products is performed by first loading the two corresponding square matrices from global memory to shared memory with one thread loading one element of each matrix, and then by having each thread compute one element of the product. Each thread accumulates the result of each of these products into a register and once done writes the result to global memory.
+
+![](images/e1613b458760508fdb8f217b46b050fab53b7323f88647b694c9a8d3b6adce41.jpg)  
+Figure 8: Matrix Multiplication without Shared Memory
+
+By blocking the computation this way, we take advantage of fast shared memory and save a lot of global memory bandwidth since A is only read (B.width / block\_size) times from global memory and B is read (A.height / block\_size) times.
+
+The Matrix type from the previous code sample is augmented with a stride field, so that sub-matrices can be eficiently represented with the same type. \_\_device\_\_ functions are used to get and set elements and build any sub-matrix from a matrix.
+
+```c
+// Matrices are stored in row-major order:
+// M(row, col) = *(M.elements + row * M.stride + col)
+typedef struct {
+    int width;
+    int height;
+    int stride;
+    float* elements;
+} Matrix;
+// Get a matrix element
+__device__ float GetElement(const Matrix A, int row, int col)
+{
+    return A.elements[row * A.stride + col];
+}
+// Set a matrix element
+__device__ void SetElement(Matrix A, int row, int col,
+                    float value)
+{
+    A.elements[row * A.stride + col] = value;
+}
+// Get the BLOCK_SIZExBLOCK_SIZE sub-matrix Asub of A that is
+// located col sub-matrices to the right and row sub-matrices down
+// from the upper-left corner of A
+__device__ Matrix GetSubMatrix(Matrix A, int row, int col)
+{
+    Matrix Asub;
+    Asub.width      = BLOCK_SIZE;
+    Asub.height     = BLOCK_SIZE;
+    Asub.stride   = A.stride;
+    Asub.elements = &A.elements[A.stride * BLOCK_SIZE * row
+                                        + BLOCK_SIZE * col];
+    return Asub;
+}
+// Thread block size
+#define BLOCK_SIZE 16
+// Forward declaration of the matrix multiplication kernel
+__global__ void MatMulKernel(const Matrix, const Matrix, Matrix);
+// Matrix multiplication - Host code
+// Matrix dimensions are assumed to be multiples of BLOCK_SIZE
+void MatMul(const Matrix A, const Matrix B, Matrix C)
+{
+    // Load A and B to device memory
+```
+
+(continues on next page)
+
+(continued from previous page)
+
+```txt
+Matrix d_A;
+d_A.width = d_A.stride = A.width; d_A.height = A.height;
+size_t size = A.width * A.height * sizeof(float);
+cudaMalloc(&d_A.elements, size);
+cudaMemcpy(d_A.elements, A.elements, size,
+        cudaMemcpyHostToDevice);
+Matrix d_B;
+d_B.width = d_B.stride = B.width; d_B.height = B.height;
+size = B.width * B.height * sizeof(float);
+cudaMalloc(&d_B.elements, size);
+cudaMemcpy(d_B.elements, B.elements, size,
+cudaMemcpyHostToDevice);
+// Allocate C in device memory
+Matrix d_C;
+d_C.width = d_C.stride = C.width; d_C.height = C.height;
+size = C.width * C.height * sizeof(float);
+cudaMalloc(&d_C.elements, size);
+// Invoke kernel
+dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE);
+dim3 dimGrid(B.width / dimBlock.x, A.height / dimBlock.y);
+MatMulKernel<<<dimGrid, dimBlock>>>(d_A, d_B, d_C);
+// Read C from device memory
+cudaMemcpy(C.elements, d_C.elements, size,
+        cudaMemcpyDeviceToHost);
+// Free device memory
+cudaFree(d_A.elements);
+cudaFree(d_B.elements);
+cudaFree(d_C.elements);
+}
+// Matrix multiplication kernel called by MatMul()
+__global__ void MatMulKernel(Matrix A, Matrix B, Matrix C)
+{
+    // Block row and column
+    int blockRow = blockIdx.y;
+    int blockCol = blockIdx.x;
+    // Each thread block computes one sub-matrix Csub of C
+    Matrix Csub = GetSubMatrix(C, blockRow, blockCol);
+    // Each thread computes one element of Csub
+    // by accumulating results into Cvalue
+    float Cvalue = 0;
+    // Thread row and column within Csub
+    int row = threadIdx.y;
+    int col = threadIdx.x;
+    // Loop over all the sub-matrices of A and B that are
+    // required to compute Csub
+    // Multiply each pair of sub-matrices together
+    // and accumulate the results
+    for (int m = 0; m < (A.width / BLOCK_SIZE); ++m) {
+        // Get sub-matrix Asub of A
+        Matrix Asub = GetSubMatrix(A, blockRow, m);
+        // Get sub-matrix Bsub of B
+        Matrix Bsub = GetSubMatrix(B, m, blockCol);
+        // Shared memory used to store Asub and Bsub respectively
+        __shared__ float As[BLOCK_SIZE][BLOCK_SIZE];
+        __shared__ float Bs[BLOCK_SIZE][BLOCK_SIZE];
+        // Load Asub and Bsub from device memory to shared memory
+```
+
+(continues on next page)
+
+(continued from previous page)
+
+```txt
+// Each thread loads one element of each sub-matrix
+As[row][col] = GetElement(Asub, row, col);
+Bs[row][col] = GetElement(Bsub, row, col);
+// Synchronize to make sure the sub-matrices are loaded
+// before starting the computation
+__syncthreads();
+// Multiply Asub and Bsub together
+for (int e = 0; e < BLOCK_SIZE; ++e)
+    Cvalue += As[row][e] * Bs[e][col];
+// Synchronize to make sure that the preceding
+// computation is done before loading two new
+// sub-matrices of A and B in the next iteration
+__syncthreads();
+}
+// Write Csub to device memory
+// Each thread writes one element
+SetElement(Csub, row, col, Cvalue);
+}
+```
+````

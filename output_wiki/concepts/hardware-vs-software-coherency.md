@@ -1,51 +1,42 @@
-# Hardware vs. Software Coherency in Unified Memory
+# Hardware vs. Software Coherency in Page Tables
 
-In the context of unified memory architectures, systems are categorized based on how CPU and GPU page tables are managed and how memory coherency is enforced. These distinctions significantly impact performance, particularly regarding TLB efficiency and contention during concurrent access.
+Contrasts hardware coherent systems (combined CPU/GPU page tables) with software coherent systems (separate page tables requiring page faults for coherency). Explains performance benefits of hardware coherency regarding TLB misses, cache-line granularity contention, and atomic updates.
 
-## Definitions
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-*   **Hardware Coherent Systems**: Systems that provide a logically combined page table for both CPUs and GPUs. An example of such a system is the NVIDIA Grace Hopper [CUDA_C_Programming_Guide:L21654-L21656].
-*   **Software Coherent Systems**: Systems where CPUs and GPUs maintain separate, distinct logical page tables [CUDA_C_Programming_Guide:L21656-L21657].
+## Source CUDA_C_Programming_Guide:L21647-L21675
 
-## Hardware Coherent Systems
+Citation: [CUDA_C_Programming_Guide:L21647-L21675]
 
-In hardware coherent systems, the GPU accesses System-Allocated Memory by utilizing the page table entries created by the CPU [CUDA_C_Programming_Guide:L21657-L21661]. This unified view is critical for performance because it avoids the overhead associated with separate translation mechanisms.
+````text
+## 24.2.2.1.2 CPU and GPU page tables: hardware coherency vs. software coherency
 
-### Page Size and TLB Efficiency
+Note: In the remainder of the performance tuning documentation, we will refer to systems with a combined page table for both CPUs and GPUs as hardware coherent systems. Systems with separate page tables for CPUs and GPUs are referred to as software coherent.
 
-A key concern in hardware coherent systems is the page size used for System-Allocated Memory. If the page table entries use default CPU page sizes (such as 4KiB or 64KiB), accessing large virtual memory areas can result in significant Translation Lookaside Buffer (TLB) misses, leading to substantial slowdowns [CUDA_C_Programming_Guide:L21661-L21664]. To mitigate this, it is recommended to configure the system to use huge pages, ensuring that System-Allocated Memory utilizes sufficiently large page sizes [CUDA_C_Programming_Guide:L21664-L21666].
+Hardware coherent systems such as NVIDIA Grace Hopper ofer a logically combined page table for both CPUs and GPUs. This is important because in order to access System-Allocated Memory from the GPU, the GPU uses whichever page table entry was created by the CPU for the requested memory. If that page table entry uses the default CPU page size of 4KiB or 64KiB, accesses to large virtual memory areas will cause significant TLB misses, thus significant slowdowns.
 
-## Software Coherent Systems
+See the section on configuring huge pages for examples on how to ensure System-Allocated Memory uses large enough page sizes to avoid this type of issue.
 
-In software coherent systems, where CPUs and GPUs have their own logical page tables, coherency is typically enforced through page faults. When a processor attempts to access a memory address mapped into the physical memory of a different processor, a page fault is triggered [CUDA_C_Programming_Guide:L21667-L21670].
+On the other hand, on systems where the CPUs and GPUs each have their own logical page table, diferent performance tuning aspects should be considered: in order to guarantee coherency, these systems usually use page faults in case a processor accesses a memory address mapped into the physical memory of a diferent processor. Such a page fault means that:
 
-### Page Fault Mechanism
+▶ it needs to be ensured that the currently owning processor (where the physical page currently resides) cannot access this page anymore, either by deleting the page table entry or updating it.
 
-A page fault in this context involves three main steps to guarantee coherency:
+▶ it needs to be ensured that the processor requesting access can access this page, either by creating a new page table entry or updating and existing entry, such that it becomes valid/active.
 
-1.  **Invalidation**: The system must ensure that the currently owning processor (where the physical page resides) can no longer access the page. This is achieved by deleting the page table entry or updating it [CUDA_C_Programming_Guide:L21670-L21672].
-2.  **Validation**: The system must ensure that the processor requesting access can access the page. This involves creating a new page table entry or updating an existing one to make it valid and active [CUDA_C_Programming_Guide:L21672-L21674].
-3.  **Migration**: The physical page backing the virtual page must be moved or migrated to the processor requesting access. This operation is expensive, and the amount of work is proportional to the page size [CUDA_C_Programming_Guide:L21674-L21676].
+the physical page backing this virtual page must be moved/migrated to the processor requesting access: this can be an expensive operation, and the amount of work is proportional to the page size.
 
-## Performance Comparison
+Overall, hardware coherent systems provide significant performance benefits compared to software coherent systems in cases where frequent concurrent accesses to the same memory page are made by both CPU and GPU threads:
 
-Hardware coherent systems provide significant performance benefits over software coherent systems, particularly in scenarios involving frequent concurrent accesses to the same memory page by both CPU and GPU threads [CUDA_C_Programming_Guide:L21677-L21679].
+▶ less page-faults: these systems do not need to use page-faults for emulating coherency or migrating memory,
 
-### Key Advantages
+less contention: these systems are coherent at cache-line granularity instead of page-size granularity, that is, when there is contention from multiple processors within a cache line, only the cache line is exchanged which is much smaller than the smallest page-size, and when the diferent processors access diferent cache-lines within a page, then there is no contention.
 
-*   **Reduced Page Faults**: Hardware coherent systems do not need to use page faults to emulate coherency or migrate memory, eliminating the overhead associated with the migration process [CUDA_C_Programming_Guide:L21679-L21681].
-*   **Lower Contention**: These systems operate at cache-line granularity rather than page-size granularity [CUDA_C_Programming_Guide:L21681-L21683].
-    *   When multiple processors contend within a single cache line, only that specific cache line is exchanged, which is much smaller than the smallest page size [CUDA_C_Programming_Guide:L21683-L21685].
-    *   If different processors access different cache lines within the same page, there is no contention [CUDA_C_Programming_Guide:L21685-L21687].
+This impacts the performance of the following scenarios:
 
-### Impact on Specific Scenarios
+▶ Atomic updates to the same address concurrently from both CPUs and GPUs.
 
-The differences in coherency mechanisms directly impact the performance of the following scenarios:
+Signaling a GPU thread from a CPU thread or vice-versa.
 
-*   Atomic updates to the same address performed concurrently by both CPUs and GPUs [CUDA_C_Programming_Guide:L21687-L21689].
-*   Signaling between a GPU thread and a CPU thread, or vice versa [CUDA_C_Programming_Guide:L21689-L21691].
-
-## See Also
-
-*   [Direct Unified Memory Access from host](concept/hardware-vs-software-coherency#direct-unified-memory-access-from-host)
-*   Configuring huge pages for System-Allocated Memory
+## 24.2.2.2 Direct Unified Memory Access from host
+````

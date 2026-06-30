@@ -46,6 +46,7 @@ Package `wiki/` — lossless Markdown wiki generator. Module layout
 
 Entrypoint: ../md.py is a thin shim that calls wiki.phases.main.
 """
+
 from __future__ import annotations
 
 import os
@@ -53,7 +54,6 @@ from dataclasses import dataclass
 from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, Field
-
 
 # ---------------------------------------------------------------------
 # Runtime config
@@ -64,11 +64,11 @@ OUTPUT_ROOT = "/run/media/blaze/Common/Code/llm-wiki/output4"
 
 PHASE = "all"  # all | generate | generate-flat | verify | repair
 
-BASE_URL = os.environ.get("OPENAI_BASE_URL", "http://194.14.47.19:23149/v1")
+BASE_URL = os.environ.get("OPENAI_BASE_URL", "http://180.21.170.235:42383/v1")
 API_KEY = os.environ.get("OPENAI_API_KEY", "local")
 
-GEN_MODEL = "nvidia/Qwen3.6-35B-A3B-NVFP4"
-VERIFY_MODEL = "nvidia/Qwen3.6-35B-A3B-NVFP4"
+GEN_MODEL = os.environ.get("WIKI_GEN_MODEL", "nvidia/Qwen3.6-35B-A3B-NVFP4")
+VERIFY_MODEL = os.environ.get("WIKI_VERIFY_MODEL", GEN_MODEL)
 
 GENERATION_LINES = 100
 VERIFICATION_LINES = 25
@@ -114,6 +114,7 @@ class GenerationDecision(BaseModel):
     new_source_range: Optional[list[int]] = None
 
     reason: str = ""
+
 
 class VerificationResult(BaseModel):
     answer: Literal["YES", "NO"]

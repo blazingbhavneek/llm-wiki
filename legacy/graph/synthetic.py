@@ -109,8 +109,12 @@ class SyntheticManager:
             "creation_query": query,
             "absolute_dependencies": deps,
             "source_version_fingerprint": fingerprint,
-            "times_retrieved": (existing.metadata.get("times_retrieved", 0) if existing else 0),
-            "times_confirmed": (existing.metadata.get("times_confirmed", 0) if existing else 0),
+            "times_retrieved": (
+                existing.metadata.get("times_retrieved", 0) if existing else 0
+            ),
+            "times_confirmed": (
+                existing.metadata.get("times_confirmed", 0) if existing else 0
+            ),
             "times_refreshed": (
                 (existing.metadata.get("times_refreshed", 0) + 1) if existing else 0
             ),
@@ -128,7 +132,11 @@ class SyntheticManager:
         with self.store.transaction():
             self.store.upsert_node(node)
             self.store.fts_index(
-                node.id, title=node.title, aliases=query, summary=node.summary, body=body
+                node.id,
+                title=node.title,
+                aliases=query,
+                summary=node.summary,
+                body=body,
             )
             self._link_dependencies(node, deps, result)
             self.store.upsert_cache(
@@ -181,9 +189,7 @@ class SyntheticManager:
         self, node: Node, deps: list[str], result: QueryResult
     ) -> None:
         max_edges = int(self.policy.get("max_edges_per_synthetic_node", 10))
-        scored = sorted(
-            result.nodes, key=lambda r: -r.score
-        )
+        scored = sorted(result.nodes, key=lambda r: -r.score)
         count = 0
         for rn in scored:
             if count >= max_edges:
@@ -268,7 +274,7 @@ class SyntheticManager:
             "---\n"
             f"node_class: synthetic\n"
             f"kind: {kind}\n"
-            f"creation_query: \"{query}\"\n"
+            f'creation_query: "{query}"\n'
             f"generated_at: {utcnow()}\n"
             "---\n\n"
         )

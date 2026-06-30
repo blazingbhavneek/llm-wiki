@@ -1,46 +1,49 @@
-# Warp Reduce Functions (__reduce_sync)
+# Warp Reduce Functions
 
-The `__reduce_sync` intrinsics perform a reduction operation on the data provided in `value` after synchronizing threads named in `mask` [CUDA_C_Programming_Guide:L8633-L8633]. These functions are supported by devices of compute capability 8.x or higher [CUDA_C_Programming_Guide:L8635-L8635].
+Verbatim source-backed fallback page for Warp Reduce Functions.
 
-## Supported Operations
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-The template type `T` determines the supported operations:
+## Source CUDA_C_Programming_Guide:L8631-L8667
 
-*   **Arithmetic Operations**: For `add`, `min`, and `max`, `T` can be either `unsigned` or `signed` (specifically `int`) [CUDA_C_Programming_Guide:L8633-L8633].
-*   **Logical Operations**: For `and`, `or`, and `xor`, `T` must be `unsigned` [CUDA_C_Programming_Guide:L8633-L8633].
+Citation: [CUDA_C_Programming_Guide:L8631-L8667]
 
-### Function Signatures
+````text
+## 10.21. Warp Reduce Functions
 
-**Arithmetic Reductions**
+The \_\_reduce\_sync(unsigned mask, T value) intrinsics perform a reduction operation on the data provided in value after synchronizing threads named in mask. T can be unsigned or signed for {add, min, max} and unsigned only for {and, or, xor} operations.
+
+Supported by devices of compute capability 8.x or higher.
+
+## 10.21.1. Synopsis
 
 ```c
+// add/min/max
 unsigned __reduce_add_sync(unsigned mask, unsigned value);
 unsigned __reduce_min_sync(unsigned mask, unsigned value);
 unsigned __reduce_max_sync(unsigned mask, unsigned value);
 int __reduce_add_sync(unsigned mask, int value);
 int __reduce_min_sync(unsigned mask, int value);
 int __reduce_max_sync(unsigned mask, int value);
-```
 
-These functions return the result of applying an arithmetic add, min, or max reduction operation on the values provided in `value` by each thread named in `mask` [CUDA_C_Programming_Guide:L8641-L8646][CUDA_C_Programming_Guide:L8658-L8658].
-
-**Logical Reductions**
-
-```c
+// and/or/xor
 unsigned __reduce_and_sync(unsigned mask, unsigned value);
 unsigned __reduce_or_sync(unsigned mask, unsigned value);
 unsigned __reduce_xor_sync(unsigned mask, unsigned value);
 ```
 
-These functions return the result of applying a logical AND, OR, or XOR reduction operation on the values provided in `value` by each thread named in `mask` [CUDA_C_Programming_Guide:L8649-L8651][CUDA_C_Programming_Guide:L8662-L8662].
+## 10.21.2. Description
 
-## Mask and Convergence
+## \_\_reduce\_add\_sync, \_\_reduce\_min\_sync, \_\_reduce\_max\_sync
 
-The `mask` indicates the threads participating in the call. A bit, representing the thread’s lane id, must be set for each participating thread to ensure they are properly converged before the intrinsic is executed by the hardware [CUDA_C_Programming_Guide:L8664-L8664].
+Returns the result of applying an arithmetic add, min, or max reduction operation on the values provided in value by each thread named in mask
 
-*   Each calling thread must have its own bit set in the mask.
-*   All non-exited threads named in `mask` must execute the same intrinsic with the same mask, or the result is undefined [CUDA_C_Programming_Guide:L8664-L8664].
+## \_\_reduce\_and\_sync, \_\_reduce\_or\_sync, \_\_reduce\_xor\_sync
 
-## Memory Ordering
+Returns the result of applying a logical AND, OR, or XOR reduction operation on the values provided in value by each thread named in mask.
 
-These intrinsics do not imply a memory barrier. They do not guarantee any memory ordering [CUDA_C_Programming_Guide:L8666-L8666].
+The mask indicates the threads participating in the call. A bit, representing the thread’s lane id, must be set for each participating thread to ensure they are properly converged before the intrinsic is executed by the hardware. Each calling thread must have its own bit set in the mask and all non-exited threads named in mask must execute the same intrinsic with the same mask, or the result is undefined.
+
+These intrinsics do not imply a memory barrier. They do not guarantee any memory ordering.
+````

@@ -1,28 +1,20 @@
 # Choosing the Right Page Size
 
-When managing Unified Memory, the choice of page size involves a trade-off between memory fragmentation and translation lookaside buffer (TLB) performance. The impact of this choice is more pronounced on GPUs than on CPUs.
+Analyzes the trade-offs between small and large virtual page sizes regarding memory fragmentation, TLB misses, and migration latency. Highlights that GPU TLB misses are particularly costly.
 
-## Trade-offs: Small vs. Large Pages
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-*   **Small Page Sizes**
-    *   **Pros:** Lead to less virtual memory fragmentation.
-    *   **Cons:** Result in more TLB misses.
+## Source CUDA_C_Programming_Guide:L21639-L21646
 
-*   **Large Page Sizes**
-    *   **Pros:** Result in fewer TLB misses.
-    *   **Cons:** Lead to more memory fragmentation and higher memory migration costs. Since memory migration typically operates on full pages, larger pages can cause larger latency spikes in applications [CUDA_C_Programming_Guide:L21640-L21646].
+Citation: [CUDA_C_Programming_Guide:L21639-L21646]
 
-## GPU vs. CPU Performance Impact
+````text
+## 24.2.2.1.1 Choosing the right page size
 
-TLB misses are generally significantly more expensive on the GPU compared to the CPU [CUDA_C_Programming_Guide:L21640-L21646].
+In general, small page sizes lead to less (virtual) memory fragmentation but more TLB misses, whereas larger page sizes lead to more memory fragmentation but less TLB misses. Additionally, memory migration is generally more expensive with larger page sizes compared to smaller page sizes, because we typically migrate full memory pages. This can cause larger latency spikes in an application using large page sizes. See also the next section for more details on page faults.
 
-*   **GPU Threads:** If a GPU thread frequently accesses random locations in Unified Memory mapped with a small page size, performance may be significantly slower compared to using a large enough page size [CUDA_C_Programming_Guide:L21640-L21646].
-*   **CPU Threads:** A similar slowdown can occur on CPUs when randomly accessing large areas of memory mapped with small pages, but the effect is less pronounced [CUDA_C_Programming_Guide:L21640-L21646].
+One important aspect for performance tuning is that TLB misses are generally significantly more expensive on the GPU compared to the CPU. This means that if a GPU thread frequently accesses random locations of Unified Memory mapped using a small enough page size, it might be significantly slower compared to the same accesses to Unified Memory mapped using a large enough page size. While a similar efect might occur for a CPU thread randomly accessing a large area of memory mapped using a small page size, the slowdown is less pronounced, meaning that the application might want to trade-of this slowdown with having less memory fragmentation.
 
-Consequently, applications might choose to trade off the minor slowdown associated with CPU fragmentation for the significant performance gains of reduced TLB misses on the GPU by using larger page sizes [CUDA_C_Programming_Guide:L21640-L21646].
-
-## Tuning Recommendations
-
-Applications should not tune their performance based on the physical page size of a given processor, as physical page sizes are subject to change depending on the hardware [CUDA_C_Programming_Guide:L21640-L21646]. The advice regarding TLB and fragmentation trade-offs applies specifically to virtual page sizes [CUDA_C_Programming_Guide:L21640-L21646].
-
-For more details on the mechanics of page faults associated with these sizes, see the relevant section on page faults.
+Note that in general, applications should not tune their performance to the physical page size of a given processor, since physical page sizes are subject to change depending on the hardware. The advice above only applies to virtual page sizes.
+````

@@ -80,7 +80,9 @@ class MarkdownIngest:
     # endregion PUBLIC API
 
     # region LAYOUT DISPATCH
-    def _load_old_manifest_output(self, out_path: Path) -> tuple[list[Node], list[Edge]]:
+    def _load_old_manifest_output(
+        self, out_path: Path
+    ) -> tuple[list[Node], list[Edge]]:
         manifest_path = out_path / "manifest.json"
 
         self._log("-" * 80)
@@ -101,7 +103,9 @@ class MarkdownIngest:
         files = manifest.get("files", [])
         self._log(f"Manifest file record count: {len(files)}")
 
-        by_filename = {record["filename"]: record for record in files if record.get("filename")}
+        by_filename = {
+            record["filename"]: record for record in files if record.get("filename")
+        }
         nodes: list[Node] = []
         sections: dict[str, list[str]] = {}
 
@@ -146,7 +150,9 @@ class MarkdownIngest:
             self._log("Continuing with empty metadata/coverage fallback")
 
         if not docs_dir.exists():
-            self._log(f"ERROR: no manifest.json and no docs directory found in {out_path}")
+            self._log(
+                f"ERROR: no manifest.json and no docs directory found in {out_path}"
+            )
             raise FileNotFoundError(
                 f"no manifest.json and no docs directory found in {out_path}"
             )
@@ -174,9 +180,7 @@ class MarkdownIngest:
         self._log(f"coverage file_count: {coverage.get('file_count')}")
 
         metadata_by_name = {
-            item.get("name"): item
-            for item in metadata_files
-            if item.get("name")
+            item.get("name"): item for item in metadata_files if item.get("name")
         }
         coverage_by_name = {
             item.get("filename"): item
@@ -248,8 +252,12 @@ class MarkdownIngest:
         nodes = [*source_nodes, *page_nodes]
         edges: list[Edge] = []
         edges.extend(self._wiki_folder_edges(out_path, page_file_lookup))
-        edges.extend(self._wiki_citation_edges(page_nodes, source_lookup, sources_by_slug))
-        edges.extend(self._wiki_markdown_link_edges(out_path, page_files_by_id, page_file_lookup))
+        edges.extend(
+            self._wiki_citation_edges(page_nodes, source_lookup, sources_by_slug)
+        )
+        edges.extend(
+            self._wiki_markdown_link_edges(out_path, page_files_by_id, page_file_lookup)
+        )
 
         self._log(f"Wiki source anchor node count: {len(source_nodes)}")
         self._log(f"Wiki page node count: {len(page_nodes)}")
@@ -265,7 +273,13 @@ class MarkdownIngest:
         out: dict[str, list[dict[str, Any]]] = {}
         for slug, refs in pages.items():
             if isinstance(slug, str) and isinstance(refs, list):
-                out[slug] = [ref for ref in refs if isinstance(ref, dict)]
+                # wiki_gen keys planning JSON by the raw page slug, which may be
+                # bare ("assertion") or type-prefixed ("concept/assertion").
+                # Normalize to the bare stem so folder-derived page slugs match.
+                key = self._slug_key(slug)
+                out.setdefault(key, []).extend(
+                    ref for ref in refs if isinstance(ref, dict)
+                )
         return out
 
     def _extract_page_metadata(
@@ -282,18 +296,22 @@ class MarkdownIngest:
             if isinstance(pages, dict):
                 items = pages.items()
             elif isinstance(pages, list):
-                items = ((item.get("slug"), item) for item in pages if isinstance(item, dict))
+                items = (
+                    (item.get("slug"), item) for item in pages if isinstance(item, dict)
+                )
             else:
                 continue
 
             for slug, item in items:
                 if isinstance(slug, str) and isinstance(item, dict):
-                    current = out.setdefault(slug, {})
+                    current = out.setdefault(self._slug_key(slug), {})
                     current.update(item)
 
         return out
 
-    def _build_wiki_source_nodes(self, out_path: Path) -> tuple[list[Node], dict[str, str]]:
+    def _build_wiki_source_nodes(
+        self, out_path: Path
+    ) -> tuple[list[Node], dict[str, str]]:
         raw_dir = out_path / "raw"
         nodes: list[Node] = []
         lookup: dict[str, str] = {}
@@ -311,7 +329,9 @@ class MarkdownIngest:
             coverage = self._read_json(doc_dir / "coverage.json", default={})
             metadata = self._read_json(doc_dir / "metadata.json", default={})
             if not original.exists():
-                self._log(f"[wiki-source:{index}] SKIP: missing original.md in {doc_dir}")
+                self._log(
+                    f"[wiki-source:{index}] SKIP: missing original.md in {doc_dir}"
+                )
                 continue
 
             line_count = self._source_line_count(original, coverage)
@@ -376,9 +396,10 @@ class MarkdownIngest:
             self._log(f"Wiki {folder}/ markdown file count: {len(md_files)}")
             for index, md_file in enumerate(md_files, start=1):
                 slug = self._wiki_slug(folder, md_file)
+                key = self._slug_key(slug)
                 text = md_file.read_text(encoding="utf-8", errors="ignore")
                 source_refs = self._merge_source_refs(
-                    sources_by_slug.get(slug, []),
+                    sources_by_slug.get(key, []),
                     self._source_refs_from_markdown(
                         text=text,
                         out_path=out_path,
@@ -386,7 +407,7 @@ class MarkdownIngest:
                     ),
                 )
                 if source_refs:
-                    sources_by_slug[slug] = source_refs
+                    sources_by_slug[key] = source_refs
                 node = self._build_wiki_page_node(
                     out_path=out_path,
                     md_file=md_file,
@@ -394,7 +415,7 @@ class MarkdownIngest:
                     page_kind=page_kind,
                     cluster=cluster,
                     source_refs=source_refs,
-                    metadata=metadata_by_slug.get(slug, {}),
+                    metadata=metadata_by_slug.get(key, {}),
                     index=index,
                     total=len(md_files),
                 )
@@ -449,7 +470,9 @@ class MarkdownIngest:
         self._log(f"[wiki-page:{page_kind}:{index}/{total}] Slug: {slug}")
         self._log(f"[wiki-page:{page_kind}:{index}/{total}] Node id: {node_id}")
         self._log(f"[wiki-page:{page_kind}:{index}/{total}] Title: {title!r}")
-        self._log(f"[wiki-page:{page_kind}:{index}/{total}] Source ref count: {len(source_refs)}")
+        self._log(
+            f"[wiki-page:{page_kind}:{index}/{total}] Source ref count: {len(source_refs)}"
+        )
         self._log(f"[wiki-page:{page_kind}:{index}/{total}] Source doc ids: {doc_ids}")
 
         return Node(
@@ -560,7 +583,7 @@ class MarkdownIngest:
         sources_by_slug: dict[str, list[dict[str, Any]]],
     ) -> list[Edge]:
         page_id_by_slug = {
-            keyword: node.id
+            self._slug_key(keyword): node.id
             for node in page_nodes
             for keyword in node.keywords[:1]
             if "/" in keyword
@@ -591,9 +614,8 @@ class MarkdownIngest:
             for doc_id, ranges in sorted(refs_by_doc.items()):
                 source_id = source_lookup[doc_id]
                 range_text = ", ".join(r for r in ranges if r)
-                summary = (
-                    f"Wiki page `{slug}` cites preserved source `{doc_id}`"
-                    + (f" at {range_text}." if range_text else ".")
+                summary = f"Wiki page `{slug}` cites preserved source `{doc_id}`" + (
+                    f" at {range_text}." if range_text else "."
                 )
                 edges.append(
                     Edge(
@@ -654,6 +676,19 @@ class MarkdownIngest:
                 targets.append(candidate)
         return targets
 
+    @staticmethod
+    def _slug_key(slug: str) -> str:
+        """Bare-stem key for slug matching across wiki_gen's mixed slug styles.
+
+        wiki_gen writes planning JSON keyed by the raw page slug, which is
+        sometimes bare ("assertion") and sometimes type-prefixed
+        ("concept/assertion"); the on-disk file is always ``<folder>/<stem>.md``.
+        Collapsing to the part after the last ``/`` makes both styles match the
+        folder-derived page slug.
+        """
+
+        return slug.rsplit("/", 1)[-1]
+
     def _wiki_slug(self, folder: str, path: Path) -> str:
         prefix = {
             "entities": "entity",
@@ -664,7 +699,9 @@ class MarkdownIngest:
         return f"{prefix}/{path.stem}"
 
     def _source_line_count(self, original: Path, coverage: dict[str, Any]) -> int:
-        raw_count = coverage.get("source_line_count") if isinstance(coverage, dict) else None
+        raw_count = (
+            coverage.get("source_line_count") if isinstance(coverage, dict) else None
+        )
         try:
             count = int(raw_count)
             if count > 0:
@@ -673,7 +710,9 @@ class MarkdownIngest:
             pass
         return len(original.read_text(encoding="utf-8", errors="ignore").splitlines())
 
-    def _source_ranges_from_refs(self, refs: list[dict[str, Any]]) -> list[tuple[int, int]]:
+    def _source_ranges_from_refs(
+        self, refs: list[dict[str, Any]]
+    ) -> list[tuple[int, int]]:
         ranges: list[tuple[int, int]] = []
         for ref in refs:
             try:
@@ -787,9 +826,8 @@ class MarkdownIngest:
 
         title = record.get("title") or meta.get("title", "")
         summary = record.get("summary") or meta.get("summary", "")
-        ranges = (
-            self._parse_ranges(record.get("source_ranges"))
-            or self._parse_ranges(meta.get("source_lines"))
+        ranges = self._parse_ranges(record.get("source_ranges")) or self._parse_ranges(
+            meta.get("source_lines")
         )
         section = str(Path(filename).parent)
         cluster = self._humanize(Path(filename).parent.name)
@@ -841,7 +879,9 @@ class MarkdownIngest:
         body = body.strip()
 
         self._log(f"[new:{index}/{total}] Raw text length: {len(text)}")
-        self._log(f"[new:{index}/{total}] Body length after frontmatter split: {len(body)}")
+        self._log(
+            f"[new:{index}/{total}] Body length after frontmatter split: {len(body)}"
+        )
         self._log(f"[new:{index}/{total}] Frontmatter keys: {sorted(meta.keys())}")
 
         if not body:
@@ -849,7 +889,9 @@ class MarkdownIngest:
             return None
 
         canonical_name = self._canonical_doc_name(md_file.name)
-        self._log(f"[new:{index}/{total}] Canonical metadata filename: {canonical_name}")
+        self._log(
+            f"[new:{index}/{total}] Canonical metadata filename: {canonical_name}"
+        )
         self._log(
             f"[new:{index}/{total}] metadata.json match: {'yes' if metadata_rec else 'no'}"
         )

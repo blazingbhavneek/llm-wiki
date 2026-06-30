@@ -15,8 +15,10 @@ import json
 import logging
 import urllib.error
 import urllib.request
+from typing import TYPE_CHECKING
 
-from graph.models import Settings
+if TYPE_CHECKING:
+    from graph_big.models import Settings
 
 log = logging.getLogger(__name__)
 

@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import re
 from collections import deque
 from pathlib import Path
-import re
 
 from db import Database
 
@@ -116,7 +116,9 @@ class GraphRevisions:
 
         active_old = [
             node
-            for node in self.database.get_nodes_by_document(document_name, active_only=True)
+            for node in self.database.get_nodes_by_document(
+                document_name, active_only=True
+            )
             if node.type == NodeType.endogenous
         ]
         if not active_old:
@@ -132,7 +134,9 @@ class GraphRevisions:
         matched_old: set[str] = set()
         exact_by_hash: dict[str, Node] = {}
         for old in active_old:
-            exact_by_hash.setdefault(old.source_material_hash or source_hash(old.body), old)
+            exact_by_hash.setdefault(
+                old.source_material_hash or source_hash(old.body), old
+            )
         pending: list[Node] = []
 
         # PASS 1 — exact body-hash match (no enrichment on either side).
@@ -267,7 +271,10 @@ class GraphRevisions:
 
         if old.entity and new.entity:
             entity_bonus = (
-                0.2 if normalize_text(old.entity, _TOKEN_RE) == normalize_text(new.entity, _TOKEN_RE) else 0.0
+                0.2
+                if normalize_text(old.entity, _TOKEN_RE)
+                == normalize_text(new.entity, _TOKEN_RE)
+                else 0.0
             )
 
         return min(
@@ -355,8 +362,7 @@ class GraphRevisions:
             return
 
         frontier: deque[tuple[str, int]] = deque(
-            (node_id, 0)
-            for node_id in sorted(set(replacements) | set(stale_sources))
+            (node_id, 0) for node_id in sorted(set(replacements) | set(stale_sources))
         )
         visited_dependents: set[str] = set()
         processed = 0
@@ -378,7 +384,9 @@ class GraphRevisions:
                     continue
 
                 if processed >= max_nodes:
-                    actions.append(f"cascade-cap-hit:max_nodes={max_nodes}:at={target.id}")
+                    actions.append(
+                        f"cascade-cap-hit:max_nodes={max_nodes}:at={target.id}"
+                    )
                     return
 
                 visited_dependents.add(target.id)

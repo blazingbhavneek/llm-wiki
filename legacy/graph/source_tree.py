@@ -49,7 +49,7 @@ def _parse_frontmatter(text: str) -> tuple[dict[str, Any], str]:
     m = _FRONTMATTER_RE.match(text)
     if not m:
         return {}, text
-    body = text[m.end():]
+    body = text[m.end() :]
     meta: dict[str, Any] = {}
     for line in m.group(1).splitlines():
         if not line.strip() or ":" not in line:
@@ -74,11 +74,11 @@ def validate_coverage(output_root: Path) -> dict[str, Any]:
         raise CoverageError(f"missing coverage.json under {output_root}")
     cov = _read_json(cov_path)
     if not cov.get("exact_coverage", False):
-        raise CoverageError(f"coverage.json reports exact_coverage=false for {output_root}")
+        raise CoverageError(
+            f"coverage.json reports exact_coverage=false for {output_root}"
+        )
 
-    assignments = sorted(
-        cov.get("assignments", []), key=lambda a: a["source_start"]
-    )
+    assignments = sorted(cov.get("assignments", []), key=lambda a: a["source_start"])
     expected = 1
     for a in assignments:
         start = int(a["source_start"])

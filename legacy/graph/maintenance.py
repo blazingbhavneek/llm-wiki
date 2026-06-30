@@ -116,9 +116,25 @@ class Maintenance:
         report.metrics["synthetic_total"] = len(synth)
 
         # edge-evidence coverage for active factual edges
-        factual = [e for e in edges if e.status == "active" and e.type not in ("related",)]
-        need_ev = [e for e in factual if e.type in ("contains", "has_topic", "supports", "mentions", "implements", "depends_on")]
-        missing_ev = [e for e in need_ev if not e.has_evidence() and e.type != "supports"]
+        factual = [
+            e for e in edges if e.status == "active" and e.type not in ("related",)
+        ]
+        need_ev = [
+            e
+            for e in factual
+            if e.type
+            in (
+                "contains",
+                "has_topic",
+                "supports",
+                "mentions",
+                "implements",
+                "depends_on",
+            )
+        ]
+        missing_ev = [
+            e for e in need_ev if not e.has_evidence() and e.type != "supports"
+        ]
         report.metrics["active_factual_edges"] = len(factual)
         report.metrics["edges_missing_evidence"] = len(missing_ev)
         if missing_ev:
@@ -147,7 +163,9 @@ class Maintenance:
             if not n.metadata.get("absolute_dependencies"):
                 report.lints.append(f"synthetic {n.id} has no absolute dependencies")
             if n.status == "stale":
-                report.lints.append(f"synthetic {n.id} is stale (refresh on query/maintain)")
+                report.lints.append(
+                    f"synthetic {n.id} is stale (refresh on query/maintain)"
+                )
 
         # synthetic reuse / cache hit rate
         rows = self.store.conn.execute(
@@ -172,7 +190,9 @@ class Maintenance:
         out = []
         for d, has_ext in external.items():
             if not has_ext and d:
-                out.append(f"document '{d}' has no cross-document links (isolated cluster)")
+                out.append(
+                    f"document '{d}' has no cross-document links (isolated cluster)"
+                )
         return out
 
 

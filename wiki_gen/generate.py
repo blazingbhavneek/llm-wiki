@@ -1,12 +1,10 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
+import os
 from pathlib import Path
-
-from wiki_new.llm import structured_ainvoke
-from wiki_new.planning import join_original_source_lines
-from wiki_new.utils import numbered_source_lines, read_lines, write_json
 
 from wiki_gen.catalog import slug_to_path
 from wiki_gen.io import span_ref_dict
@@ -19,6 +17,11 @@ from wiki_gen.models import (
     WikiAssignment,
 )
 from wiki_gen.prompts import build_page_generation_prompt
+from wiki_new.llm import structured_ainvoke
+from wiki_new.planning import join_original_source_lines
+from wiki_new.utils import numbered_source_lines, read_lines, write_json
+
+PAGE_CACHE_VERSION = "wiki-gen-page-v1"
 
 
 def _span_text_cache(span: SourceSpan, cache: dict[str, list[str]]) -> SourceSpan:
@@ -69,7 +72,11 @@ def ensure_document_contexts(plan: PagePlan) -> PagePlan:
     return plan.model_copy(update={"document_contexts": contexts})
 
 
-def build_page_plans(assignments: list[WikiAssignment], chunks_by_id: dict[str, object], output_root: Path) -> list[PagePlan]:
+def build_page_plans(
+    assignments: list[WikiAssignment],
+    chunks_by_id: dict[str, object],
+    output_root: Path,
+) -> list[PagePlan]:
     del chunks_by_id
     grouped: dict[str, list[WikiAssignment]] = {}
     for assignment in assignments:
@@ -81,14 +88,16 @@ def build_page_plans(assignments: list[WikiAssignment], chunks_by_id: dict[str, 
     plans: list[PagePlan] = []
     for slug, items in sorted(grouped.items()):
         first = items[0]
-        page_type = first.page_type or ("entity" if slug.startswith("entity/") else "summary" if slug.startswith("summary/") else "concept")
+        page_type = first.page_type or (
+            "entity"
+            if slug.startswith("entity/")
+            else "summary" if slug.startswith("summary/") else "concept"
+        )
         title = first.title or slug.split("/", 1)[-1].replace("-", " ").title()
         summary = first.summary or ""
         aliases: list[str] = []
         spans: list[SourceSpan] = []
-        contexts: list[DocumentContext] = []
         seen_spans: set[tuple[str, int, int]] = set()
-        seen_contexts: set[str] = set()
 
         for item in items:
             if item.title and title == slug:
@@ -102,15 +111,6 @@ def build_page_plans(assignments: list[WikiAssignment], chunks_by_id: dict[str, 
             source_path = ""
             # Source paths are copied under output_wiki/raw/<doc_id>/original.md.
             source_path = str(output_root / "raw" / item.doc_id / "original.md")
-            if source_path not in seen_contexts:
-                contexts.append(
-                    _document_context(
-                        doc_id=item.doc_id,
-                        source_path=source_path,
-                        cache=cache,
-                    )
-                )
-                seen_contexts.add(source_path)
 
             key = (source_path, item.line_start, item.line_end)
             if key in seen_spans:
@@ -138,7 +138,6 @@ def build_page_plans(assignments: list[WikiAssignment], chunks_by_id: dict[str, 
                 summary=summary,
                 aliases=aliases,
                 source_spans=spans,
-                document_contexts=contexts,
                 existing_content=existing,
             )
         )
@@ -158,10 +157,7 @@ def deterministic_page(plan: PagePlan, reason: str) -> PageDraftResult:
 
 def source_excerpt_content(plan: PagePlan, reason: str) -> tuple[str, str, str]:
     title = plan.title or plan.slug.split("/", 1)[-1].replace("-", " ").title()
-    summary = (
-        plan.summary
-        or f"Verbatim source-backed fallback page for {title}."
-    )
+    summary = plan.summary or f"Verbatim source-backed fallback page for {title}."
     lines = [
         f"# {title}",
         "",
@@ -197,6 +193,81 @@ def ensure_page_heading(content: str, title: str) -> str:
     return f"# {title}\n\n{stripped}\n"
 
 
+def source_signature(spans: list[SourceSpan]) -> str:
+    rows = [
+        {
+            "doc_id": span.doc_id,
+            "source_path": span.source_path,
+            "line_start": span.line_start,
+            "line_end": span.line_end,
+            "text_hash": hashlib.sha256(span.text.encode("utf-8")).hexdigest(),
+        }
+        for span in sorted(
+            spans,
+            key=lambda item: (
+                item.doc_id,
+                item.source_path,
+                item.line_start,
+                item.line_end,
+            ),
+        )
+    ]
+    encoded = json.dumps(rows, sort_keys=True, ensure_ascii=False)
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+
+
+def load_page_metadata(output_root: Path) -> dict[str, dict]:
+    path = output_root / "_planning" / "page_metadata.json"
+    if not path.exists():
+        return {}
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+    pages = raw.get("pages", {})
+    return pages if isinstance(pages, dict) else {}
+
+
+def reusable_existing_page(
+    *, plan: PagePlan, output_root: Path
+) -> GeneratedPage | None:
+    if os.environ.get("WIKI_GEN_FORCE_PAGES", "0") == "1":
+        return None
+
+    page_path = slug_to_path(output_root, plan.slug, plan.page_type)
+    if not page_path.exists():
+        return None
+
+    meta = load_page_metadata(output_root).get(plan.slug)
+    if not isinstance(meta, dict):
+        return None
+
+    if meta.get("page_cache_version") != PAGE_CACHE_VERSION:
+        return None
+    if meta.get("prompt_version") != os.environ.get("WIKI_PROMPT_VERSION", "default"):
+        return None
+    signature = source_signature(plan.source_spans)
+    known_signatures = set(meta.get("source_signatures") or [])
+    known_signatures.add(str(meta.get("source_signature") or ""))
+    if signature not in known_signatures:
+        return None
+
+    content = page_path.read_text(encoding="utf-8")
+    print(f"[PageCache] {plan.slug}")
+    return GeneratedPage(
+        slug=plan.slug,
+        page_type=plan.page_type,
+        title=str(meta.get("title") or plan.title),
+        summary=str(meta.get("summary") or plan.summary),
+        content=content,
+        aliases=list(meta.get("aliases") or plan.aliases),
+        path=str(page_path),
+        source_spans=plan.source_spans,
+        research_reports=plan.research_reports,
+        repaired=False,
+    )
+
+
 async def generate_page(
     *,
     llm,
@@ -204,13 +275,21 @@ async def generate_page(
     output_root: Path,
     repair_instruction: str = "",
 ) -> GeneratedPage:
-    plan = ensure_document_contexts(plan)
+    if not repair_instruction:
+        cached_page = reusable_existing_page(plan=plan, output_root=output_root)
+        if cached_page is not None:
+            return cached_page
+
     try:
         raw = await structured_ainvoke(
             llm,
             PageDraftResult,
-            build_page_generation_prompt(plan=plan, repair_instruction=repair_instruction),
+            build_page_generation_prompt(
+                plan=plan, repair_instruction=repair_instruction
+            ),
             max_output_tokens=5000,
+            phase=f"wiki_gen.generate.{plan.slug}",
+            enable_thinking=True,
         )
         draft = PageDraftResult.model_validate(raw)
     except Exception as exc:  # noqa: BLE001
@@ -242,7 +321,6 @@ def write_source_excerpt_page(
     output_root: Path,
     reason: str,
 ) -> GeneratedPage:
-    plan = ensure_document_contexts(plan)
     title, summary, content = source_excerpt_content(plan, reason)
     page_path = slug_to_path(output_root, plan.slug, plan.page_type)
     page_path.parent.mkdir(parents=True, exist_ok=True)
@@ -307,15 +385,17 @@ def write_page_sources(output_root: Path, pages: list[GeneratedPage]) -> None:
 
 def write_page_metadata(output_root: Path, pages: list[GeneratedPage]) -> None:
     path = output_root / "_planning" / "page_metadata.json"
-    existing: dict[str, dict] = {}
-    if path.exists():
-        try:
-            raw = json.loads(path.read_text(encoding="utf-8"))
-            existing = raw.get("pages", {}) if isinstance(raw.get("pages", {}), dict) else {}
-        except json.JSONDecodeError:
-            existing = {}
+    existing = load_page_metadata(output_root)
 
     for page in pages:
+        signature = source_signature(page.source_spans)
+        previous = existing.get(page.slug, {})
+        signatures = set(previous.get("source_signatures") or [])
+        previous_signature = previous.get("source_signature")
+        if previous_signature:
+            signatures.add(str(previous_signature))
+        signatures.add(signature)
+
         existing[page.slug] = {
             "slug": page.slug,
             "page_type": page.page_type,
@@ -324,7 +404,13 @@ def write_page_metadata(output_root: Path, pages: list[GeneratedPage]) -> None:
             "aliases": page.aliases,
             "path": page.path,
             "source_refs": [span_ref_dict(span) for span in page.source_spans],
-            "research_reports": [report.model_dump() for report in page.research_reports],
+            "research_reports": [
+                report.model_dump() for report in page.research_reports
+            ],
+            "source_signature": signature,
+            "source_signatures": sorted(signatures),
+            "page_cache_version": PAGE_CACHE_VERSION,
+            "prompt_version": os.environ.get("WIKI_PROMPT_VERSION", "default"),
         }
 
     write_json(path, {"pages": existing})

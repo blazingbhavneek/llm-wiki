@@ -1,62 +1,77 @@
 # Conditional SWITCH Nodes
 
-Conditional SWITCH nodes are a feature introduced in CUDA 12.8 that enable the execution of one of *n* different graphs within a conditional node [CUDA_C_Programming_Guide:L3338-L3341].
+SWITCH nodes, introduced in CUDA 12.8, allow execution of one of n different graphs within a conditional node based on an evaluated condition value. If the condition value is greater than or equal to n, no graph is executed. The section provides code examples for creating graphs with SWITCH conditional nodes using the CUDA Graph API.
 
-## Behavior
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-The execution path is determined by the condition value evaluated at runtime:
+## Source CUDA_C_Programming_Guide:L3338-L3401
 
-*   If the condition value is equal to *n*, the *n*th graph is executed [CUDA_C_Programming_Guide:L3338-L3341].
-*   If the condition value is greater than or equal to *n*, no graph is executed [CUDA_C_Programming_Guide:L3338-L3341].
+Citation: [CUDA_C_Programming_Guide:L3338-L3401]
 
-## Implementation
+````text
+## 6.2.8.7.8.5 Conditional SWITCH Nodes
 
-SWITCH nodes are created using the CUDA Graph API. The condition value is typically set using an upstream kernel that writes to a `cudaGraphConditionalHandle` [CUDA_C_Programming_Guide:L3342-L3401].
+SWITCH nodes, added in CUDA 12.8, execute 1 of n diferent graphs within the conditional node. The nth graph will be executed when the SWITCH node is evaluated if the condition value is n. If the condition value is greater than or equal to n, no graph will be executed. The following diagram depicts a 3 node graph where the middle node, B, is a conditional node:
 
-### Creating the Conditional Node
+The following code illustrates the creation of a graph containing a SWITCH conditional node. The value of the condition is set using an upstream kernel. The bodies of the conditional are populated using the graph API.
 
-To define a SWITCH node, the `cudaGraphNodeTypeConditional` node type is used with the `cudaGraphCondTypeSwitch` type specified in the node parameters [CUDA_C_Programming_Guide:L3342-L3401]. The `size` parameter indicates the number of available body graphs [CUDA_C_Programming_Guide:L3342-L3401].
-
-```cpp
-cudaGraphNodeParams cParams = { cudaGraphNodeTypeConditional };
-cParams.conditional.handle = handle;
-cParams.conditional.type = cudaGraphCondTypeSwitch;
-cParams.conditional.size = 5;
-```
-
-### Populating Body Graphs
-
-The API provides access to the body graphs via `cParams.conditional.phGraph_out`, which is an array of `cudaGraph_t` pointers [CUDA_C_Programming_Guide:L3342-L3401]. Developers populate these body graphs independently using standard graph API calls (e.g., `cudaGraphAddNode`) [CUDA_C_Programming_Guide:L3342-L3401].
-
-### Setting the Condition
-
-An upstream kernel can be added to the graph to set the condition value. This is done by passing the `cudaGraphConditionalHandle` to a kernel function that calls `cudaGraphSetConditional` [CUDA_C_Programming_Guide:L3342-L3401].
-
-```cpp
+```javascript
 __global__ void setHandle(cudaGraphConditionalHandle handle)
 {
     ...
     cudaGraphSetConditional(handle, value);
     ...
 }
+
+void graphSetup() {
+    cudaGraph_t graph;
+    cudaGraphExec_t graphExec;
+    cudaGraphNode_t node;
+    void *kernelArgs[1];
+    int value = 1;
+
+    cudaGraphCreate(&graph, 0);
+
+    cudaGraphConditionalHandle handle;
+    cudaGraphConditionalHandleCreate(&handle, graph);
+
+    // Use a kernel upstream of the conditional to set the handle value
+    cudaGraphNodeParams params = { cudaGraphNodeTypeKernel };
+    params.kernel.func = (void *)setHandle;
+    params.kernel.gridDim.x = params.kernel.gridDim.y = params.kernel.gridDim.z = 1;
+    params.kernel.blockDim.x = params.kernel.blockDim.y = params.kernel.blockDim.z = 1;
+    params.kernel.kernelParams = kernelArgs;
+    kernelsArgs[0] = &handle;
+    cudaGraphAddNode(&node, graph, NULL, NULL, 0, &params);
+
+    cudaGraphNodeParams cParams = { cudaGraphNodeTypeConditional };
+    cParams.conditional.handle = handle;
+    cParams.conditional.type = cudaGraphCondTypeSwitch;
+    cParams.conditional.size = 5;
 ```
-
-### Execution Flow
-
-1.  Create the main graph and the conditional handle [CUDA_C_Programming_Guide:L3342-L3401].
-2.  Add the upstream kernel node that sets the condition value [CUDA_C_Programming_Guide:L3342-L3401].
-3.  Add the conditional SWITCH node, linking it to the handle [CUDA_C_Programming_Guide:L3342-L3401].
-4.  Populate the body graphs accessible through the handle [CUDA_C_Programming_Guide:L3342-L3401].
-5.  Instantiate and launch the graph [CUDA_C_Programming_Guide:L3342-L3401].
-
-## Example Diagram
-
-A typical configuration involves a graph where a middle node acts as a conditional SWITCH node, branching to different body graphs based on the condition [CUDA_C_Programming_Guide:L3338-L3341].
 
 ![](images/2df151bcaf93eec571e6ab4ffd31348d9c97e94d4f586267062123814bb0f4f2.jpg)  
 Figure 25: Conditional SWITCH Node
 
-## References
+```txt
+cudaGraphAddNode(&node, graph, &node, NULL, 1, &cParams);
 
-*   CUDA C Programming Guide, Section 6.2.8.7.8.5 Conditional SWITCH Nodes [CUDA_C_Programming_Guide:L3338-L3341]
-*   CUDA C Programming Guide, Code Example for SWITCH Node Creation [CUDA_C_Programming_Guide:L3342-L3401]
+cudaGraph_t *bodyGraphs = cParams.conditional.phGraph_out;
+
+// Populate the first body of the conditional node
+...
+cudaGraphAddNode(&node, bodyGraphs[0], NULL, NULL, 0, &params);
+...
+// Populate the last body of the conditional node
+cudaGraphAddNode(&node, bodyGraphs[4], NULL, NULL, 0, &params);
+
+cudaGraphInstantiate(&graphExec, graph, NULL, NULL, 0);
+cudaGraphLaunch(graphExec, 0);
+cudaDeviceSynchronize();
+
+cudaGraphExecDestroy(graphExec);
+cudaGraphDestroy(graph);
+}
+```
+````

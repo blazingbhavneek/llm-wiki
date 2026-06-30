@@ -1,14 +1,18 @@
 # Texture Object API
 
-The Texture Object API allows CUDA applications to create and manage texture objects, which facilitate efficient texture sampling within device kernels. A texture object is created using the `cudaCreateTextureObject()` function, which takes a resource description and a texture description as input [CUDA_C_Programming_Guide:L3679-L3809].
+Texture objects are created using cudaCreateTextureObject() with resource and texture descriptions. The API supports advanced features like anisotropic filtering, mipmapping, and sRGB. The section provides a complete code example demonstrating texture allocation, configuration, kernel execution, and cleanup.
 
-## Structure Definitions
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-### Resource Description
-The resource description is defined by the `struct cudaResourceDesc`, which specifies the underlying texture resource (such as a CUDA array) [CUDA_C_Programming_Guide:L3679-L3809].
+## Source CUDA_C_Programming_Guide:L3678-L3810
 
-### Texture Description
-The texture description is defined by the `struct cudaTextureDesc`, which configures how the texture is sampled. The structure is defined as follows [CUDA_C_Programming_Guide:L3679-L3809]:
+Citation: [CUDA_C_Programming_Guide:L3678-L3810]
+
+````text
+## 6.2.14.1.1 Texture Object API
+
+A texture object is created using cudaCreateTextureObject() from a resource description of type struct cudaResourceDesc, which specifies the texture, and from a texture description defined as such:
 
 ```txt
 struct cudaTextureDesc
@@ -26,20 +30,17 @@ struct cudaTextureDesc
 };
 ```
 
-Key fields include [CUDA_C_Programming_Guide:L3679-L3809]:
-*   `addressMode`: Specifies the addressing mode for texture coordinates.
-*   `filterMode`: Specifies the filter mode (e.g., linear or point filtering).
-*   `readMode`: Specifies the read mode (e.g., reading as the element type or as normalized integers).
-*   `normalizedCoords`: Specifies whether texture coordinates are normalized (0.0 to 1.0) or not.
-*   `sRGB`, `maxAnisotropy`, `mipmapFilterMode`, `mipmapLevelBias`, `minMipmapLevelClamp`, and `maxMipmapLevelClamp`: Additional parameters for advanced texture filtering and mipmap management, as detailed in the reference manual.
+addressMode specifies the addressing mode;
 
-## Usage Example
+filterMode specifies the filter mode;
 
-The following code sample demonstrates how to create a texture object and use it in a transformation kernel. The kernel rotates a 2D image by applying a transformation to the texture coordinates before sampling [CUDA_C_Programming_Guide:L3679-L3809].
+readMode specifies the read mode;
 
-### Kernel Implementation
+▶ normalizedCoords specifies whether texture coordinates are normalized or not;
 
-The `transformKernel` calculates normalized texture coordinates, applies a rotation transformation, and samples the texture using `tex2D` [CUDA_C_Programming_Guide:L3679-L3809]:
+▶ See reference manual for sRGB, maxAnisotropy, mipmapFilterMode, mipmapLevelBias, minMipmapLevelClamp, and maxMipmapLevelClamp.
+
+The following code sample applies some simple transformation kernel to a texture.
 
 ```lisp
 // Simple transformation kernel
@@ -64,20 +65,42 @@ __global__ void transformKernel(float* output,
     // Read from texture and write to global memory
     output[y * width + x] = tex2D<float>(texObj, tu, tv);
 }
+
+// Host code
+int main()
+{
+    const int height = 1024;
+    const int width = 1024;
+    float angle = 0.5;
+
+    // Allocate and set some host data
+    float *h_data = (float *)std::malloc(sizeof(float) * width * height);
+    for (int i = 0; i < height * width; ++i)
+        h_data[i] = i;
+
+    // Allocate CUDA array in device memory
+    cudaChannelFormatDesc channelDesc =
+        cudaCreateChannelDesc(32, 0, 0, 0, cudaChannelFormatKindFloat);
+    cudaArray_t cuArray;
+    cudaMallocArray(&cuArray, &channelDesc, width, height);
+
+    // Set pitch of the source (the width in memory in bytes of the 2D array pointed
+    // to by src, including padding), we dont have any padding
+    const size_t spitch = width * sizeof(float);
+    // Copy data located at address h_data in host memory to device memory
+    cudaMemcpy2DToArray(cuArray, 0, 0, h_data, spitch, width * sizeof(float),
+                            height, cudaMemcpyHostToDevice);
+
+    // Specify texture
+    struct cudaResourceDesc resDesc;
+    memset(&resDesc, 0, sizeof(resDesc));
+    resDesc.resType = cudaResourceTypeArray;
+    resDesc.res.array.array = cuArray;
 ```
 
-### Host Code Setup
+(continues on next page)
 
-The host code performs the following steps [CUDA_C_Programming_Guide:L3679-L3809]:
-
-1.  **Allocate and Initialize Data**: Host data is allocated and initialized.
-2.  **Create CUDA Array**: A CUDA array is allocated in device memory with a specific channel format (e.g., 32-bit float) [CUDA_C_Programming_Guide:L3679-L3809].
-3.  **Copy Data**: Data is copied from host memory to the device array using `cudaMemcpy2DToArray` [CUDA_C_Programming_Guide:L3679-L3809].
-4.  **Configure Resource Description**: The `cudaResourceDesc` is set up to point to the CUDA array [CUDA_C_Programming_Guide:L3679-L3809].
-5.  **Configure Texture Description**: The `cudaTextureDesc` is initialized with parameters such as wrap addressing, linear filtering, and normalized coordinates [CUDA_C_Programming_Guide:L3679-L3809].
-6.  **Create Texture Object**: `cudaCreateTextureObject` is called to create the texture object [CUDA_C_Programming_Guide:L3679-L3809].
-7.  **Execute Kernel**: The transformation kernel is launched [CUDA_C_Programming_Guide:L3679-L3809].
-8.  **Cleanup**: The texture object is destroyed, and memory is freed [CUDA_C_Programming_Guide:L3679-L3809].
+(continued from previous page)
 
 ```txt
 // Specify texture object parameters
@@ -93,13 +116,30 @@ texDesc.normalizedCoords = 1;
 cudaTextureObject_t texObj = 0;
 cudaCreateTextureObject(&texObj, &resDesc, &texDesc, NULL);
 
-// ... (kernel launch and execution) ...
+// Allocate result of transformation in device memory
+float *output;
+cudaMalloc(&output, width * height * sizeof(float));
+
+// Invoke kernel
+dim3 threadsperBlock(16, 16);
+dim3 numBlocks((width + threadsperBlock.x - 1) / threadsperBlock.x,
+                      (height + threadsperBlock.y - 1) / threadsperBlock.y);
+transformKernel<<<numBlocks, threadsperBlock>>>(output, texObj, width, height,
+                           angle);
+// Copy data from device back to host
+cudaMemcpy(h_data, output, width * height * sizeof(float),
+        cudaMemcpyDeviceToHost);
 
 // Destroy texture object
 cudaDestroyTextureObject(texObj);
+
+// Free device memory
+cudaFreeArray(cuArray);
+cudaFree(output);
+
+// Free host memory
+free(h_data);
+
+return 0;
 ```
-
-## References
-
-*   CUDA C Programming Guide: Texture Object API documentation [CUDA_C_Programming_Guide:L3679-L3809].
-*   CUDA C Programming Guide: Additional texture parameters [CUDA_C_Programming_Guide:L3810-L3810].
+````

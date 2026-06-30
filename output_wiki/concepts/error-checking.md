@@ -1,29 +1,24 @@
 # Error Checking
 
-All CUDA runtime functions return an error code to indicate success or failure [CUDA_C_Programming_Guide:L3626-L3637]. However, the behavior of these error codes differs between synchronous and asynchronous operations.
+Runtime functions return error codes, but asynchronous functions report errors via subsequent calls. cudaDeviceSynchronize() is required to catch async errors. cudaPeekAtLastError() and cudaGetLastError() manage thread-local error variables. Kernel launches require explicit error checking immediately after launch, and cudaErrorNotReady is not considered an error.
 
-## Asynchronous Errors
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-For asynchronous functions, the returned error code only reports errors that occur on the host prior to executing the task, typically related to parameter validation [CUDA_C_Programming_Guide:L3626-L3637]. It cannot report asynchronous errors that occur on the device because the function returns before the device has completed the task [CUDA_C_Programming_Guide:L3626-L3637]. If an asynchronous error occurs, it will be reported by some subsequent unrelated runtime function call [CUDA_C_Programming_Guide:L3626-L3637].
+## Source CUDA_C_Programming_Guide:L3626-L3637
 
-The only way to check for asynchronous errors immediately after an asynchronous function call is to synchronize the device by calling `cudaDeviceSynchronize()` (or using other synchronization mechanisms) and checking the error code returned by that synchronization call [CUDA_C_Programming_Guide:L3626-L3637].
+Citation: [CUDA_C_Programming_Guide:L3626-L3637]
 
-## Thread-Local Error Variables
+````text
+## 6.2.12. Error Checking
 
-The CUDA runtime maintains an error variable for each host thread, initialized to `cudaSuccess` [CUDA_C_Programming_Guide:L3626-L3637]. This variable is overwritten by the error code every time an error occurs, whether it is a parameter validation error or an asynchronous error [CUDA_C_Programming_Guide:L3626-L3637].
+All runtime functions return an error code, but for an asynchronous function (see Asynchronous Concurrent Execution), this error code cannot possibly report any of the asynchronous errors that could occur on the device since the function returns before the device has completed the task; the error code only reports errors that occur on the host prior to executing the task, typically related to parameter validation; if an asynchronous error occurs, it will be reported by some subsequent unrelated runtime function call.
 
-Two functions manage this thread-local state:
-*   `cudaPeekAtLastError()`: Returns the current value of the error variable without modifying it [CUDA_C_Programming_Guide:L3626-L3637].
-*   `cudaGetLastError()`: Returns the current value of the error variable and resets it to `cudaSuccess` [CUDA_C_Programming_Guide:L3626-L3637].
+The only way to check for asynchronous errors just after some asynchronous function call is therefore to synchronize just after the call by calling cudaDeviceSynchronize() (or by using any other synchronization mechanisms described in Asynchronous Concurrent Execution) and checking the error code returned by cudaDeviceSynchronize().
 
-## Kernel Launch Error Checking
+The runtime maintains an error variable for each host thread that is initialized to cudaSuccess and is overwritten by the error code every time an error occurs (be it a parameter validation error or an asynchronous error). cudaPeekAtLastError() returns this variable. cudaGetLastError() returns this variable and resets it to cudaSuccess.
 
-Kernel launches do not return any error code directly [CUDA_C_Programming_Guide:L3626-L3637]. To check for errors associated with a kernel launch, `cudaPeekAtLastError()` or `cudaGetLastError()` must be called just after the kernel launch to retrieve any pre-launch errors [CUDA_C_Programming_Guide:L3626-L3637].
+Kernel launches do not return any error code, so cudaPeekAtLastError() or cudaGetLastError() must be called just after the kernel launch to retrieve any pre-launch errors. To ensure that any error returned by cudaPeekAtLastError() or cudaGetLastError() does not originate from calls prior to the kernel launch, one has to make sure that the runtime error variable is set to cudaSuccess just before the kernel launch, for example, by calling cudaGetLastError() just before the kernel launch. Kernel launches are asynchronous, so to check for asynchronous errors, the application must synchronize in-between the kernel launch and the call to cudaPeekAtLastError() or cudaGetLastError().
 
-To ensure that the error retrieved does not originate from calls prior to the kernel launch, the runtime error variable must be set to `cudaSuccess` immediately before the kernel launch, for example, by calling `cudaGetLastError()` just before the launch [CUDA_C_Programming_Guide:L3626-L3637].
-
-Since kernel launches are asynchronous, checking for asynchronous errors requires synchronization between the kernel launch and the call to `cudaPeekAtLastError()` or `cudaGetLastError()` [CUDA_C_Programming_Guide:L3626-L3637].
-
-## Special Cases
-
-The error code `cudaErrorNotReady`, which may be returned by `cudaStreamQuery()` and `cudaEventQuery()`, is not considered an error and is therefore not reported by `cudaPeekAtLastError()` or `cudaGetLastError()` [CUDA_C_Programming_Guide:L3626-L3637].
+Note that cudaErrorNotReady that may be returned by cudaStreamQuery() and cudaEvent-Query() is not considered an error and is therefore not reported by cudaPeekAtLastError() or cudaGetLastError().
+````

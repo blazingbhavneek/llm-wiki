@@ -1,50 +1,325 @@
 # Stream Ordered Memory Allocator
 
-> **Warning**: This document has been replaced by a new CUDA Programming Guide. The information in this document should be considered legacy, and this document is no longer being updated as of CUDA 13.0. Please refer to the CUDA Programming Guide for up-to-date information on CUDA. [CUDA_C_Programming_Guide:L15390-L15398]
+Covers the Stream Ordered Memory Allocator (CUDA 11.2+), including cudaMallocAsync/cudaFreeAsync, memory pools, caching behavior, reuse policies, and multi-GPU accessibility.
 
-The Stream Ordered Memory Allocator is a memory management system introduced in CUDA 11.3 that allows applications to order memory allocation and deallocation operations with other work launched into a CUDA stream, such as kernel launches and asynchronous copies [CUDA_C_Programming_Guide:L15390-L15398].
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-## Problem Statement
+## Source CUDA_C_Programming_Guide:L15392-L15704
 
-Traditional memory management using `cudaMalloc` and `cudaFree` causes the GPU to synchronize across all executing CUDA streams [CUDA_C_Programming_Guide:L15390-L15398]. This synchronization can create performance bottlenecks and limit concurrency [CUDA_C_Programming_Guide:L15390-L15398].
+Citation: [CUDA_C_Programming_Guide:L15392-L15704]
 
-## Key Features
+````text
 
-### Stream-Ordered Semantics
+## 15.1. Introduction
 
-The allocator enables applications to order memory allocation and deallocation with other work launched into a CUDA stream [CUDA_C_Programming_Guide:L15390-L15398]. This stream-ordering semantics allows the allocator to reuse memory allocations more effectively, improving application memory use [CUDA_C_Programming_Guide:L15390-L15398].
+Managing memory allocations using cudaMalloc and cudaFree causes GPU to synchronize across all executing CUDA streams. The Stream Order Memory Allocator enables applications to order memory allocation and deallocation with other work launched into a CUDA stream such as kernel launches and asynchronous copies. This improves application memory use by taking advantage of stream-ordering semantics to reuse memory allocations. The allocator also allows applications to control the allocator’s memory caching behavior. When set up with an appropriate release threshold, the caching behavior allows the allocator to avoid expensive calls into the OS when the application indicates it is willing to accept a bigger memory footprint. The allocator also supports the easy and secure sharing of allocations between processes.
 
-### Memory Caching and OS Calls
+For many applications, the Stream Ordered Memory Allocator reduces the need for custom memory management abstractions, and makes it easier to create high-performance custom memory management for applications that need it. For applications and libraries that already have custom memory allocators, adopting the Stream Ordered Memory Allocator enables multiple libraries to share a common pool of memory managed by the driver, thus reducing excess memory consumption. Additionally, the driver can perform optimizations based on its awareness of the allocator and other stream management APIs. Finally, Nsight Compute and the Next-Gen CUDA debugger is aware of the allocator as part of their CUDA 11.3 toolkit support.
 
-Applications can control the allocator’s memory caching behavior [CUDA_C_Programming_Guide:L15390-L15398]. When configured with an appropriate release threshold, the caching behavior allows the allocator to avoid expensive calls into the operating system when the application indicates it is willing to accept a larger memory footprint [CUDA_C_Programming_Guide:L15390-L15398].
+## 15.2. Query for Support
 
-### Inter-Process Sharing
+The user can determine whether or not a device supports the stream ordered memory allocator by calling cudaDeviceGetAttribute() with the device attribute cudaDevAttrMemoryPoolsSupported.
 
-The allocator supports the easy and secure sharing of allocations between processes [CUDA_C_Programming_Guide:L15390-L15398].
+Starting with CUDA 11.3, IPC memory pool support can be queried with the cudaDevAttrMemoryPoolSupportedHandleTypes device attribute. Previous drivers will return cudaErrorInvalid-Value as those drivers are unaware of the attribute enum.
 
-## Benefits
+```txt
+int driverVersion = 0;
+int deviceSupportsMemoryPools = 0;
+int poolSupportedHandleTypes = 0;
+cudaDriverGetVersion(&driverVersion);
+if (driverVersion >= 11020) {
+    cudaDeviceGetAttribute(&deviceSupportsMemoryPools,
+                             cudaDevAttrMemoryPoolsSupported, device);
+}
+if (deviceSupportsMemoryPools != 0) {
+    // `device` supports the Stream Ordered Memory Allocator
+}
 
-### Reduced Custom Management
+if (driverVersion >= 11030) {
+    cudaDeviceGetAttribute(&poolSupportedHandleTypes,
+                             cudaDevAttrMemoryPoolSupportedHandleTypes, device);
+}
+if (poolSupportedHandleTypes & cudaMemHandleTypePosixFileDescriptor) {
+    // Pools on the specified device can be created with posix file descriptor-based IPC
+}
+```
 
-For many applications, the Stream Ordered Memory Allocator reduces the need for custom memory management abstractions [CUDA_C_Programming_Guide:L15390-L15398]. It makes it easier to create high-performance custom memory management for applications that require it [CUDA_C_Programming_Guide:L15390-L15398].
+Performing the driver version check before the query avoids hitting a cudaErrorInvalidValue error on drivers where the attribute was not yet defined. One can use cudaGetLastError to clear the error instead of avoiding it.
 
-### Library Integration
+## 15.3. API Fundamentals (cudaMallocAsync and cudaFreeAsync)
 
-For applications and libraries that already have custom memory allocators, adopting the Stream Ordered Memory Allocator enables multiple libraries to share a common pool of memory managed by the driver [CUDA_C_Programming_Guide:L15390-L15398]. This sharing reduces excess memory consumption [CUDA_C_Programming_Guide:L15390-L15398].
+The APIs cudaMallocAsync and cudaFreeAsync form the core of the allocator. cudaMallocAsync returns an allocation and cudaFreeAsync frees an allocation. Both APIs accept stream arguments to define when the allocation will become and stop being available for use. The pointer value returned by cudaMallocAsync is determined synchronously and is available for constructing future work. It is important to note that cudaMallocAsync ignores the current device/context when determining where the allocation will reside. Instead, cudaMallocAsync determines the resident device based on the specified memory pool or the supplied stream. The simplest use pattern is when the memory is allocated, used, and freed back into the same stream.
 
-### Driver Optimizations
+```cpp
+void *ptr;
+size_t size = 512;
+cudaMallocAsync(&ptr, size, cudaStreamPerThread);
+// do work using the allocation
+kernel<<<..., cudaStreamPerThread>>>(ptr, ...);
+```
 
-The driver can perform optimizations based on its awareness of the allocator and other stream management APIs [CUDA_C_Programming_Guide:L15390-L15398].
+(continues on next page)
 
-## Tooling Support
+(continued from previous page)
 
-Nsight Compute and the Next-Gen CUDA debugger are aware of the allocator as part of their CUDA 11.3 toolkit support [CUDA_C_Programming_Guide:L15390-L15398].
+```txt
+// An asynchronous free can be specified without synchronizing the cpu and GPU
+cudaFreeAsync(ptr, cudaStreamPerThread);
+```
 
-## API
+When using an allocation in a stream other than the allocating stream, the user must guarantee that the access will happen after the allocation operation, otherwise the behavior is undefined. The user may make this guarantee either by synchronizing the allocating stream, or by using CUDA events to synchronize the producing and consuming streams.
 
-The primary functions associated with the Stream Ordered Memory Allocator are:
+cudaFreeAsync() inserts a free operation into the stream. The user must guarantee that the free operation happens after the allocation operation and any use of the allocation. Also, any use of the allocation after the free operation starts results in undefined behavior. Events and/or stream synchronizing operations should be used to guarantee any access to the allocation on other streams is complete before the freeing stream begins the free operation.
 
-*   `cudaMallocAsync`: Allocates memory in a stream-ordered manner.
-*   `cudaFreeAsync`: Frees memory in a stream-ordered manner.
+```txt
+cudaMallocAsync(&ptr, size, stream1);
+cudaEventRecord(event1, stream1);
+//stream2 must wait for the allocation to be ready before accessing
+cudaStreamWaitEvent(stream2, event1);
+kernel<<<..., stream2>>>(ptr, ...);
+cudaEventRecord(event2, stream2);
+// stream3 must wait for stream2 to finish accessing the allocation before
+// freeing the allocation
+cudaStreamWaitEvent(stream3, event2);
+cudaFreeAsync(ptr, stream3);
+```
 
-These functions allow memory operations to be ordered relative to other stream work, enabling the benefits described above [CUDA_C_Programming_Guide:L15390-L15398].
+The user can free allocations allocated with cudaMalloc() with cudaFreeAsync(). The user must make the same guarantees about accesses being complete before the free operation begins.
+
+```txt
+cudaMalloc(&ptr, size);
+kernel<<<..., stream>>>(ptr, ...);
+cudaFreeAsync(ptr, stream);
+```
+
+The user can free memory allocated with cudaMallocAsync with cudaFree(). When freeing such allocations through the cudaFree() API, the driver assumes that all accesses to the allocation are complete and performs no further synchronization. The user can use cudaStreamQuery / cudaStreamSynchronize / cudaEventQuery / cudaEventSynchronize / cudaDeviceSynchronize to guarantee that the appropriate asynchronous work is complete and that the GPU will not try to access the allocation.
+
+```c
+cudaMallocAsync(&ptr, size,stream);
+kernel<<<..., stream>>>(ptr, ...);
+// synchronize is needed to avoid prematurely freeing the memory
+cudaStreamSynchronize(stream);
+cudaFree(ptr);
+```
+
+## 15.4. Memory Pools and the cudaMemPool\_t
+
+Memory pools encapsulate virtual address and physical memory resources that are allocated and managed according to the pools attributes and properties. The primary aspect of a memory pool is the kind and location of memory it manages.
+
+All calls to cudaMallocAsync use the resources of a memory pool. In the absence of a specified memory pool, cudaMallocAsync uses the current memory pool of the supplied stream’s device. The current memory pool for a device may be set with cudaDeviceSetMempool and queried with cudaDeviceGetMempool. By default (in the absence of a cudaDeviceSetMempool call), the current memory pool is the default memory pool of a device. The API cudaMallocFromPoolAsync and c++ overloads of cudaMallocAsync allow a user to specify the pool to be used for an allocation without setting it as the current pool. The APIs cudaDeviceGetDefaultMempool and cudaMemPoolCreate give users handles to memory pools.
+
+Note: The mempool current to a device will be local to that device. So allocating without specifying a memory pool will always yield an allocation local to the stream’s device.
+
+Note: cudaMemPoolSetAttribute and cudaMemPoolGetAttribute control the attributes of the memory pools.
+
+## 15.5. Default/Implicit Pools
+
+The default memory pool of a device may be retrieved with the cudaDeviceGetDefaultMempool API. Allocations from the default memory pool of a device are non-migratable device allocation located on that device. These allocations will always be accessible from that device. The accessibility of the default memory pool may be modified with cudaMemPoolSetAccess and queried by cudaMemPool-GetAccess. Since the default pools do not need to be explicitly created, they are sometimes referred to as implicit pools. The default memory pool of a device does not support IPC.
+
+## 15.6. Explicit Pools
+
+The API cudaMemPoolCreate creates an explicit pool. This allows applications to request properties for their allocation beyond what is provided by the default/implict pools. These include properties such as IPC capability, maximum pool size, allocations resident on a specific CPU NUMA node on supported platforms etc.
+
+```javascript
+// create a pool similar to the implicit pool on device 0
+int device = 0;
+cudaMemPoolProps poolProps = { };
+poolProps.allocType = cudaMemAllocationTypePinned;
+poolProps.location.id = device;
+poolProps.location.type = cudaMemLocationTypeDevice;
+
+cudaMemPoolCreate(&memPool, &poolProps));
+```
+
+The following code snippet illustrates an example of creating an IPC capable memory pool on a valid CPU NUMA node.
+
+```txt
+// create a pool resident on a CPU NUMA node that is capable of IPC sharing (via a file
+    descriptor).
+int cpu_numa_id = 0;
+cudaMemPoolProps poolProps = { };
+poolProps.allocType = cudaMemcpyAllocationTypePinned;
+poolProps.location.id = cpu_numa_id;
+poolProps.location.type = cudaMemcpyLocationTypeHostNuma;
+poolProps.handleType = cudaMemcpyHandleTypePosixFileDescriptor;
+
+cudaMemPoolCreate(&ipcMemPool, &poolProps));
+```
+
+## 15.7. Physical Page Caching Behavior
+
+By default, the allocator tries to minimize the physical memory owned by a pool. To minimize the OS calls to allocate and free physical memory, applications must configure a memory footprint for each pool. Applications can do this with the release threshold attribute (cudaMemPoolAttrReleaseThreshold).
+
+The release threshold is the amount of memory in bytes a pool should hold onto before trying to release memory back to the OS. When more than the release threshold bytes of memory are held by the memory pool, the allocator will try to release memory back to the OS on the next call to stream, event or device synchronize. Setting the release threshold to UINT64\_MAX will prevent the driver from attempting to shrink the pool after every synchronization.
+
+```txt
+Cuuid64_t setVal = UINT64_MAX;
+cudaMemPoolSetAttribute(memPool, cudaMemPoolAttrReleaseThreshold, &setVal);
+```
+
+Applications that set cudaMemPoolAttrReleaseThreshold high enough to efectively disable memory pool shrinking may wish to explicitly shrink a memory pool’s memory footprint. cudaMem-PoolTrimTo allows such applications to do so. When trimming a memory pool’s footprint, the min-BytesToKeep parameter allows an application to hold onto an amount of memory it expects to need in a subsequent phase of execution.
+
+```cpp
+Cuuid64_t setVal = UINT64_MAX;
+cudaMemPoolSetAttribute(memPool, cudaMemPoolAttrReleaseThreshold, &setVal);
+
+// application phase needing a lot of memory from the stream ordered allocator
+for (i=0; i<10; i++) {
+    for (j=0; j<10; j++) {
+        cudaMallocAsync(&ptrs[j],size[j], stream);
+    }
+    kernel<<<...,stream>>>(ptrs,...);
+    for (j=0; j<10; j++) {
+        cudaFreeAsync(ptrs[j], stream);
+    }
+}
+
+// Process does not need as much memory for the next phase.
+// Synchronize so that the trim operation will know that the allocations are no
+// longer in use.
+cudaStreamSynchronize(stream);
+```
+
+(continues on next page)
+
+```txt
+(continued from previous page)
+cudaMemPoolTrimTo(mempool, 0);
+
+// Some other process/allocation mechanism can now use the physical memory
+// released by the trimming operation.
+```
+
+## 15.8. Resource Usage Statistics
+
+In CUDA 11.3, the pool attributes cudaMemPoolAttrReservedMemCurrent, cudaMemPoolAttrReservedMemHigh, cudaMemPoolAttrUsedMemCurrent, and cudaMemPoolAttrUsedMemHigh were added to query the memory usage of a pool.
+
+Querying the cudaMemPoolAttrReservedMemCurrent attribute of a pool reports the current total physical GPU memory consumed by the pool. Querying the cudaMemPoolAttrUsedMemCurrent of a pool returns the total size of all of the memory allocated from the pool and not available for reuse.
+
+ThecudaMemPoolAttr\*MemHigh attributes are watermarks recording the max value achieved by the respective cudaMemPoolAttr\*MemCurrent attribute since last reset. They can be reset to the current value by using the cudaMemPoolSetAttribute API.
+
+```c
+// sample helper functions for getting the usage statistics in bulk
+struct usageStatistics {
+    cuuint64_t reserved;
+    cuuint64_t reservedHigh;
+    cuuint64_t used;
+    cuuint64_t usedHigh;
+};
+
+void getUsageStatistics(cudaMemoryPool_t memPool, struct usageStatistics *statistics)
+{
+    cudaMemPoolGetAttribute(memPool, cudaMemPoolAttrReservedMemCurrent, statistics->reserved);
+    cudaMemPoolGetAttribute(memPool, cudaMemPoolAttrReservedMemHigh, statistics->reservedHigh);
+    cudaMemPoolGetAttribute(memPool, cudaMemPoolAttrUsedMemCurrent, statistics->used);
+    cudaMemPoolGetAttribute(memPool, cudaMemPoolAttrUsedMemHigh, statistics->usedHigh);
+}
+
+// resetting the watermarks will make them take on the current value.
+void resetStatistics(cudaMemoryPool_t memPool)
+{
+    cuuint64_t value = 0;
+    cudaMemPoolSetAttribute(memPool, cudaMemPoolAttrReservedMemHigh, &value);
+    cudaMemPoolSetAttribute(memPool, cudaMemPoolAttrUsedMemHigh, &value);
+}
+```
+
+## 15.9. Memory Reuse Policies
+
+In order to service an allocation request, the driver attempts to reuse memory that was previously freed via cudaFreeAsync() before attempting to allocate more memory from the OS. For example, memory freed in a stream can immediately be reused for a subsequent allocation request in the same stream. Similarly, when a stream is synchronized with the CPU, the memory that was previously freed in that stream becomes available for reuse for an allocation in any stream.
+
+The stream ordered allocator has a few controllable allocation policies. The pool attributes cudaMemPoolReuseFollowEventDependencies, cudaMemPoolReuseAllowOpportunistic, and cudaMemPoolReuseAllowInternalDependencies control these policies. Upgrading to a newer CUDA driver may change, enhance, augment and/or reorder the reuse policies.
+
+## 15.9.1. cudaMemPoolReuseFollowEventDependencies
+
+Before allocating more physical GPU memory, the allocator examines dependency information established by CUDA events and tries to allocate from memory freed in another stream.
+
+```txt
+cudaMallocAsync(&ptr, size, originalStream);
+kernel<<<..., originalStream>>>(ptr, ...);
+cudaFreeAsync(ptr, originalStream);
+cudaEventRecord(event, originalStream);
+
+// waiting on the event that captures the free in another stream
+// allows the allocator to reuse the memory to satisfy
+// a new allocation request in the other stream when
+// cudaMemPoolReuseFollowEventDependencies is enabled.
+cudaStreamWaitEvent(otherStream, event);
+cudaMallocAsync(&ptr2, size, otherStream);
+```
+
+## 15.9.2. cudaMemPoolReuseAllowOpportunistic
+
+According to the cudaMemPoolReuseAllowOpportunistic policy, the allocator examines freed allocations to see if the free’s stream order semantic has been met (such as the stream has passed the point of execution indicated by the free). When this is disabled, the allocator will still reuse memory made available when a stream is synchronized with the CPU. Disabling this policy does not stop the cudaMemPoolReuseFollowEventDependencies from applying.
+
+```txt
+cudaMallocAsync(&ptr, size, originalStream);
+kernel<<<..., originalStream>>>(ptr, ...);
+cudaFreeAsync(ptr, originalStream);
+
+// after some time, the kernel finishes running
+wait(10);
+
+// When cudaMemPoolReuseAllowOpportunistic is enabled this allocation request
+// can be fulfilled with the prior allocation based on the progress of originalStream.
+cudaMallocAsync(&ptr2, size, otherStream);
+```
+
+## 15.9.3. cudaMemPoolReuseAllowInternalDependencies
+
+Failing to allocate and map more physical memory from the OS, the driver will look for memory whose availability depends on another stream’s pending progress. If such memory is found, the driver will insert the required dependency into the allocating stream and reuse the memory.
+
+```txt
+cudaMallocAsync(&ptr, size, originalStream);
+kernel<<<..., originalStream>>>(ptr, ...);
+cudaFreeAsync(ptr, originalStream);
+
+// When cudaMemPoolReuseAllowInternalDependencies is enabled
+// and the driver fails to allocate more physical memory, the driver may
+// effectively perform a cudaStreamWaitEvent in the allocating stream
+// to make sure that future work in 'otherStream' happens after the work
+// in the original stream that would be allowed to access the original allocation.
+cudaMallocAsync(&ptr2, size, otherStream);
+```
+
+## 15.9.4. Disabling Reuse Policies
+
+While the controllable reuse policies improve memory reuse, users may want to disable them. Allowing opportunistic reuse (such as cudaMemPoolReuseAllowOpportunistic) introduces run to run variance in allocation patterns based on the interleaving of CPU and GPU execution. Internal dependency insertion (such as cudaMemPoolReuseAllowInternalDependencies) can serialize work in unexpected and potentially non-deterministic ways when the user would rather explicitly synchronize an event or stream on allocation failure.
+
+## 15.10. Device Accessibility for Multi-GPU Support
+
+Just like allocation accessibility controlled through the virtual memory management APIs, memory pool allocation accessibility does not follow cudaDeviceEnablePeerAccess or cuCtxEnablePeer-Access. Instead, the API cudaMemPoolSetAccess modifies what devices can access allocations from a pool. By default, allocations are accessible from the device where the allocations are located. This access cannot be revoked. To enable access from other devices, the accessing device must be peer capable with the memory pool’s device; check with cudaDeviceCanAccessPeer. If the peer capability is not checked, the set access may fail with cudaErrorInvalidDevice. If no allocations had been made from the pool, the cudaMemPoolSetAccess call may succeed even when the devices are not peer capable; in this case, the next allocation from the pool will fail.
+
+It is worth noting that cudaMemPoolSetAccess afects all allocations from the memory pool, not just future ones. Also the accessibility reported by cudaMemPoolGetAccess applies to all allocations from the pool, not just future ones. It is recommended that the accessibility settings of a pool for a given GPU not be changed frequently; once a pool is made accessible from a given GPU, it should remain accessible from that GPU for the lifetime of the pool.
+
+```txt
+// snippet showing usage of cudaMemPoolSetAccess:
+cudaError_t setAccessOnDevice(cudaMemPool_t memPool, int residentDevice,
+        int accessingDevice) {
+```
+
+(continues on next page)
+
+(continued from previous page)
+
+```txt
+cudaMemAccessDesc accessDesc = {};
+accessDesc.location.type = cudaMemLocationTypeDevice;
+accessDesc.location.id = accessingDevice;
+accessDesc.flags = cudaMemAccessFlagsProtReadWrite;
+
+int canAccess = 0;
+cudaError_t error = cudaDeviceCanAccessPeer(&canAccess, accessingDevice,
+residentDevice);
+if (error != cudaSuccess) {
+    return error;
+} else if (canAccess == 0) {
+    return cudaErrorPeerAccessUnsupported;
+}
+
+// Make the address accessible
+return cudaMemPoolSetAccess(memPool, &accessDesc, 1);
+}
+```
+````

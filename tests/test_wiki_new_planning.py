@@ -4,8 +4,8 @@ import asyncio
 from pathlib import Path
 
 from wiki_new.planning import (
-    _apply_section_judge_decision,
     ConceptFilePlan,
+    _apply_section_judge_decision,
     build_concept_split_prompt,
     build_streaming_boundary_judge_prompt,
     judge_concept_plan,
@@ -15,7 +15,9 @@ from wiki_new.planning import (
 )
 
 
-def test_validate_concept_partition_preserves_model_ranges_without_manual_merge() -> None:
+def test_validate_concept_partition_preserves_model_ranges_without_manual_merge() -> (
+    None
+):
     source_lines = [
         "## Contents",
         "1 Overview .... 2",
@@ -62,7 +64,9 @@ def test_validate_concept_partition_preserves_model_ranges_without_manual_merge(
     ]
 
 
-def test_validate_concept_partition_preserves_small_ranges_without_manual_merge() -> None:
+def test_validate_concept_partition_preserves_small_ranges_without_manual_merge() -> (
+    None
+):
     source_lines = [
         "9 CUDA-Enabled GPUs 157",
         "10 C++ Language Extensions 159",
@@ -176,7 +180,9 @@ def test_validate_concept_partition_keeps_distinct_prose_sections() -> None:
     ]
 
 
-def test_validate_concept_partition_preserves_large_ranges_without_manual_merge() -> None:
+def test_validate_concept_partition_preserves_large_ranges_without_manual_merge() -> (
+    None
+):
     source_lines = [
         "10 C++ Language Extensions 159",
         "10.1 Function Execution Space Specifiers 159",
@@ -281,7 +287,10 @@ def test_build_concept_split_prompt_targets_logical_sections() -> None:
     assert "logical reader-facing document sections" in system_text
     assert "Do NOT atomize the document into every possible concept" in system_text
     assert "500-700 lines should be rare" in user_text
-    assert "Do NOT create continuation pages merely because a chunk boundary was reached" in user_text
+    assert (
+        "Do NOT create continuation pages merely because a chunk boundary was reached"
+        in user_text
+    )
     assert "Boundary hygiene matters" not in user_text
 
 
@@ -363,12 +372,17 @@ def test_streaming_boundary_judge_prompt_mentions_next_raw_lines() -> None:
     assert "first-pass streaming check" in messages[1].content
     assert "merge_into_previous" in messages[1].content
     assert "carry-over tail" in messages[1].content
-    assert "clear new chapter or major section later in its own range" in messages[1].content
+    assert (
+        "clear new chapter or major section later in its own range"
+        in messages[1].content
+    )
     assert "merged_line_count" in messages[1].content
 
 
 def test_judge_concept_plan_merges_tiny_section_with_neighbors(monkeypatch) -> None:
-    async def fake_structured_ainvoke(llm, schema_cls, messages, max_output_tokens=None):
+    async def fake_structured_ainvoke(
+        llm, schema_cls, messages, max_output_tokens=None
+    ):
         return schema_cls(action="merge_previous_target_next", reason="too small")
 
     monkeypatch.setattr(
@@ -424,7 +438,9 @@ def test_judge_concept_plan_merges_tiny_section_with_neighbors(monkeypatch) -> N
 def test_judge_concept_plan_can_adjust_boundary(monkeypatch) -> None:
     calls = {"count": 0}
 
-    async def fake_structured_ainvoke(llm, schema_cls, messages, max_output_tokens=None):
+    async def fake_structured_ainvoke(
+        llm, schema_cls, messages, max_output_tokens=None
+    ):
         calls["count"] += 1
         if calls["count"] == 2:
             return schema_cls(
@@ -477,7 +493,9 @@ def test_judge_concept_plan_can_adjust_boundary(monkeypatch) -> None:
     ]
 
 
-def test_plan_concept_files_streaming_runs_local_judge_before_commit(monkeypatch) -> None:
+def test_plan_concept_files_streaming_runs_local_judge_before_commit(
+    monkeypatch,
+) -> None:
     source_lines = [f"line {index}" for index in range(1, 9)]
     committed_ranges: list[list[tuple[int, int]]] = []
     judge_calls: list[list[tuple[int, int]]] = []
@@ -566,7 +584,9 @@ def test_plan_concept_files_streaming_runs_local_judge_before_commit(monkeypatch
     )
 
     def on_commit(items) -> None:
-        committed_ranges.append([(item.source_start, item.source_end) for item in items])
+        committed_ranges.append(
+            [(item.source_start, item.source_end) for item in items]
+        )
 
     planned = asyncio.run(
         plan_concept_files_streaming(

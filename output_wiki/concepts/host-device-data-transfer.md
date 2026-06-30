@@ -1,33 +1,24 @@
-# Host-Device Data Transfer Optimization
+# Host-Device Data Transfer
 
-Applications should strive to minimize data transfer between the host and the device to maximize performance [CUDA_C_Programming_Guide:L6395-L6406]. This section outlines strategies to reduce transfer overhead and improve bandwidth utilization.
+Details techniques to minimize host-device data transfers, including batching small transfers, using page-locked host memory, mapped memory, and handling integrated systems.
 
-## Minimizing Transfer Volume
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-One effective strategy to reduce data transfer is to move more computation from the host to the device. This may involve executing kernels that do not expose sufficient parallelism for full device efficiency, if doing so avoids copying intermediate data structures between host and device memory [CUDA_C_Programming_Guide:L6395-L6406]. Intermediate data can be created, operated on, and destroyed entirely within device memory without ever being mapped by the host or copied back [CUDA_C_Programming_Guide:L6395-L6406].
+## Source CUDA_C_Programming_Guide:L6395-L6406
 
-## Batching Transfers
+Citation: [CUDA_C_Programming_Guide:L6395-L6406]
 
-Due to the fixed overhead associated with each transfer operation, batching many small transfers into a single large transfer consistently yields better performance than executing transfers individually [CUDA_C_Programming_Guide:L6395-L6406].
+````text
+## 8.3.1. Data Transfer between Host and Device
 
-## Page-Locked Host Memory
+Applications should strive to minimize data transfer between the host and the device. One way to accomplish this is to move more code from the host to the device, even if that means running kernels that do not expose enough parallelism to execute on the device with full eficiency. Intermediate data structures may be created in device memory, operated on by the device, and destroyed without ever being mapped by the host or copied to host memory.
 
-On systems with a front-side bus, higher performance for data transfers between host and device is achieved by using page-locked host memory [CUDA_C_Programming_Guide:L6395-L6406]. Page-locked memory prevents the operating system from swapping the memory to disk, allowing for direct memory access (DMA) transfers [CUDA_C_Programming_Guide:L6395-L6406].
+Also, because of the overhead associated with each transfer, batching many small transfers into a single large transfer always performs better than making each transfer separately.
 
-## Mapped Memory
+On systems with a front-side bus, higher performance for data transfers between host and device is achieved by using page-locked host memory as described in Page-Locked Host Memory.
 
-Mapped page-locked memory allows data transfers to be performed implicitly when a kernel accesses the mapped memory, eliminating the need to explicitly allocate device memory and copy data between host and device [CUDA_C_Programming_Guide:L6395-L6406].
+In addition, when using mapped page-locked memory (Mapped Memory), there is no need to allocate any device memory and explicitly copy data between device and host memory. Data transfers are implicitly performed each time the kernel accesses the mapped memory. For maximum performance, these memory accesses must be coalesced as with accesses to global memory (see Device Memory Accesses). Assuming that they are and that the mapped memory is read or written only once, using mapped page-locked memory instead of explicit copies between device and host memory can be a win for performance.
 
-### Performance Considerations
-
-For mapped memory to provide a performance benefit over explicit copies, the following conditions should be met:
-*   Memory accesses must be coalesced, similar to accesses to global memory [CUDA_C_Programming_Guide:L6395-L6406].
-*   The mapped memory should be read or written only once [CUDA_C_Programming_Guide:L6395-L6406].
-
-If these conditions are satisfied, using mapped page-locked memory can be a win for performance [CUDA_C_Programming_Guide:L6395-L6406].
-
-## Integrated Systems
-
-On integrated systems where device memory and host memory are physically the same, explicit copies between host and device memory are superfluous [CUDA_C_Programming_Guide:L6395-L6406]. In such cases, mapped page-locked memory should be used instead [CUDA_C_Programming_Guide:L6395-L6406].
-
-Applications can query whether a device is integrated by checking if the integrated device property is equal to 1 [CUDA_C_Programming_Guide:L6395-L6406].
+On integrated systems where device memory and host memory are physically the same, any copy between host and device memory is superfluous and mapped page-locked memory should be used instead. Applications may query a device is integrated by checking that the integrated device property (see Device Enumeration) is equal to 1.
+````

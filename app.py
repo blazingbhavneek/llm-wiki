@@ -44,7 +44,9 @@ async def _run(fn, *args, **kwargs):
 async def lifespan(_: FastAPI):
     global engine
     loop = asyncio.get_running_loop()
-    engine = await loop.run_in_executor(_executor, lambda: DomainEngine(Settings.from_env()))
+    engine = await loop.run_in_executor(
+        _executor, lambda: DomainEngine(Settings.from_env())
+    )
     try:
         yield
     finally:
@@ -124,9 +126,15 @@ async def read_node(node_id: str) -> dict:
 
 
 @app.get("/api/node/{node_id}/links")
-async def node_links(node_id: str, direction: str = "both", label: str | None = None) -> list[dict]:
-    pairs = await _run(lambda: _engine().follow_link(node_id, label=label, direction=direction))
-    return [{"edge": edge.model_dump(), "node": node.model_dump()} for edge, node in pairs]
+async def node_links(
+    node_id: str, direction: str = "both", label: str | None = None
+) -> list[dict]:
+    pairs = await _run(
+        lambda: _engine().follow_link(node_id, label=label, direction=direction)
+    )
+    return [
+        {"edge": edge.model_dump(), "node": node.model_dump()} for edge, node in pairs
+    ]
 
 
 @app.put("/api/node/{node_id}")
@@ -175,9 +183,7 @@ async def ask_stream(payload: AskBody) -> StreamingResponse:
 
     def run() -> None:
         try:
-            answer = _engine().ask(
-                payload.question, persist=False, on_event=events.put
-            )
+            answer = _engine().ask(payload.question, persist=False, on_event=events.put)
             events.put({"type": "answer", **answer.model_dump()})
         except Exception as exc:  # noqa: BLE001 - surface as an error frame
             events.put({"type": "error", "message": str(exc)})

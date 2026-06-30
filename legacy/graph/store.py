@@ -136,7 +136,11 @@ class Store:
     # -- sources / versions ------------------------------------------------
 
     def upsert_source(
-        self, source_id: str, logical_path: str, name: str, source_type: str = "markdown"
+        self,
+        source_id: str,
+        logical_path: str,
+        name: str,
+        source_type: str = "markdown",
     ) -> None:
         self.conn.execute(
             """INSERT INTO sources(id, logical_path, name, source_type)
@@ -148,9 +152,7 @@ class Store:
             (source_id, logical_path, name, source_type),
         )
 
-    def add_source_version(
-        self, version_id: str, source_id: str, sha256: str
-    ) -> None:
+    def add_source_version(self, version_id: str, source_id: str, sha256: str) -> None:
         self.conn.execute(
             """INSERT OR REPLACE INTO source_versions
                  (id, source_id, sha256, imported_at, compiler_version, active)
@@ -221,9 +223,7 @@ class Store:
         )
 
     def get_node(self, node_id: str) -> Optional[Node]:
-        row = self.conn.execute(
-            "SELECT * FROM nodes WHERE id=?", (node_id,)
-        ).fetchone()
+        row = self.conn.execute("SELECT * FROM nodes WHERE id=?", (node_id,)).fetchone()
         return _row_to_node(row) if row else None
 
     def source_versions_for_node(self, node_id: str) -> set[str]:
@@ -273,7 +273,9 @@ class Store:
         existing = self.get_edge(edge.id)
         if existing:
             edge.evidence = _merge_evidence(existing.evidence, edge.evidence)
-            edge.dependencies = sorted(set(existing.dependencies) | set(edge.dependencies))
+            edge.dependencies = sorted(
+                set(existing.dependencies) | set(edge.dependencies)
+            )
             edge.strength = max(existing.strength, edge.strength)
         self.conn.execute(
             """INSERT INTO edges
@@ -304,9 +306,7 @@ class Store:
         )
 
     def get_edge(self, edge_id: str) -> Optional[Edge]:
-        row = self.conn.execute(
-            "SELECT * FROM edges WHERE id=?", (edge_id,)
-        ).fetchone()
+        row = self.conn.execute("SELECT * FROM edges WHERE id=?", (edge_id,)).fetchone()
         return _row_to_edge(row) if row else None
 
     def edges_from(self, node_id: str, status: str = "active") -> list[Edge]:

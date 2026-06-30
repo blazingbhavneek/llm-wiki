@@ -1,29 +1,34 @@
 # Compressible Memory
 
-Compressible memory is a feature designed to accelerate accesses to data with unstructured sparsity and other compressible data patterns. By leveraging Compute Data Compression, this memory type can save DRAM bandwidth, L2 read bandwidth, and L2 capacity, depending on the specific data being operated on [CUDA_C_Programming_Guide:L15101-L15128].
+Details on allocating and querying compressible memory using CU_MEM_ALLOCATION_COMP_GENERIC and CU_DEVICE_ATTRIBUTE_GENERIC_COMPRESSION_SUPPORTED.
 
-## Prerequisites and Support
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-Before allocating compressible memory, applications must verify that the target device supports Compute Data Compression. This is done by querying the device attribute `CU_DEVICE_ATTRIBUTE_GENERIC_COMPRESSION_SUPPORTED` using `cuDeviceGetAttribute` [CUDA_C_Programming_Guide:L15101-L15128].
+## Source CUDA_C_Programming_Guide:L15101-L15128
 
-```c
+Citation: [CUDA_C_Programming_Guide:L15101-L15128]
+
+````text
+## 14.3.2.1 Compressible Memory
+
+Compressible memory can be used to accelerate accesses to data with unstructured sparsity and other compressible data patterns. Compression can save DRAM bandwidth, L2 read bandwidth and L2 capacity depending on the data being operated on. Applications that want to allocate compressible memory on devices that support Compute Data Compression can do so by setting CUmemAllocationProp::allocFlags::compressionType to CU\_MEM\_ALLOCATION\_COMP\_GENERIC. Users must query if device supports Compute Data Compression by using CU\_DEVICE\_ATTRIBUTE\_GENERIC\_COMPRESSION\_SUPPORTED. The following code snippet illustrates querying compressible memory support cuDeviceGetAttribute.
+
+```txt
 int compressionSupported = 0;
-cuDeviceGetAttribute(&compressionSupported, CU_DEVICE_ATTRIBUTE_GENERIC_COMPRESSION_SUPPORTED, device);
+cuDeviceGetAttribute(&compressionSupported, CU_DEVICE_ATTRIBUTE_GENERIC_COMPRESSION_
+→SUPPORTED, device);
 ```
 
-## Allocation
+On devices that support Compute Data Compression, users must opt in at allocation time as shown below:
 
-To allocate compressible memory on a supported device, applications must opt in at allocation time by setting the `compressionType` field within `CUmemAllocationProp::allocFlags` to `CU_MEM_ALLOCATION_COMP_GENERIC` [CUDA_C_Programming_Guide:L15101-L15128].
-
-```c
+```javascript
 prop.allocFlags.compressionType = CU_MEM_ALLOCATION_COMP_GENERIC;
 ```
 
-## Verification
+Due to various reasons such as limited HW resources, the allocation may not have compression attributes, the user is expected to query back the properties of the allocated memory using cuMemGetAllocationPropertiesFromHandle and check for compression attribute.
 
-Due to hardware resource limitations, an allocation request for compressible memory may not result in memory with compression attributes enabled. Therefore, applications are expected to query the properties of the allocated memory after allocation using `cuMemGetAllocationPropertiesFromHandle` and verify that the compression attribute is present [CUDA_C_Programming_Guide:L15101-L15128].
-
-```c
+```javascript
 CUmemAllocationProp allocationProp = {};
 cuMemGetAllocationPropertiesFromHandle(&allocationProp, allocationHandle);
 
@@ -32,3 +37,4 @@ if (allocationProp.allocFlags.compressionType == CU_MEM_ALLOCATION_COMP_GENERIC)
     // Obtained compressible memory allocation
 }
 ```
+````

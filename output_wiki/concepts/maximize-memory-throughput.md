@@ -1,42 +1,36 @@
 # Maximize Memory Throughput
 
-Maximizing memory throughput is a critical step in optimizing application performance, particularly in GPU computing environments. The primary goal is to reduce latency and increase bandwidth utilization by managing data movement efficiently.
+Outlines the strategy for maximizing memory throughput by minimizing low-bandwidth transfers, leveraging on-chip memory (shared memory, L1/L2 caches), and optimizing global memory access patterns for coalescing.
 
-## Minimize Low-Bandwidth Transfers
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-The first step in maximizing overall memory throughput is to minimize data transfers with low bandwidth [[CUDA_C_Programming_Guide:L6371-L6374]]. This involves two key areas:
+## Source CUDA_C_Programming_Guide:L6371-L6394
 
-1.  **Host-Device Transfers**: Data transfers between the host (CPU) and the device (GPU) have significantly lower bandwidth than transfers between global memory and the device. These should be minimized as much as possible [[CUDA_C_Programming_Guide:L6374-L6377]].
-2.  **Global Memory Transfers**: Transfers between global memory and the device should also be minimized by maximizing the use of on-chip memory [[CUDA_C_Programming_Guide:L6377-L6380]].
+Citation: [CUDA_C_Programming_Guide:L6371-L6394]
 
-## Maximize On-Chip Memory Usage
+````text
+## 8.3. Maximize Memory Throughput
 
-On-chip memory offers much higher bandwidth than global memory. Key on-chip resources include:
+The first step in maximizing overall memory throughput for the application is to minimize data transfers with low bandwidth.
 
-*   **Shared Memory**: A user-managed cache where the application explicitly allocates and accesses data [[CUDA_C_Programming_Guide:L6380-L6383]].
-*   **Caches**: Hardware-managed caches such as the L1 cache, L2 cache, texture cache, and constant cache [[CUDA_C_Programming_Guide:L6380-L6383]].
+That means minimizing data transfers between the host and the device, as detailed in Data Transfer between Host and Device, since these have much lower bandwidth than data transfers between global memory and the device.
 
-### Shared Memory Programming Pattern
+That also means minimizing data transfers between global memory and the device by maximizing use of on-chip memory: shared memory and caches (i.e., L1 cache and L2 cache available on devices of compute capability 2.x and higher, texture cache and constant cache available on all devices).
 
-Shared memory acts as a user-managed cache. A typical programming pattern involves staging data from device memory into shared memory to allow threads within a block to cooperate efficiently [[CUDA_C_Programming_Guide:L6383-L6385]]. The standard workflow is:
+Shared memory is equivalent to a user-managed cache: The application explicitly allocates and accesses it. As illustrated in CUDA Runtime, a typical programming pattern is to stage data coming from device memory into shared memory; in other words, to have each thread of a block:
 
-1.  Each thread loads data from device memory into shared memory [[CUDA_C_Programming_Guide:L6386-L6387]].
-2.  Threads synchronize with all other threads in the block to ensure safe reading of shared memory locations populated by different threads [[CUDA_C_Programming_Guide:L6387-L6390]].
-3.  Threads process the data in shared memory [[CUDA_C_Programming_Guide:L6390-L6391]].
-4.  Threads synchronize again if necessary to ensure shared memory has been updated with results [[CUDA_C_Programming_Guide:L6391-L6392]].
-5.  Results are written back to device memory [[CUDA_C_Programming_Guide:L6392-L6393]].
+Load data from device memory to shared memory,
 
-### Configurable L1/Shared Memory
+Synchronize with all the other threads of the block so that each thread can safely read shared memory locations that were populated by diferent threads,
 
-For devices with compute capability 7.x, 8.x, and 9.0, the same on-chip memory space is used for both L1 cache and shared memory. The amount of memory dedicated to L1 versus shared memory is configurable for each kernel call [[CUDA_C_Programming_Guide:L6393-L6394]].
+Process the data in shared memory,
 
-## Optimize Global Memory Access Patterns
+▶ Synchronize again if necessary to make sure that shared memory has been updated with the results,
 
-The throughput of memory accesses by a kernel can vary by an order of magnitude depending on the access pattern for each type of memory [[CUDA_C_Programming_Guide:L6394-L6396]]. Therefore, organizing memory accesses optimally is the next critical step [[CUDA_C_Programming_Guide:L6396-L6397]].
+▶ Write the results back to device memory.
 
-This optimization is especially important for **global memory accesses** because:
+For some applications (for example, for which global memory access patterns are data-dependent), a traditional hardware-managed cache is more appropriate to exploit data locality. As mentioned in Compute Capability 7.x, Compute Capability 8.x and Compute Capability 9.0, for devices of compute capability 7.x, 8.x and 9.0, the same on-chip memory is used for both L1 and shared memory, and how much of it is dedicated to L1 versus shared memory is configurable for each kernel call.
 
-*   Global memory bandwidth is low compared to available on-chip bandwidths and arithmetic instruction throughput [[CUDA_C_Programming_Guide:L6397-L6399]].
-*   Non-optimal global memory accesses generally have a high impact on performance [[CUDA_C_Programming_Guide:L6399-L6400]].
-
-For applications where global memory access patterns are data-dependent, a traditional hardware-managed cache may be more appropriate to exploit data locality than shared memory [[CUDA_C_Programming_Guide:L6393-L6394]].
+The throughput of memory accesses by a kernel can vary by an order of magnitude depending on access pattern for each type of memory. The next step in maximizing memory throughput is therefore to organize memory accesses as optimally as possible based on the optimal memory access patterns described in Device Memory Accesses. This optimization is especially important for global memory accesses as global memory bandwidth is low compared to available on-chip bandwidths and arithmetic instruction throughput, so non-optimal global memory accesses generally have a high impact on performance.
+````

@@ -24,6 +24,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
+from wiki.llm import make_llm
 from wiki.models import (
     API_KEY,
     BASE_URL,
@@ -36,18 +37,8 @@ from wiki.models import (
     SOURCE_PATH,
     TEMPERATURE,
 )
-
-from wiki.llm import make_llm
-
 from wiki.planning import *
-
-from wiki.utils import (
-    init_manifest,
-    read_lines,
-    utc_now_iso,
-    write_json,
-)
-
+from wiki.utils import init_manifest, read_lines, utc_now_iso, write_json
 
 # ---------------------------------------------------------------------
 # Deterministic rendered-output integrity check
@@ -148,6 +139,7 @@ def assert_rendered_docs_match_source(
 # Generation phase
 # ---------------------------------------------------------------------
 
+
 async def phase_generate(args: argparse.Namespace) -> None:
     """
     Simplified concept-file generation.
@@ -244,7 +236,7 @@ async def phase_generate(args: argparse.Namespace) -> None:
             original_filename=source_path.name,
             files=concept_files,
         )
-        
+
         inferred_headers = [f.header for f in enrichment_result.files]
         inferred_global_name = enrichment_result.inferred_file_name
 
@@ -261,7 +253,7 @@ async def phase_generate(args: argparse.Namespace) -> None:
         # Re-sort headers to match the sorted concept_files
         paired = sorted(
             zip(concept_files, inferred_headers),
-            key=lambda x: (x[0].source_start, x[0].source_end)
+            key=lambda x: (x[0].source_start, x[0].source_end),
         )
         ordered_concept_files = [p[0] for p in paired]
         inferred_headers = [p[1] for p in paired]

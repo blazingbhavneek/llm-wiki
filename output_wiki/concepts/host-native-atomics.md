@@ -1,12 +1,16 @@
 # Host Native Atomics
 
-Host native atomics refer to hardware-accelerated atomic accesses to CPU-resident memory. This capability is supported by specific devices, particularly those connected via NVLink in hardware coherent systems [CUDA_C_Programming_Guide:L21750-L21752].
+Describes hardware-accelerated atomic accesses to CPU-resident memory on NVLink-connected coherent systems, eliminating the need for page fault emulation.
 
-## Key Characteristics
+> Deterministic fallback: the normal synthesis path could not be verified. This page preserves the full source evidence verbatim with original line citations.
+> Reason: page agent failed: Connection error.
 
-*   **Hardware Acceleration**: The atomic operations are performed directly by the hardware rather than through software emulation [CUDA_C_Programming_Guide:L21750-L21752].
-*   **No Page Fault Emulation**: Because the hardware supports these operations natively, atomic accesses to host memory do not need to be emulated using page faults [CUDA_C_Programming_Guide:L21750-L21752].
+## Source CUDA_C_Programming_Guide:L21750-L21753
 
-## Detection
+Citation: [CUDA_C_Programming_Guide:L21750-L21753]
 
-To determine if a device supports host native atomics, query the device attribute `cudaDevAttrHostNativeAtomicSupported`. This attribute is set to `1` for devices that support this feature [CUDA_C_Programming_Guide:L21750-L21752].
+````text
+## 24.2.2.3 Host Native Atomics
+
+Some devices, including NVLink-connected devices in hardware coherent systems, support hardwareaccelerated atomic accesses to CPU-resident memory. This implies that atomic accesses to host memory do not have to be emulated with a page fault. For these devices, the attribute cudaDevAttrHostNativeAtomicSupported is set to 1.
+````

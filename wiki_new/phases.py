@@ -22,25 +22,22 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
+from wiki_new.llm import make_llm
 from wiki_new.models import (
     API_KEY,
     BASE_URL,
     CLEAN_OUTPUT,
     FILE_CONCURRENCY,
     GEN_MODEL,
+    GENERATION_LINES,
     MAX_CHUNK_EXTRA,
     OUTPUT_ROOT,
     PHASE,
     SOURCE_PATH,
     TEMPERATURE,
-    GENERATION_LINES,
     VERIFY_MODEL,
 )
-
-from wiki_new.llm import make_llm
-
 from wiki_new.planning import *
-
 from wiki_new.utils import (
     init_manifest,
     load_json,
@@ -195,6 +192,7 @@ def assert_rendered_docs_match_source(
 # Generation phase
 # ---------------------------------------------------------------------
 
+
 async def phase_generate(args: argparse.Namespace) -> None:
     """
     Simplified concept-file generation.
@@ -233,8 +231,10 @@ async def phase_generate(args: argparse.Namespace) -> None:
             _data = load_json(_progress_path)
             resume_files = [ConceptFilePlan(**f) for f in _data.get("files", [])]
             if resume_files:
-                print(f"[Resume] Found {len(resume_files)} committed files, "
-                      f"resuming from line {resume_files[-1].source_end + 1}")
+                print(
+                    f"[Resume] Found {len(resume_files)} committed files, "
+                    f"resuming from line {resume_files[-1].source_end + 1}"
+                )
         except Exception as e:
             print(f"[Resume] Could not load progress.json: {e}. Starting fresh.")
             resume_files = []
@@ -298,10 +298,16 @@ async def phase_generate(args: argparse.Namespace) -> None:
             for item in new_files:
                 normalized = normalize_plan_item(item)
                 index = len(committed_progress) + 1
-                filename = make_numbered_filename(index, normalized.filename, normalized.title)
+                filename = make_numbered_filename(
+                    index, normalized.filename, normalized.title
+                )
                 out_path = docs_dir / filename
-                selected = source_lines[normalized.source_start - 1: normalized.source_end]
-                write_concept_markdown_file(path=out_path, source_body=join_original_source_lines(selected))
+                selected = source_lines[
+                    normalized.source_start - 1 : normalized.source_end
+                ]
+                write_concept_markdown_file(
+                    path=out_path, source_body=join_original_source_lines(selected)
+                )
                 committed_progress.append(normalized.model_dump())
             write_json(progress_json_path, {"files": committed_progress})
 
@@ -348,7 +354,7 @@ async def phase_generate(args: argparse.Namespace) -> None:
             original_filename=source_path.name,
             files=concept_files,
         )
-        
+
         inferred_headers = [f.header for f in enrichment_result.files]
         inferred_global_name = enrichment_result.inferred_file_name
 
@@ -365,7 +371,7 @@ async def phase_generate(args: argparse.Namespace) -> None:
         # Re-sort headers to match the sorted concept_files
         paired = sorted(
             zip(concept_files, inferred_headers),
-            key=lambda x: (x[0].source_start, x[0].source_end)
+            key=lambda x: (x[0].source_start, x[0].source_end),
         )
         ordered_concept_files = [p[0] for p in paired]
         inferred_headers = [p[1] for p in paired]

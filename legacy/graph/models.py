@@ -12,11 +12,10 @@ class. Every edge carries type/explanation/strength/status/evidence/created_by.
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Literal, Optional
-
 
 # --------------------------------------------------------------------------
 # Constants / vocabularies
