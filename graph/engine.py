@@ -226,18 +226,20 @@ class DomainEngine:
             return None
         avoided = used_names or []
         system = (
-            "You name one topic cluster for a knowledge graph. Choose a specific "
-            "name that distinguishes this cluster from the other names already used. "
-            "Prefer the most specific technical subtopic visible in the keywords and "
-            "sample section titles. Avoid broad source names like CUDA, SYCL, OpenMP, "
-            "or oneAPI when a narrower topic is present. Reply with ONE concise topic "
-            "name of at most 4 words. No quotes, no punctuation, no explanation."
+            "あなたはナレッジグラフ内の 1 つのトピッククラスタに名前を付けます。"
+            "すでに使用されている他の名前と区別できる、具体的な名前を選んでください。"
+            "キーワードとサンプルセクションタイトルに現れている、最も具体的な技術的サブトピックを優先してください。"
+            "より狭いトピックが存在する場合は、CUDA、SYCL、OpenMP、oneAPI のような広範なソース名は避けてください。"
+            "回答は、簡潔なトピック名 1 つだけにしてください。"
+            "最大 4 語以内にしてください。"
+            "引用符、句読点、説明は不要です。"
+            "トピック名は日本語で記述してください。"
         )
         user = (
-            f"Keywords: {', '.join(keywords) or '(none)'}\n"
-            f"Sample titles: {'; '.join(titles) or '(none)'}\n"
-            f"Already used names to avoid: {', '.join(avoided) or '(none)'}\n\n"
-            "Topic name:"
+            f"キーワード: {', '.join(keywords) or '(なし)'}\n"
+            f"サンプルタイトル: {'; '.join(titles) or '(なし)'}\n"
+            f"避けるべき使用済みの名前: {', '.join(avoided) or '(なし)'}\n\n"
+            "トピック名:"
         )
         try:
             raw = self.llm.complete(system, user)

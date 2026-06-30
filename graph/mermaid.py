@@ -20,25 +20,27 @@ from pathlib import Path
 from typing import Any, Callable
 
 # Appended to the lead/compile prompt ONLY when enable_mermaid is on.
-MERMAID_INSTRUCTION = (
-    "\n\nDiagrams:\n"
-    "- If a flowchart, architecture/block diagram, sequence, or data-flow diagram "
-    "would make the answer clearer, include ONE Mermaid diagram in a ```mermaid "
-    "fenced block as part of your answer.\n"
-    "- Only add a diagram when it genuinely helps; skip it otherwise.\n"
-    "- Use simple ASCII node IDs (n1, n2, proc_a) and put any spaces/punctuation/"
-    "long text inside quoted labels: n1[\"Linear layer\"] --> n2[\"GEMM\"].\n"
-    "- The mermaid block must contain ONLY Mermaid syntax (no prose/bullets)."
-)
 
 _MERMAID_BLOCK_RE = re.compile(
     r"```mermaid[ \t]*\r?\n(?P<code>.*?)```",
     re.IGNORECASE | re.DOTALL,
 )
 
+MERMAID_INSTRUCTION = (
+    "\n\n図表:\n"
+    "- フローチャート、アーキテクチャ図/ブロック図、シーケンス図、またはデータフロー図を使うと"
+    "回答がより分かりやすくなる場合は、回答の一部として Mermaid 図を 1 つだけ ```mermaid "
+    "フェンス付きコードブロック内に含めてください。\n"
+    "- 図が本当に役立つ場合にのみ追加してください。そうでない場合は省略してください。\n"
+    "- シンプルな ASCII ノード ID（n1、n2、proc_a など）を使用し、空白、句読点、"
+    "長いテキストは引用符付きラベル内に入れてください: n1[\"Linear layer\"] --> n2[\"GEMM\"]。\n"
+    "- mermaid ブロックには Mermaid 構文のみを含めてください（説明文や箇条書きは含めないこと）。"
+)
+
+
 _FIX_SYSTEM = (
-    "You fix Mermaid diagram syntax so it renders with mermaid-cli (mmdc). "
-    "Return ONLY one corrected ```mermaid fenced code block and nothing else."
+    "Mermaid 図の構文を修正し、mermaid-cli（mmdc）でレンダリングできるようにしてください。"
+    "修正済みの ```mermaid フェンス付きコードブロックを 1 つだけ返し、それ以外は何も返さないでください。"
 )
 
 
@@ -80,10 +82,11 @@ def validate_mermaid(code: str, settings: Any) -> tuple[bool, str]:
 
 def _repair_once(llm: Any, code: str, error: str, settings: Any) -> str | None:
     user = (
-        "The following Mermaid diagram does not render. Fix the syntax, preserving "
-        "all nodes, edges, directions, and labels. Use simple ASCII node IDs and "
-        "quoted labels for any spaces/punctuation/long text.\n\n"
-        f"Render error:\n{error}\n\n"
+        "次の Mermaid 図はレンダリングできません。"
+        "すべてのノード、エッジ、方向、ラベルを維持したまま、構文を修正してください。"
+        "シンプルな ASCII ノード ID を使用し、空白、句読点、長いテキストを含む場合は"
+        "引用符付きラベルを使用してください。\n\n"
+        f"レンダリングエラー:\n{error}\n\n"
         f"```mermaid\n{code}\n```"
     )
     try:

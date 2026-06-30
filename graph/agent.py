@@ -37,39 +37,48 @@ from .runtime import (
 
 # region TOOL SCHEMAS
 class search(BaseModel):
-    """Search the wiki for nodes matching a text query."""
+    """テキストクエリに一致する Wiki ノードを検索する。"""
 
-    text: str = Field(description="keywords to search for")
+    text: str = Field(description="検索するキーワード。日本語で指定してよい。")
 
 
 class read(BaseModel):
-    """Read a node's full body and metadata by id."""
+    """ID を指定して、ノードの本文全体とメタデータを読み取る。"""
 
-    node_id: str = Field(description="id of the node to read")
+    node_id: str = Field(description="読み取るノードの ID。")
 
 
 class follow_link(BaseModel):
-    """Follow edges from a node to its neighboring nodes."""
+    """あるノードから、その隣接ノードへのエッジをたどる。"""
 
-    node_id: str = Field(description="id of the node to expand")
-    direction: str = Field(default="both", description="'incoming', 'outgoing', or 'both'")
+    node_id: str = Field(description="展開するノードの ID。")
+    direction: str = Field(
+        default="both",
+        description="'incoming'、'outgoing'、または 'both'。たどるリンクの方向を指定する。"
+    )
 
 
 class explore(BaseModel):
-    """Hand distinct starting node ids to a team of exploration subagents."""
+    """複数の探索サブエージェントに、重複しない開始ノード ID を渡す。"""
 
     node_ids: list[str] = Field(
         default_factory=list,
-        description="distinct starting node ids, each exploring a different sub-topic",
+        description=(
+            "重複しない開始ノード ID のリスト。"
+            "各ノードは異なるサブトピックを探索するために使われる。"
+        ),
     )
 
 
 class finish(BaseModel):
-    """Provide the final answer and the node ids used as evidence."""
+    """最終回答と、その根拠として使用したノード ID を提示する。"""
 
-    answer: str = Field(description="the final answer, grounded in node content")
+    answer: str = Field(
+        description="ノード内容に基づいた最終回答。日本語で記述すること。"
+    )
     cited_node_ids: list[str] = Field(
-        default_factory=list, description="ids of nodes that support the answer"
+        default_factory=list,
+        description="回答の根拠となるノード ID のリスト。"
     )
 
 
@@ -257,8 +266,8 @@ class QueryAgent:
         starts = self._resolve_distinct_starts(raw_node_ids)
         if not starts:
             return (
-                "no valid starting nodes resolved from those ids. Search again and "
-                "pass exact node ids from the search results to explore."
+                "指定された ID から有効な開始ノードを解決できませんでした。"
+                "もう一度検索し、検索結果に含まれる正確なノード ID を explore に渡してください。"
             )
 
         assignments = [
@@ -343,19 +352,19 @@ class QueryAgent:
                 read_count = len(state["read_ids"])
                 if read_count < self.settings.subagent_min_reads:
                     return (
-                        f"You have read only {read_count} node(s); read at least "
-                        f"{self.settings.subagent_min_reads} before finishing. Read "
-                        "another relevant node in your region now."
+                        f"あなたはまだ {read_count} 個のノードしか読んでいません。"
+                        f"終了する前に、少なくとも {self.settings.subagent_min_reads} 個のノードを読んでください。"
+                        "今すぐ、担当領域内の別の関連ノードを読んでください。"
                     )
                 return None
 
-            siblings = ", ".join(sibling_ids) if sibling_ids else "(none)"
+            siblings = ", ".join(sibling_ids) if sibling_ids else "(なし)"
             user_prompt = (
-                f"Question: {question}\n\n"
-                f"Your assigned starting node: {start_id}\n"
-                f"Sibling agents are covering (do NOT explore these): {siblings}\n\n"
-                "Read your starting node first, then follow links / search within your "
-                "region. Report what this region says about the question."
+                f"質問: {question}\n\n"
+                f"割り当てられた開始ノード: {start_id}\n"
+                f"兄弟エージェントが担当している範囲（これらは探索しないこと）: {siblings}\n\n"
+                "まず開始ノードを読み、その後、担当領域内でリンクをたどるか検索してください。"
+                "この領域が質問について何を述べているかを報告してください。"
             )
 
             result = self.llm.run_tool_loop(
@@ -389,13 +398,13 @@ class QueryAgent:
             database.close()
 
     def _format_reports(self, reports: list[dict[str, Any]]) -> str:
-        blocks = ["Subagent reports (each explored a different region):"]
+        blocks = ["サブエージェントのレポート（それぞれ異なる領域を探索）:"]
         for index, report in enumerate(reports, start=1):
-            cited = ", ".join(report.get("cited", [])) or "(none)"
+            cited = ", ".join(report.get("cited", [])) or "(なし)"
             blocks.append(
-                f"\n### Subagent {index} — start node: {report.get('start')}\n"
+                f"\n### サブエージェント {index} — 開始ノード: {report.get('start')}\n"
                 f"{report.get('answer', '').strip()}\n"
-                f"Evidence node ids: {cited}"
+                f"根拠ノード ID: {cited}"
             )
         return "\n".join(blocks)
 
@@ -409,24 +418,24 @@ class QueryAgent:
     ) -> str:
         if not node:
             return (
-                "node not found\n"
-                f"requested_id: {requested_id}\n"
-                f"cleaned_id: {cleaned_id}"
+                "ノードが見つかりません\n"
+                f"要求された ID: {requested_id}\n"
+                f"正規化後の ID: {cleaned_id}"
             )
 
         note = ""
         if requested_id.strip() != cleaned_id:
             note = (
-                f"requested_id: {requested_id}\n"
-                f"cleaned_id: {cleaned_id}\n"
+                f"要求された ID: {requested_id}\n"
+                f"正規化後の ID: {cleaned_id}\n"
             )
 
         return (
             f"{note}"
-            f"id: {node.id}\n"
-            f"title: {node.title}\n"
-            f"summary: {node.summary}\n"
-            f"body:\n{node.body}"
+            f"ID: {node.id}\n"
+            f"タイトル: {node.title}\n"
+            f"要約: {node.summary}\n"
+            f"本文:\n{node.body}"
         )
 
     # region SUBAGENT DISPATCH
@@ -460,15 +469,16 @@ class QueryAgent:
                 # Already read: don't re-emit, don't re-count — break read loops.
                 if node.id in read_ids:
                     return (
-                        f"already read {node.id} ({node.title}). Pick a DIFFERENT "
-                        "node, follow a link, or finish."
+                        f"{node.id}（{node.title}）はすでに読み取り済みです。"
+                        "別のノードを選ぶか、リンクをたどるか、finish を呼び出してください。"
                     )
+
                 # New read past the ceiling: stop expanding this region.
                 if len(read_ids) >= self.settings.subagent_max_reads:
                     return (
-                        f"read budget reached ({len(read_ids)}/"
-                        f"{self.settings.subagent_max_reads} nodes). Call finish now "
-                        "with what you have gathered."
+                        f"読み取り上限に達しました（{len(read_ids)}/"
+                        f"{self.settings.subagent_max_reads} ノード）。"
+                        "これまでに収集した内容を使って、今すぐ finish を呼び出してください。"
                     )
                 state["empty_streak"] = 0
                 read_ids.add(node.id)
@@ -498,36 +508,36 @@ class QueryAgent:
     def _empty_search_observation(self, streak: int) -> str:
         if streak >= self.settings.agent_patience:
             return (
-                f"no nodes found ({streak} consecutive empty searches). "
-                "Stop searching now: call finish with the best answer supported "
-                "by nodes you already read, citing their ids."
+                f"ノードが見つかりません（空の検索結果が {streak} 回連続）。"
+                "検索はここで停止してください。"
+                "すでに読んだノードによって裏付けられる最善の回答を使って finish を呼び出し、"
+                "それらのノード ID を引用してください。"
             )
-        return "no nodes found"
+        return "ノードが見つかりません"
 
     # endregion SUBAGENT DISPATCH
 
     # region FORMATTING
     def _format_candidates(self, nodes: list[Node]) -> str:
-        """Lead-facing candidate list: ids to hand to explore (no read action)."""
+        """リード向けの候補リスト。explore に渡す ID を示す（read アクションは行わない）。"""
         if not nodes:
-            return "no nodes found"
+            return "ノードが見つかりません"
         return "\n".join(
             f"- node_id: `{node.id}`\n"
             f"  title: {node.title}\n"
             f"  summary: {node.summary}\n"
-            f"  next_action: pass this id to explore(node_ids=[...]) if it is a "
-            f"promising, distinct lead"
+            f"  next_action: 有望で、他と重複しないリードであれば、この ID を explore(node_ids=[...]) に渡してください"
             for node in nodes
         )
 
     def _format_nodes(self, nodes: list[Node]) -> str:
         if not nodes:
-            return "no nodes found"
+            return "ノードが見つかりません"
         return "\n".join(
             f"- node_id: `{node.id}`\n"
             f"  title: {node.title}\n"
             f"  summary: {node.summary}\n"
-            f"  next_action: read this node with read(node_id='{node.id}') if relevant"
+            f"  next_action: 関連がある場合は read(node_id='{node.id}') でこのノードを読んでください"
             for node in nodes
         )
 
