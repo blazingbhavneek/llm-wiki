@@ -353,6 +353,33 @@ async def _json_schema_ainvoke(
     return schema_cls.model_validate(data)
 
 
+_GLOBAL_GATE: asyncio.Semaphore | None = None
+_GATE_SIZE: int | None = None
+
+
+def _concurrency() -> int:
+    value = _env_int("WIKI_CONCURRENCY")
+    if value is None:
+        return 12
+    return max(1, value)
+
+
+def _global_gate() -> asyncio.Semaphore:
+    """Process-wide concurrency gate shared by every LLM call/stage.
+
+    This is the single concurrency knob (WIKI_CONCURRENCY). It is acquired
+    *before* the per-request timeout timer starts, so time spent queued for a
+    free slot never counts against the deadline -- the timer only measures the
+    request once it is actually in flight.
+    """
+    global _GLOBAL_GATE, _GATE_SIZE
+    size = _concurrency()
+    if _GLOBAL_GATE is None or _GATE_SIZE != size:
+        _GLOBAL_GATE = asyncio.Semaphore(size)
+        _GATE_SIZE = size
+    return _GLOBAL_GATE
+
+
 def _request_timeout_seconds() -> int:
     value = _env_int("WIKI_LLM_REQUEST_TIMEOUT")
     # Thinking on large chunks routinely exceeds 180s; default higher.
@@ -401,16 +428,20 @@ async def _attempt_with_timeout(
     enable_thinking: bool | None,
     timeout_seconds: int,
 ) -> BaseModel:
-    return await asyncio.wait_for(
-        _structured_ainvoke_uncached(
-            llm=llm,
-            schema_cls=schema_cls,
-            messages=messages,
-            max_output_tokens=max_output_tokens,
-            enable_thinking=enable_thinking,
-        ),
-        timeout=timeout_seconds,
-    )
+    # Acquire a global concurrency slot BEFORE starting the timeout timer: the
+    # deadline must measure only the in-flight request, not time spent queued
+    # behind other requests waiting for a slot.
+    async with _global_gate():
+        return await asyncio.wait_for(
+            _structured_ainvoke_uncached(
+                llm=llm,
+                schema_cls=schema_cls,
+                messages=messages,
+                max_output_tokens=max_output_tokens,
+                enable_thinking=enable_thinking,
+            ),
+            timeout=timeout_seconds,
+        )
 
 
 async def _structured_ainvoke_with_retry_policy(

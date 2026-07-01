@@ -339,22 +339,6 @@ def write_source_excerpt_page(
     )
 
 
-async def generate_pages_bounded(
-    *,
-    llm,
-    plans: list[PagePlan],
-    output_root: Path,
-    concurrency: int,
-) -> list[GeneratedPage]:
-    semaphore = asyncio.Semaphore(concurrency)
-
-    async def run(plan: PagePlan) -> GeneratedPage:
-        async with semaphore:
-            print(f"[Page] {plan.slug} spans={len(plan.source_spans)}")
-            return await generate_page(llm=llm, plan=plan, output_root=output_root)
-
-    return await asyncio.gather(*(run(plan) for plan in plans))
-
 
 def load_page_sources(output_root: Path) -> dict[str, list[dict]]:
     path = output_root / "_planning" / "page_sources.json"

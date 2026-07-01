@@ -46,22 +46,6 @@ async def fact_check_page(*, llm, page: GeneratedPage) -> FactCheckResult:
         )
 
 
-async def fact_check_pages_bounded(
-    *,
-    llm,
-    pages: list[GeneratedPage],
-    concurrency: int,
-) -> dict[str, FactCheckResult]:
-    semaphore = asyncio.Semaphore(concurrency)
-
-    async def run(page: GeneratedPage) -> tuple[str, FactCheckResult]:
-        async with semaphore:
-            print(f"[FactCheck] {page.slug}")
-            return page.slug, await fact_check_page(llm=llm, page=page)
-
-    pairs = await asyncio.gather(*(run(page) for page in pages))
-    return dict(pairs)
-
 
 def page_overlaps_chunk(page: GeneratedPage, chunk: SourceChunk) -> bool:
     for span in page.source_spans:
@@ -174,28 +158,6 @@ async def coverage_check_chunk(
             reason=str(exc),
         )
 
-
-async def coverage_check_chunks_bounded(
-    *,
-    llm,
-    chunks: list[SourceChunk],
-    pages: list[GeneratedPage],
-    concurrency: int,
-) -> dict[str, CoverageCheckResult]:
-    semaphore = asyncio.Semaphore(concurrency)
-    pages_by_doc = build_pages_by_doc(pages)
-
-    async def run(chunk: SourceChunk) -> tuple[str, CoverageCheckResult]:
-        async with semaphore:
-            print(f"[Coverage] {chunk.chunk_id}")
-            return chunk.chunk_id, await coverage_check_chunk(
-                llm=llm,
-                chunk=chunk,
-                pages=pages_by_doc.get(chunk.doc_id, []),
-            )
-
-    pairs = await asyncio.gather(*(run(chunk) for chunk in chunks))
-    return dict(pairs)
 
 
 def write_fact_check_audit(

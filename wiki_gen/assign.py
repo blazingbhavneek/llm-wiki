@@ -211,22 +211,3 @@ async def assign_chunk(
     )
     return assignments
 
-
-async def assign_chunks_bounded(
-    *,
-    llm,
-    chunks: list[SourceChunk],
-    catalog: list[WikiCatalogEntry],
-    concurrency: int,
-) -> list[WikiAssignment]:
-    semaphore = asyncio.Semaphore(concurrency)
-
-    async def run(chunk: SourceChunk) -> list[WikiAssignment]:
-        async with semaphore:
-            print(
-                f"[Assign] {chunk.chunk_id} lines {chunk.line_start}-{chunk.line_end}"
-            )
-            return await assign_chunk(llm=llm, chunk=chunk, catalog=catalog)
-
-    nested = await asyncio.gather(*(run(chunk) for chunk in chunks))
-    return [item for group in nested for item in group]

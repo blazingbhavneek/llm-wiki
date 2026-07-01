@@ -135,46 +135,18 @@ async def research_one_document_for_page(
         return fallback_research_report(plan, doc_id, str(exc))
 
 
-async def research_page_plan(
-    *,
-    llm,
-    plan: PagePlan,
-    concurrency: int,
-) -> PagePlan:
+async def research_page_plan(*, llm, plan: PagePlan) -> PagePlan:
     doc_ids = sorted({span.doc_id for span in plan.source_spans})
     if not doc_ids:
         return plan
 
-    semaphore = asyncio.Semaphore(max(1, concurrency))
-
     async def run(doc_id: str) -> PageResearchReport:
-        async with semaphore:
-            print(f"[Research] {plan.slug} doc={doc_id}")
-            return await research_one_document_for_page(
-                llm=llm,
-                plan=plan,
-                doc_id=doc_id,
-            )
+        print(f"[Research] {plan.slug} doc={doc_id}")
+        return await research_one_document_for_page(
+            llm=llm,
+            plan=plan,
+            doc_id=doc_id,
+        )
 
     reports = await asyncio.gather(*(run(doc_id) for doc_id in doc_ids))
     return plan.model_copy(update={"research_reports": list(reports)})
-
-
-async def research_page_plans_bounded(
-    *,
-    llm,
-    plans: list[PagePlan],
-    page_concurrency: int,
-    subagent_concurrency: int,
-) -> list[PagePlan]:
-    semaphore = asyncio.Semaphore(max(1, page_concurrency))
-
-    async def run(plan: PagePlan) -> PagePlan:
-        async with semaphore:
-            return await research_page_plan(
-                llm=llm,
-                plan=plan,
-                concurrency=subagent_concurrency,
-            )
-
-    return await asyncio.gather(*(run(plan) for plan in plans))

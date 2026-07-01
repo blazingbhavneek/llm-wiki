@@ -30,10 +30,9 @@ VERIFY_MODEL = os.environ.get("WIKI_VERIFY_MODEL", GEN_MODEL)
 TEMPERATURE = float(os.environ.get("WIKI_GEN_TEMPERATURE", "0.3"))
 TIMEOUT = int(os.environ.get("WIKI_GEN_TIMEOUT", "600"))
 
-ASSIGN_CONCURRENCY = int(os.environ.get("WIKI_ASSIGN_CONCURRENCY", "12"))
-PAGE_CONCURRENCY = int(os.environ.get("WIKI_PAGE_CONCURRENCY", "6"))
-JUDGE_CONCURRENCY = int(os.environ.get("WIKI_JUDGE_CONCURRENCY", "8"))
-RESEARCH_CONCURRENCY = int(os.environ.get("WIKI_RESEARCH_CONCURRENCY", "8"))
+# Single global concurrency knob. The LLM layer (wiki_new.llm) enforces it as a
+# process-wide gate shared by every stage, so WIKI_CONCURRENCY is the one dial.
+CONCURRENCY = int(os.environ.get("WIKI_CONCURRENCY", "12"))
 
 MAX_CATALOG_ITEMS = int(os.environ.get("WIKI_MAX_CATALOG_ITEMS", "18"))
 ASSIGN_REPAIR_ATTEMPTS = int(os.environ.get("WIKI_ASSIGN_REPAIR_ATTEMPTS", "5"))
